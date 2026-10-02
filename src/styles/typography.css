@@ -1,0 +1,80 @@
+/* Figma Hanmaum text styles. Sizes use rem (16px root); tracking is 0.
+ * Fontsource's "Noto Sans KR Variable" is the variable build of Noto Sans KR.
+ */
+@theme {
+  --font-sans:
+    "Noto Sans KR Variable", "Noto Sans KR", system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji";
+
+  /* Hanmaum/Title/Page */
+  --text-hm-title-page: 1.625rem;
+  --text-hm-title-page--line-height: 2.375rem;
+  --text-hm-title-page--font-weight: 700;
+  --text-hm-title-page--letter-spacing: 0em;
+
+  /* Hanmaum/Title/Hero */
+  --text-hm-title-hero: 1.375rem;
+  --text-hm-title-hero--line-height: 2rem;
+  --text-hm-title-hero--font-weight: 700;
+  --text-hm-title-hero--letter-spacing: 0em;
+
+  /* Hanmaum/Heading/Section */
+  --text-hm-heading-section: 1.125rem;
+  --text-hm-heading-section--line-height: 1.75rem;
+  --text-hm-heading-section--font-weight: 700;
+  --text-hm-heading-section--letter-spacing: 0em;
+
+  /* Hanmaum/Body/Default */
+  --text-hm-body-default: 1rem;
+  --text-hm-body-default--line-height: 1.625rem;
+  --text-hm-body-default--font-weight: 400;
+  --text-hm-body-default--letter-spacing: 0em;
+
+  /* Hanmaum/Body/Reading */
+  --text-hm-body-reading: 1rem;
+  --text-hm-body-reading--line-height: 1.75rem;
+  --text-hm-body-reading--font-weight: 400;
+  --text-hm-body-reading--letter-spacing: 0em;
+
+  /* Hanmaum/Body/Emphasis */
+  --text-hm-body-emphasis: 1rem;
+  --text-hm-body-emphasis--line-height: 1.625rem;
+  --text-hm-body-emphasis--font-weight: 500;
+  --text-hm-body-emphasis--letter-spacing: 0em;
+
+  /* Hanmaum/Body/Small */
+  --text-hm-body-small: 0.875rem;
+  --text-hm-body-small--line-height: 1.5rem;
+  --text-hm-body-small--font-weight: 400;
+  --text-hm-body-small--letter-spacing: 0em;
+
+  /* Hanmaum/Label/Button */
+  --text-hm-label-button: 1rem;
+  --text-hm-label-button--line-height: 1.5rem;
+  --text-hm-label-button--font-weight: 700;
+  --text-hm-label-button--letter-spacing: 0em;
+
+  /* Hanmaum/Caption/Default */
+  --text-hm-caption-default: 0.8125rem;
+  --text-hm-caption-default--line-height: 1.375rem;
+  --text-hm-caption-default--font-weight: 400;
+  --text-hm-caption-default--letter-spacing: 0em;
+
+  /* Hanmaum/Label/Badge */
+  --text-hm-label-badge: 0.75rem;
+  --text-hm-label-badge--line-height: 1.125rem;
+  --text-hm-label-badge--font-weight: 500;
+  --text-hm-label-badge--letter-spacing: 0em;
+
+  /* Hanmaum/Navigation/Default */
+  --text-hm-navigation-default: 0.75rem;
+  --text-hm-navigation-default--line-height: 1.125rem;
+  --text-hm-navigation-default--font-weight: 400;
+  --text-hm-navigation-default--letter-spacing: 0em;
+
+  /* Hanmaum/Navigation/Selected */
+  --text-hm-navigation-selected: 0.75rem;
+  --text-hm-navigation-selected--line-height: 1.125rem;
+  --text-hm-navigation-selected--font-weight: 700;
+  --text-hm-navigation-selected--letter-spacing: 0em;
+}

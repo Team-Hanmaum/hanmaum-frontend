@@ -1,0 +1,92 @@
+/* Tailwind v4 adapter. Values remain owned by tokens.css. */
+@theme inline {
+  /* Semantic colors, including the existing Figma social token names. */
+  --color-hm-bg-page: var(--hm-color-bg-page);
+  --color-hm-bg-surface: var(--hm-color-bg-surface);
+  --color-hm-bg-subtle: var(--hm-color-bg-subtle);
+  --color-hm-bg-brand-subtle: var(--hm-color-bg-brand-subtle);
+  --color-hm-bg-canvas: var(--hm-color-bg-canvas);
+  --color-hm-text-primary: var(--hm-color-text-primary);
+  --color-hm-text-secondary: var(--hm-color-text-secondary);
+  --color-hm-text-brand: var(--hm-color-text-brand);
+  --color-hm-text-inverse: var(--hm-color-text-inverse);
+  --color-hm-icon-primary: var(--hm-color-icon-primary);
+  --color-hm-icon-secondary: var(--hm-color-icon-secondary);
+  --color-hm-icon-brand: var(--hm-color-icon-brand);
+  --color-hm-icon-inverse: var(--hm-color-icon-inverse);
+  --color-hm-action-primary: var(--hm-color-action-primary);
+  --color-hm-border-default: var(--hm-color-border-default);
+  --color-hm-border-focus: var(--hm-color-border-focus);
+  --color-hm-divider-default: var(--hm-color-divider-default);
+  --color-hm-feedback-error-text: var(--hm-color-feedback-error-text);
+  --color-hm-feedback-error-icon: var(--hm-color-feedback-error-icon);
+  --color-hm-feedback-error-bg: var(--hm-color-feedback-error-bg);
+  --color-hm-feedback-error-border: var(--hm-color-feedback-error-border);
+  --color-hm-action-destructive: var(--hm-color-action-destructive);
+  --color-hm-action-destructive-pressed: var(
+    --hm-color-action-destructive-pressed
+  );
+  --color-hm-action-primary-pressed: var(--hm-color-action-primary-pressed);
+  --color-hm-action-disabled: var(--hm-color-action-disabled);
+  --color-hm-text-disabled: var(--hm-color-text-disabled);
+  --color-hm-icon-disabled: var(--hm-color-icon-disabled);
+  --color-hm-border-disabled: var(--hm-color-border-disabled);
+  --color-hm-input-bg-default: var(--hm-color-input-bg-default);
+  --color-hm-input-bg-disabled: var(--hm-color-input-bg-disabled);
+  --color-hm-input-border-default: var(--hm-color-input-border-default);
+  --color-hm-input-border-focus: var(--hm-color-input-border-focus);
+  --color-hm-input-border-error: var(--hm-color-input-border-error);
+  --color-hm-input-border-disabled: var(--hm-color-input-border-disabled);
+  --color-hm-input-text-placeholder: var(--hm-color-input-text-placeholder);
+  --color-hm-input-text-disabled: var(--hm-color-input-text-disabled);
+  --color-hm-border-interactive: var(--hm-color-border-interactive);
+  --color-hm-social-kakao-background: var(--color-social-kakao-background);
+  --color-hm-social-kakao-text: var(--color-social-kakao-text);
+  --color-hm-social-google-background: var(--color-social-google-background);
+  --color-hm-social-google-text: var(--color-social-google-text);
+  --color-hm-social-google-border: var(--color-social-google-border);
+
+  /* Explicit pixel scale: p-hm-16 = 16px; the existing p-4 is unchanged. */
+  --spacing-hm-0: var(--hm-spacing-0);
+  --spacing-hm-2: var(--hm-spacing-2);
+  --spacing-hm-3: var(--hm-spacing-3);
+  --spacing-hm-4: var(--hm-spacing-4);
+  --spacing-hm-5: var(--hm-spacing-5);
+  --spacing-hm-6: var(--hm-spacing-6);
+  --spacing-hm-8: var(--hm-spacing-8);
+  --spacing-hm-10: var(--hm-spacing-10);
+  --spacing-hm-12: var(--hm-spacing-12);
+  --spacing-hm-14: var(--hm-spacing-14);
+  --spacing-hm-16: var(--hm-spacing-16);
+  --spacing-hm-20: var(--hm-spacing-20);
+  --spacing-hm-24: var(--hm-spacing-24);
+  --spacing-hm-28: var(--hm-spacing-28);
+  --spacing-hm-32: var(--hm-spacing-32);
+  --spacing-hm-40: var(--hm-spacing-40);
+  --spacing-hm-48: var(--hm-spacing-48);
+  --spacing-hm-touch-min: var(--hm-size-touch-min);
+  --spacing-hm-control: var(--hm-size-control);
+
+  --radius-hm-0: var(--hm-radius-0);
+  --radius-hm-5: var(--hm-radius-5);
+  --radius-hm-6: var(--hm-radius-6);
+  --radius-hm-8: var(--hm-radius-8);
+  --radius-hm-9: var(--hm-radius-9);
+  --radius-hm-10: var(--hm-radius-10);
+  --radius-hm-12: var(--hm-radius-12);
+  --radius-hm-14: var(--hm-radius-14);
+  --radius-hm-16: var(--hm-radius-16);
+  --radius-hm-18: var(--hm-radius-18);
+  --radius-hm-20: var(--hm-radius-20);
+  --radius-hm-24: var(--hm-radius-24);
+  --radius-hm-full: var(--hm-radius-full);
+}
+
+/* Width utilities are separate from semantic border color utilities. */
+@utility border-hm-default {
+  border-width: var(--hm-border-width-default);
+}
+
+@utility border-hm-focus {
+  border-width: var(--hm-border-width-focus);
+}

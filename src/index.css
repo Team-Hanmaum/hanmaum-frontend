@@ -1,1 +1,11 @@
 @import "tailwindcss";
+@import "@fontsource-variable/noto-sans-kr";
+@import "./styles/tokens.css";
+@import "./styles/theme.css";
+@import "./styles/typography.css";
+
+@layer base {
+  body {
+    @apply bg-hm-bg-page font-sans text-hm-body-default text-hm-text-primary;
+  }
+}
