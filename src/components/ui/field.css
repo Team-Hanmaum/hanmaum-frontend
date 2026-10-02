@@ -1,0 +1,54 @@
+@layer components {
+  .hm-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--hm-spacing-8);
+    width: 100%;
+    min-width: 0;
+  }
+
+  .hm-field-control {
+    width: 100%;
+    min-width: 0;
+    min-height: var(--hm-size-control);
+    padding: var(--hm-spacing-12) var(--hm-spacing-16);
+    border: var(--hm-border-width-default) solid
+      var(--hm-color-border-interactive);
+    border-radius: var(--hm-radius-10);
+    background: var(--hm-color-input-bg-default);
+    color: var(--hm-color-text-primary);
+    font-size: var(--text-hm-body-default);
+    line-height: var(--text-hm-body-default--line-height);
+    font-weight: var(--text-hm-body-default--font-weight);
+    letter-spacing: var(--text-hm-body-default--letter-spacing);
+  }
+
+  textarea.hm-field-control {
+    min-height: 148px;
+    padding: var(--hm-spacing-16);
+    resize: vertical;
+  }
+
+  .hm-field-control::placeholder {
+    color: var(--hm-color-input-text-placeholder);
+    opacity: 1;
+  }
+
+  .hm-field-control:focus {
+    outline: var(--hm-border-width-focus) solid var(--hm-color-border-focus);
+    outline-offset: 3px;
+    border-color: var(--hm-color-input-border-focus);
+  }
+
+  .hm-field-control[aria-invalid="true"] {
+    border-color: var(--hm-color-input-border-error);
+  }
+
+  .hm-field-control:disabled {
+    color: var(--hm-color-input-text-disabled);
+    background: var(--hm-color-input-bg-disabled);
+    border-color: var(--hm-color-input-border-disabled);
+    opacity: 1;
+    cursor: not-allowed;
+  }
+}
