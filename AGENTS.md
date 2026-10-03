@@ -15,6 +15,7 @@
 - routes: 경로 등록, URL 생성, 라우팅 관련 레이아웃
 - styles: 공통 토큰과 전역 스타일
 - assets: 로고, 아이콘, 이미지
+- 공통 components는 features·pages·routes에 직접 의존하지 않고, 필요한 데이터와 동작은 props로 전달받는다.
 - 컴포넌트와 페이지 파일은 PascalCase를 사용한다.
 - 훅과 유틸 파일은 camelCase, 폴더와 정적 에셋은 kebab-case를 사용한다.
 - main.tsx, index.ts 등 기존 진입점과 도구 지정 파일명은 유지한다.
@@ -26,6 +27,7 @@
 - 휴대폰 중심으로 구현하고 화면 너비를 Figma의 390px에 고정하지 않는다.
 - 비활성, 로딩, 오류 등 필요한 상태와 키보드 접근성을 확인한다.
 - API 미연동 동작은 Mock임을 명확히 표시한다.
+- 개발용 인증 우회와 실제 인증 없이 로그인 다음 화면으로 이동하는 Mock 동작은 프로덕션에서 비활성화한다.
 - 구성원의 요청과 소유자의 최종 반영을 구분한다.
 - 인증은 BE의 세션 쿠키·CSRF 계약을 따르며 임의의 JWT 방식을 도입하지 않는다.
 
@@ -93,3 +95,5 @@
 - UI 작업은 FIGMA.md와 해당 Figma 상세 화면을 확인한다.
 - 기능과 정책 작업은 FEATURES.md, DECISIONS.md, sources/notion-policy.md의 관련 부분을 확인한다.
 - 위 문서명은 ../docs/handoff/ 기준이며 작업에 필요한 부분만 읽는다.
+- 현재 레포의 구현과 공통 규격은 README.md, src/components/README.md, src/routes/README.md, src/styles/README.md, src/assets/README.md도 함께 참고한다. 이 경로들은 현재 레포 루트 기준이다.
+- 공통 handoff에는 개발 초기 상태가 포함될 수 있으므로, 현재 구현 상태는 실제 코드와 현재 레포 문서로 재확인한다.
