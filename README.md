@@ -11,11 +11,12 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-- `/`: 최신 Figma `HM-ON-A02` 로그인 대표 화면. 상단의 Mock 안내는 확인용 UI이며 실제 인증·계정 생성은 발생하지 않는다.
-- `/?preview=components`: 개발 모드 전용 공통 컴포넌트 확인 화면. 전체 아이콘·기본 컨트롤·내비게이션·피드백·모달·도메인 카드의 상태와 동작 확인.
-- 로그인 버튼 클릭 시 1초 동안 로딩 상태를 표시한 후 기본 상태로 복귀. 이전 화면 연결 전이므로 뒤로가기 역시 Mock 안내만 표시.
+- `/login`: 최신 Figma `HM-ON-A02` 로그인 대표 화면. 상단의 Mock 안내는 확인용 UI이며 실제 인증·계정 생성은 발생하지 않는다.
+- `/_dev/components`: 개발 모드 전용 공통 컴포넌트 확인 화면. 기존 `/?preview=components` 주소도 이 화면으로 이동한다.
+- 라우팅 기반 단계의 `/`는 `/login`으로 이동한다. 랜딩 화면은 후속 단계에서 연결한다.
+- 로그인 버튼 클릭 시 1초 동안 로딩 상태를 표시한 후 기본 상태로 복귀한다.
 
-별도의 `dev/` 폴더나 라우터 의존성 없이 개발용 쿼리로 확인 화면을 선택한다. `routes/Router.tsx`와 제품 URL 등록은 후속 라우팅 작업에서 진행한다. 프로덕션 빌드에서는 컴포넌트 확인 화면의 JavaScript와 진입 링크를 제외한다. 현재 로그인은 프로덕션 빌드에서도 Mock이다.
+React Router의 Data 모드를 사용하며 `src/routes/Router.tsx`에서 URL을 등록한다. 잘못된 주소는 404 화면, 라우트 오류는 공통 오류 화면으로 처리한다. 뒤로가기는 앱 안에서 관측한 방문 이력이 있을 때만 이전 항목으로 이동하고, 직접 진입·새로고침 후에는 지정한 대체 경로를 사용한다. 프로덕션 빌드에서는 컴포넌트 확인 화면의 JavaScript와 진입 링크를 제외한다. 현재 로그인은 프로덕션 빌드에서도 Mock이다.
 
 ## 파일·폴더 이름
 
@@ -42,4 +43,4 @@ pnpm build
 
 `check`는 ESLint, Prettier, TypeScript를 검증한다. 화면 검증 절차와 컴포넌트 API는 [공통 컴포넌트 규격](src/components/README.md), 토큰·폰트는 [공통 스타일 규격](src/styles/README.md), 벡터 출처는 [자산 목록](src/assets/README.md) 참조.
 
-현재 작업: [이슈 #8](https://github.com/Team-Hanmaum/hanmaum-frontend/issues/8). 최초 세 단계 구현에 이어 Figma 공통 보드 전체로 확장. 로컬 실행 검토를 거쳐 push·PR을 별도로 진행한다.
+현재 작업: [이슈 #10](https://github.com/Team-Hanmaum/hanmaum-frontend/issues/10). 라우팅 기반 → 공통 레이아웃 → 랜딩 → 온보딩 안내·Mock 이동 순서로 단계별 커밋. 로컬 실행 검토를 거쳐 push·PR을 별도로 진행한다.
