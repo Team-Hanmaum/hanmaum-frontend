@@ -1,0 +1,107 @@
+/* Figma: TNlkTZrM8NIo0jSp6tRTwH / local variables, checked 2026-10-02.
+ * Preserve Figma CSS names and semantic → primitive aliases.
+ * Layout numbers are pixels; they do not replace Tailwind's default scale.
+ */
+@layer base {
+  :root {
+    /* Hanmaum · Primitives · Value */
+    --hm-teal-50: #e9f4f1;
+    --hm-teal-700: #24746b;
+    --hm-neutral-0: #ffffff;
+    --hm-neutral-25: #f7f8f6;
+    --hm-neutral-50: #f0f3f0;
+    --hm-neutral-100: #edf0ed;
+    --hm-neutral-200: #dce3de;
+    --hm-neutral-600: #61716b;
+    --hm-neutral-900: #25332f;
+    --hm-red-50: #fff1ed;
+    --hm-red-600: #c93625;
+    --hm-red-700: #b83224;
+    --hm-teal-800: #1c5f58;
+    --social-kakao-background: #fee500;
+    --social-kakao-text: #171a23;
+    --social-google-background: #fcfcfd;
+    --social-google-text: #1c2230;
+    --social-google-border: #c6ceda;
+
+    /* Hanmaum · Color · Light */
+    --hm-color-bg-page: var(--hm-neutral-25);
+    --hm-color-bg-surface: var(--hm-neutral-0);
+    --hm-color-bg-subtle: var(--hm-neutral-50);
+    --hm-color-bg-brand-subtle: var(--hm-teal-50);
+    --hm-color-bg-canvas: var(--hm-neutral-100);
+    --hm-color-text-primary: var(--hm-neutral-900);
+    --hm-color-text-secondary: var(--hm-neutral-600);
+    --hm-color-text-brand: var(--hm-teal-700);
+    --hm-color-text-inverse: var(--hm-neutral-0);
+    --hm-color-icon-primary: var(--hm-neutral-900);
+    --hm-color-icon-secondary: var(--hm-neutral-600);
+    --hm-color-icon-brand: var(--hm-teal-700);
+    --hm-color-icon-inverse: var(--hm-neutral-0);
+    --hm-color-action-primary: var(--hm-teal-700);
+    --hm-color-border-default: var(--hm-neutral-200);
+    --hm-color-border-focus: var(--hm-teal-700);
+    --hm-color-divider-default: var(--hm-neutral-200);
+    --hm-color-feedback-error-text: var(--hm-red-600);
+    --hm-color-feedback-error-icon: var(--hm-red-600);
+    --hm-color-feedback-error-bg: var(--hm-red-50);
+    --hm-color-feedback-error-border: var(--hm-red-600);
+    --hm-color-action-destructive: var(--hm-red-600);
+    --hm-color-action-destructive-pressed: var(--hm-red-700);
+    --hm-color-action-primary-pressed: var(--hm-teal-800);
+    --hm-color-action-disabled: var(--hm-neutral-200);
+    --hm-color-text-disabled: var(--hm-neutral-600);
+    --hm-color-icon-disabled: var(--hm-neutral-600);
+    --hm-color-border-disabled: var(--hm-neutral-200);
+    --hm-color-input-bg-default: var(--hm-neutral-0);
+    --hm-color-input-bg-disabled: var(--hm-neutral-50);
+    --hm-color-input-border-default: var(--hm-neutral-200);
+    --hm-color-input-border-focus: var(--hm-teal-700);
+    --hm-color-input-border-error: var(--hm-red-600);
+    --hm-color-input-border-disabled: var(--hm-neutral-200);
+    --hm-color-input-text-placeholder: var(--hm-neutral-600);
+    --hm-color-input-text-disabled: var(--hm-neutral-600);
+    --hm-color-border-interactive: var(--hm-neutral-600);
+    --color-social-kakao-background: var(--social-kakao-background);
+    --color-social-kakao-text: var(--social-kakao-text);
+    --color-social-google-background: var(--social-google-background);
+    --color-social-google-text: var(--social-google-text);
+    --color-social-google-border: var(--social-google-border);
+
+    /* Hanmaum · Layout · Value */
+    --hm-spacing-0: 0px;
+    --hm-spacing-2: 2px;
+    --hm-spacing-3: 3px;
+    --hm-spacing-4: 4px;
+    --hm-spacing-5: 5px;
+    --hm-spacing-6: 6px;
+    --hm-spacing-8: 8px;
+    --hm-spacing-10: 10px;
+    --hm-spacing-12: 12px;
+    --hm-spacing-14: 14px;
+    --hm-spacing-16: 16px;
+    --hm-spacing-20: 20px;
+    --hm-spacing-24: 24px;
+    --hm-spacing-28: 28px;
+    --hm-spacing-32: 32px;
+    --hm-spacing-40: 40px;
+    --hm-spacing-48: 48px;
+    --hm-radius-0: 0px;
+    --hm-radius-5: 5px;
+    --hm-radius-6: 6px;
+    --hm-radius-8: 8px;
+    --hm-radius-9: 9px;
+    --hm-radius-10: 10px;
+    --hm-radius-12: 12px;
+    --hm-radius-14: 14px;
+    --hm-radius-16: 16px;
+    --hm-radius-18: 18px;
+    --hm-radius-20: 20px;
+    --hm-radius-24: 24px;
+    --hm-radius-full: 999px;
+    --hm-size-touch-min: 44px;
+    --hm-size-control: 52px;
+    --hm-border-width-default: 1px;
+    --hm-border-width-focus: 2px;
+  }
+}
