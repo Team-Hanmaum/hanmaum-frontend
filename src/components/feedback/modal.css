@@ -1,0 +1,33 @@
+@layer components {
+  .hm-modal {
+    border: 0;
+    padding: 0;
+    color: var(--hm-color-text-primary);
+    background: transparent;
+    max-height: calc(100dvh - 40px);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .hm-modal::backdrop {
+    background: color-mix(
+      in srgb,
+      var(--hm-color-text-primary) 40%,
+      transparent
+    );
+  }
+  .hm-modal[data-variant="dialog"] {
+    margin: auto;
+    width: calc(100% - 40px);
+    max-width: 350px;
+    border-radius: var(--hm-radius-20);
+  }
+  .hm-modal[data-variant="sheet"] {
+    position: fixed;
+    inset: auto 0 0;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 512px;
+    max-height: calc(100dvh - 20px);
+    border-radius: var(--hm-radius-24) var(--hm-radius-24) 0 0;
+  }
+}

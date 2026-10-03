@@ -1,0 +1,75 @@
+@layer components {
+  .hm-selection-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    gap: var(--hm-spacing-12);
+    padding: var(--hm-spacing-16);
+    border: 1px solid var(--hm-color-border-interactive);
+    border-radius: var(--hm-radius-12);
+    background: var(--hm-color-bg-surface);
+    cursor: pointer;
+  }
+  .hm-selection-row:has(input:checked) {
+    border-color: var(--hm-color-border-focus);
+    background: var(--hm-color-bg-brand-subtle);
+  }
+  .hm-selection-row:has(input:focus-visible)::after {
+    content: "";
+    position: absolute;
+    inset: -5px;
+    border: 2px solid var(--hm-color-border-focus);
+    border-radius: var(--hm-radius-14);
+    pointer-events: none;
+  }
+  .hm-selection-control {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border: 1px solid var(--hm-color-border-interactive);
+    border-radius: var(--hm-radius-6);
+    background: var(--hm-color-bg-surface);
+  }
+  .hm-selection-control[data-control="radio"] {
+    border-radius: var(--hm-radius-full);
+  }
+  .hm-selection-mark,
+  .hm-selection-dot {
+    display: none;
+  }
+  .hm-selection-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--hm-radius-full);
+    background: var(--hm-color-icon-inverse);
+  }
+  .hm-selection-row:has(input:checked) .hm-selection-control {
+    border: 0;
+    background: var(--hm-color-action-primary);
+  }
+  .hm-selection-row:has(input:checked) .hm-selection-mark,
+  .hm-selection-row:has(input:checked) .hm-selection-dot {
+    display: block;
+  }
+  .hm-selection-row:has(input:disabled) {
+    border-color: var(--hm-color-border-disabled);
+    background: var(--hm-color-bg-subtle);
+    cursor: not-allowed;
+  }
+  .hm-selection-row:has(input:disabled) .hm-selection-label {
+    color: var(--hm-color-text-disabled);
+  }
+  .hm-selection-row:has(input:disabled) .hm-selection-control {
+    border-color: var(--hm-color-border-disabled);
+  }
+  .hm-selection-row:has(input:checked:disabled) .hm-selection-control {
+    background: var(--hm-color-action-disabled);
+  }
+  .hm-selection-row:has(input:disabled) .hm-selection-dot {
+    background: var(--hm-color-icon-disabled);
+  }
+}

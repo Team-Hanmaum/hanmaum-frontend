@@ -1,0 +1,29 @@
+@import "./focus-ring.css";
+@layer components {
+  .hm-text-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--hm-spacing-8);
+    min-height: var(--hm-size-touch-min);
+    border-radius: var(--hm-radius-8);
+    color: var(--hm-color-text-secondary);
+    font-size: var(--text-hm-body-small);
+    line-height: var(--text-hm-body-small--line-height);
+    overflow-wrap: anywhere;
+    cursor: pointer;
+  }
+  .hm-text-action[data-tone="danger"] {
+    color: var(--hm-color-feedback-error-text);
+  }
+  .hm-text-action:enabled:active {
+    background: var(--hm-color-bg-subtle);
+  }
+  .hm-text-action[data-tone="danger"]:enabled:active {
+    background: var(--hm-color-feedback-error-bg);
+  }
+  .hm-text-action:disabled {
+    color: var(--hm-color-text-disabled);
+    cursor: not-allowed;
+  }
+}
