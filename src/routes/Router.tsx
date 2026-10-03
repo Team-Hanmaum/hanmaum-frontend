@@ -3,6 +3,7 @@ import { RouterProvider } from "react-router/dom";
 import App from "@/App";
 import { LoginPage } from "@/pages/login/LoginPage";
 import { LandingPage } from "@/pages/landing/LandingPage";
+import { OnboardingGuidePage } from "@/pages/onboarding/OnboardingGuidePage";
 import { NotFoundPage } from "@/pages/error/NotFoundPage";
 import { RouteErrorPage } from "@/pages/error/RouteErrorPage";
 import { recordNavigation } from "./navigationHistory";
@@ -58,6 +59,11 @@ const router = createBrowserRouter([
         },
       },
       { path: paths.login, Component: LoginPage, handle: { title: "로그인" } },
+      {
+        path: paths.onboardingGuide,
+        Component: OnboardingGuidePage,
+        handle: { title: "시작 전 안내" },
+      },
       {
         path: paths.spaces,
         Component: SpaceSelectionPage,

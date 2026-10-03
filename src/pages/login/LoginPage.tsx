@@ -1,4 +1,5 @@
 import { DetailLayout } from "@/components/layout";
+import { MockNotice } from "@/components/feedback/MockNotice";
 import { BrandSymbol } from "@/components/ui";
 import { SocialLoginOptions } from "@/features/auth/ui/SocialLoginOptions";
 import { Link } from "react-router";
@@ -8,7 +9,7 @@ import { useLoginPreview } from "./useLoginPreview";
 
 export function LoginPage() {
   const onBack = useBackNavigation(paths.landing);
-  const { provider, message, previewLogin } = useLoginPreview();
+  const { enabled, provider, message, previewLogin } = useLoginPreview();
   return (
     <DetailLayout
       title="로그인"
@@ -16,16 +17,7 @@ export function LoginPage() {
       surface="surface"
       mainClassName="flex flex-col items-center justify-center gap-hm-40 p-hm-20"
       notice={
-        <aside
-          aria-label="Mock 안내"
-          className="flex flex-wrap items-center justify-center gap-hm-8 bg-hm-bg-brand-subtle px-hm-20 py-hm-8 text-hm-caption-default text-hm-text-brand"
-        >
-          <p
-            role="status"
-            aria-atomic="true"
-          >
-            Mock · {message}
-          </p>
+        <MockNotice message={message}>
           {import.meta.env.DEV && (
             <Link
               className="hm-focus-ring rounded-hm-5 underline underline-offset-4"
@@ -34,7 +26,7 @@ export function LoginPage() {
               컴포넌트 보기
             </Link>
           )}
-        </aside>
+        </MockNotice>
       }
     >
       <div className="flex w-full flex-col items-center gap-hm-16 text-center">
@@ -50,6 +42,7 @@ export function LoginPage() {
         </p>
       </div>
       <SocialLoginOptions
+        disabled={!enabled}
         loadingProvider={provider}
         onLogin={previewLogin}
       />

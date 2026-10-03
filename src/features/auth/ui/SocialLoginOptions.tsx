@@ -1,11 +1,13 @@
 import { SocialLoginButton, type SocialProvider } from "@/components/ui";
 
 export type SocialLoginOptionsProps = {
+  disabled?: boolean;
   loadingProvider?: SocialProvider | null;
   onLogin: (provider: SocialProvider) => void;
 };
 
 export function SocialLoginOptions({
+  disabled = false,
   loadingProvider,
   onLogin,
 }: SocialLoginOptionsProps) {
@@ -16,7 +18,9 @@ export function SocialLoginOptions({
           key={provider}
           provider={provider}
           loading={loadingProvider === provider}
-          disabled={Boolean(loadingProvider && loadingProvider !== provider)}
+          disabled={
+            disabled || Boolean(loadingProvider && loadingProvider !== provider)
+          }
           onClick={() => onLogin(provider)}
         />
       ))}
