@@ -1,13 +1,11 @@
 import { Link } from "react-router";
 import { ErrorState } from "@/components/feedback";
+import { PageLayout } from "@/components/layout";
 import { paths } from "@/routes/paths";
 
 export function NotFoundPage() {
   return (
-    <main
-      tabIndex={-1}
-      className="mx-auto flex min-h-svh w-full max-w-lg flex-col justify-center gap-hm-20 p-hm-20 outline-none"
-    >
+    <PageLayout mainClassName="flex flex-col justify-center gap-hm-20 p-hm-20">
       <h1 className="text-hm-title-page">페이지를 찾을 수 없어요</h1>
       <ErrorState
         reason="load-error"
@@ -21,6 +19,6 @@ export function NotFoundPage() {
       >
         시작 화면으로
       </Link>
-    </main>
+    </PageLayout>
   );
 }

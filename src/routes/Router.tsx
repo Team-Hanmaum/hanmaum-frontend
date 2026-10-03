@@ -5,7 +5,14 @@ import { LoginPage } from "@/pages/login/LoginPage";
 import { NotFoundPage } from "@/pages/error/NotFoundPage";
 import { RouteErrorPage } from "@/pages/error/RouteErrorPage";
 import { recordNavigation } from "./navigationHistory";
-import { paths } from "./paths";
+import { paths, spacePath } from "./paths";
+import { TabLayout } from "./layouts/TabLayout";
+import { SpaceSelectionPage } from "@/pages/space-selection/SpaceSelectionPage";
+import { HomePage } from "@/pages/home/HomePage";
+import { CarePage } from "@/pages/care/CarePage";
+import { NewsPage } from "@/pages/news/NewsPage";
+import { FamilyPage } from "@/pages/family/FamilyPage";
+import { AllPage } from "@/pages/all/AllPage";
 
 const developmentRoutes: RouteObject[] = import.meta.env.DEV
   ? [
@@ -48,6 +55,62 @@ const router = createBrowserRouter([
         },
       },
       { path: paths.login, Component: LoginPage, handle: { title: "로그인" } },
+      {
+        path: paths.spaces,
+        Component: SpaceSelectionPage,
+        handle: { title: "돌봄 공간 선택" },
+      },
+      {
+        path: `${paths.spaces}/:careSpaceId`,
+        children: [
+          {
+            index: true,
+            loader: ({ params, request }) => {
+              if (!params.careSpaceId)
+                throw new Response(null, { status: 404 });
+              const url = new URL(request.url);
+              return redirect(
+                `${spacePath(params.careSpaceId)}${url.search}${url.hash}`,
+              );
+            },
+          },
+          {
+            Component: TabLayout,
+            children: [
+              {
+                path: "home",
+                Component: HomePage,
+                handle: { title: "홈", tab: "home" },
+              },
+              {
+                path: "care",
+                Component: CarePage,
+                handle: { title: "돌봄", tab: "care" },
+              },
+              {
+                path: "news",
+                Component: NewsPage,
+                handle: { title: "소식", tab: "news" },
+              },
+              {
+                path: "family",
+                Component: FamilyPage,
+                handle: { title: "가족", tab: "family" },
+              },
+              {
+                path: "all",
+                Component: AllPage,
+                handle: { title: "전체", tab: "all" },
+              },
+            ],
+          },
+          {
+            path: "*",
+            Component: NotFoundPage,
+            handle: { title: "페이지를 찾을 수 없어요" },
+          },
+        ],
+      },
       ...developmentRoutes,
       {
         path: "*",
