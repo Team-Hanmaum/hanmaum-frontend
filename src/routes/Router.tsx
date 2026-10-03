@@ -2,6 +2,7 @@ import { createBrowserRouter, redirect, type RouteObject } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import App from "@/App";
 import { LoginPage } from "@/pages/login/LoginPage";
+import { LandingPage } from "@/pages/landing/LandingPage";
 import { NotFoundPage } from "@/pages/error/NotFoundPage";
 import { RouteErrorPage } from "@/pages/error/RouteErrorPage";
 import { recordNavigation } from "./navigationHistory";
@@ -44,14 +45,16 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
+        Component: LandingPage,
+        handle: { title: "한마음" },
         loader: ({ request }) => {
           const url = new URL(request.url);
-          return redirect(
+          if (
             import.meta.env.DEV &&
-              url.searchParams.get("preview") === "components"
-              ? `${paths.components}${url.hash}`
-              : paths.login,
-          );
+            url.searchParams.get("preview") === "components"
+          )
+            return redirect(`${paths.components}${url.hash}`);
+          return null;
         },
       },
       { path: paths.login, Component: LoginPage, handle: { title: "로그인" } },

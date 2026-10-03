@@ -11,9 +11,11 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
+- `/`: 최신 Figma `HM-ON-A01` 랜딩 화면. 시작하기·이미 계정이 있어요 → `/login`.
 - `/login`: 최신 Figma `HM-ON-A02` 로그인 대표 화면. 상단의 Mock 안내는 확인용 UI이며 실제 인증·계정 생성은 발생하지 않는다.
 - `/_dev/components`: 개발 모드 전용 공통 컴포넌트 확인 화면. 기존 `/?preview=components` 주소도 이 화면으로 이동한다.
-- 라우팅 기반 단계의 `/`는 `/login`으로 이동한다. 랜딩 화면은 후속 단계에서 연결한다.
+- `/spaces`: 공간 선택 임시 화면. 개발 모드에서는 두 Mock 공간으로 탭 전환을 확인한다.
+- `/spaces/:careSpaceId/home|care|news|family|all`: 공간 ID를 유지하는 다섯 탭의 임시 화면.
 - 로그인 버튼 클릭 시 1초 동안 로딩 상태를 표시한 후 기본 상태로 복귀한다.
 
 React Router의 Data 모드를 사용하며 `src/routes/Router.tsx`에서 URL을 등록한다. 잘못된 주소는 404 화면, 라우트 오류는 공통 오류 화면으로 처리한다. 뒤로가기는 앱 안에서 관측한 방문 이력이 있을 때만 이전 항목으로 이동하고, 직접 진입·새로고침 후에는 지정한 대체 경로를 사용한다. 프로덕션 빌드에서는 컴포넌트 확인 화면의 JavaScript와 진입 링크를 제외한다. 현재 로그인은 프로덕션 빌드에서도 Mock이다.
