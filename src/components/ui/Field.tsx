@@ -83,7 +83,7 @@ export function Field({
           className={`flex items-start gap-hm-8 text-hm-body-small ${invalid ? "text-hm-feedback-error-text" : "text-hm-text-secondary"}`}
           role={invalid ? "alert" : undefined}
         >
-          {invalid && <Icon name="alert" />}
+          {invalid && <Icon name="alert-error" />}
           <p className="min-w-0 wrap-anywhere">{description}</p>
         </div>
       )}

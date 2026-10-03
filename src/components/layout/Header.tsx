@@ -44,7 +44,7 @@ export function Header(props: HeaderProps) {
               <span className="min-w-0 flex-1 truncate">
                 {props.space.name}
               </span>
-              <Icon name="chevron-down" />
+              <Icon name="chevron-down-secondary" />
             </button>
           )}
         </>

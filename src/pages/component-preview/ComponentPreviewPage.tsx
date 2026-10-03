@@ -8,6 +8,10 @@ import {
   IconButton,
   SocialLoginButton,
 } from "@/components/ui";
+import { iconNames } from "@/components/ui/iconSources";
+import { FoundationPreview } from "./FoundationPreview";
+import { FeedbackPreview } from "./FeedbackPreview";
+import { DomainPreview } from "./DomainPreview";
 
 function Example({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -44,7 +48,28 @@ export default function ComponentPreviewPage() {
         >
           로그인 조합 보기
         </a>
+        <nav
+          aria-label="컴포넌트 분류"
+          className="flex flex-wrap gap-x-hm-16 gap-y-hm-8"
+        >
+          {[
+            ["#brand-heading", "아이콘"],
+            ["#button-heading", "버튼·입력·헤더"],
+            ["#foundation", "표시·선택·탐색"],
+            ["#feedback", "안내·오버레이"],
+            ["#domain", "도메인 카드"],
+          ].map(([href, label]) => (
+            <a
+              key={href}
+              href={href}
+              className="hm-focus-ring inline-flex min-h-hm-touch-min items-center text-hm-body-small text-hm-text-brand underline underline-offset-4"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
         <p
+          id="preview-status"
           role="status"
           aria-atomic="true"
           className="w-full rounded-hm-10 bg-hm-bg-brand-subtle p-hm-12 text-hm-body-small text-hm-text-brand"
@@ -71,27 +96,26 @@ export default function ComponentPreviewPage() {
                 <BrandSymbol size="login" />
               </div>
             </Example>
-            <Example title="Figma 원본 아이콘">
-              <div className="flex flex-wrap gap-hm-16">
-                {(
-                  [
-                    "google",
-                    "kakao",
-                    "chevron-left",
-                    "chevron-down",
-                    "alert",
-                  ] as const
-                ).map((name) => (
-                  <span
-                    key={name}
-                    title={name}
-                  >
-                    <Icon name={name} />
-                    <span className="sr-only">{name}</span>
-                  </span>
-                ))}
+          </div>
+          <div
+            aria-label="Figma 아이콘 목록"
+            className="grid grid-cols-2 gap-hm-12 sm:grid-cols-3 lg:grid-cols-6"
+          >
+            {iconNames.map((name) => (
+              <div
+                key={name}
+                className="flex min-w-0 flex-col items-center gap-hm-8 rounded-hm-12 border border-hm-border-default bg-hm-bg-surface p-hm-12"
+              >
+                <span
+                  className={`grid size-hm-touch-min place-items-center rounded-hm-8 ${name.includes("inverse") ? "bg-hm-action-primary" : "bg-hm-bg-brand-subtle"}`}
+                >
+                  <Icon name={name} />
+                </span>
+                <span className="text-center text-hm-caption-default wrap-anywhere">
+                  {name}
+                </span>
               </div>
-            </Example>
+            ))}
           </div>
         </section>
 
@@ -342,6 +366,9 @@ export default function ComponentPreviewPage() {
             </div>
           </div>
         </section>
+        <FoundationPreview onAction={setMessage} />
+        <FeedbackPreview onAction={setMessage} />
+        <DomainPreview onAction={setMessage} />
       </main>
     </div>
   );

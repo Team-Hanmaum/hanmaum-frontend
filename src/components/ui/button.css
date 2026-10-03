@@ -1,21 +1,5 @@
+@import "./focus-ring.css";
 @layer components {
-  .hm-focus-ring {
-    position: relative;
-  }
-
-  .hm-focus-ring:focus-visible {
-    outline: none;
-  }
-
-  .hm-focus-ring:focus-visible::after {
-    content: "";
-    pointer-events: none;
-    position: absolute;
-    inset: -4px;
-    border: var(--hm-border-width-focus) solid var(--hm-color-border-focus);
-    border-radius: var(--hm-radius-14);
-  }
-
   .hm-button {
     display: inline-flex;
     align-items: center;
