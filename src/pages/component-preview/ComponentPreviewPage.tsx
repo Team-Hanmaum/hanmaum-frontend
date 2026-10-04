@@ -1,4 +1,6 @@
 import { useState, type ReactNode } from "react";
+import { Link } from "react-router";
+import { paths } from "@/routes/paths";
 import { Header } from "@/components/layout";
 import {
   BrandSymbol,
@@ -42,12 +44,12 @@ export default function ComponentPreviewPage() {
           기본·비활성·로딩 상태를 비교하고, 마우스 올림·누름·Tab 키로 포커스를
           확인하세요. 각 상태는 실제 HTML 컨트롤입니다.
         </p>
-        <a
-          href="/"
+        <Link
+          to={paths.login}
           className="hm-focus-ring inline-flex min-h-hm-touch-min items-center rounded-hm-5 text-hm-body-emphasis text-hm-text-brand underline underline-offset-4"
         >
           로그인 조합 보기
-        </a>
+        </Link>
         <nav
           aria-label="컴포넌트 분류"
           className="flex flex-wrap gap-x-hm-16 gap-y-hm-8"
@@ -78,7 +80,10 @@ export default function ComponentPreviewPage() {
         </p>
       </div>
 
-      <main className="flex flex-col gap-hm-40">
+      <main
+        tabIndex={-1}
+        className="flex flex-col gap-hm-40 outline-none"
+      >
         <section
           aria-labelledby="brand-heading"
           className="flex flex-col gap-hm-16"

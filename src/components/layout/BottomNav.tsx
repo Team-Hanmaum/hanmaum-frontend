@@ -1,7 +1,8 @@
-import { NavItem } from "./NavItem";
+import { NavItem, type NavItemProps } from "./NavItem";
 import { FixedBottomArea, type FixedBottomAreaProps } from "./FixedBottomArea";
 export type BottomNavTab = "home" | "care" | "news" | "family" | "all";
 export type BottomNavProps = {
+  renderLink?: NavItemProps["renderLink"];
   active: BottomNavTab;
   position?: FixedBottomAreaProps["position"];
   className?: string;
@@ -45,6 +46,7 @@ export function BottomNav({
   active,
   position,
   className = "",
+  renderLink,
   ...navigation
 }: BottomNavProps) {
   return (
@@ -61,6 +63,7 @@ export function BottomNav({
             key={value}
             {...tab}
             selected={value === active}
+            renderLink={renderLink}
             {...(navigation.destinations
               ? { href: navigation.destinations[value] }
               : { onClick: () => navigation.onNavigate(value) })}
