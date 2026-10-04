@@ -2,6 +2,18 @@
 
 현재 앱은 BE API를 연결하기 전의 UI 미리보기다. Vercel Preview와 Production 모두 `pnpm build`로 만든 프로덕션 번들을 사용한다. 소셜 로그인 버튼, 개발용 로그인 이동, Mock 공간 진입 링크와 `/_dev/components`는 로컬 개발 모드에서만 사용할 수 있다.
 
+## 최초 배포 기록
+
+- 배포 주소: [hanmaum-frontend.vercel.app](https://hanmaum-frontend.vercel.app/)
+- Vercel 프로젝트: [Hanmaum / hanmaum-frontend](https://vercel.com/hanmaum1/hanmaum-frontend)
+- 최초 배포일: 2026-10-04
+- 최초 배포 소스: `chore/14-vercel-deployment`의 `041d72c`
+- 방식: 승인된 프로젝트 계정의 CLI로 첫 Production 배포, GitHub 저장소 연결 완료
+- 자동 Production 배포 대상: `dev`로 설정 완료
+- 설정 반영 PR: [#15](https://github.com/Team-Hanmaum/hanmaum-frontend/pull/15). 최초 배포 시점에는 승인·머지 대기 상태이며, 팀 검토 후 `dev`에 반영하는 절차
+
+첫 배포는 `dev`의 앱 코드에 이 PR의 배포 설정을 더한 커밋을 사용했다. 아직 설정 PR이 반영되지 않은 `dev` 커밋을 다시 배포하면 SPA rewrite가 누락될 수 있으므로, `dev` 자동 배포는 PR #15 반영 후 기준으로 사용한다. [배포 검증 기록](verification/issue-14.md) 참조.
+
 ## 프로젝트 설정
 
 | 항목             | 값                                                      |

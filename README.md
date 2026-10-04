@@ -52,4 +52,6 @@ pnpm build
 
 ## 배포
 
+[배포 화면 열기](https://hanmaum-frontend.vercel.app/) — 현재는 실제 로그인·API 연결 전의 UI 미리보기.
+
 Vercel에서 Vite 정적 앱으로 빌드한다. `vercel.json`에 빌드·출력 경로와 페이지 직접 진입을 위한 SPA rewrite를 정의한다. Node.js 24.x와 pnpm 10.18.2를 유지하며, Vercel에는 `ENABLE_EXPERIMENTAL_COREPACK=1` 설정이 필요하다. [배포 설정과 검증 절차](docs/deployment.md) 참조.
