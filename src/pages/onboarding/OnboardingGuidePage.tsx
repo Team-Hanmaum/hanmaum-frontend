@@ -4,6 +4,7 @@ import { ActionBar, DetailLayout } from "@/components/layout";
 import { BottomSheet, Notice } from "@/components/feedback";
 import { MockNotice } from "@/components/feedback/MockNotice";
 import { Button } from "@/components/ui";
+import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { paths } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 
@@ -68,12 +69,12 @@ export function OnboardingGuidePage() {
           공간 생성은 후속 작업에서 연결해요. 지금은 실제 동의나 공간 생성을
           처리하지 않아요.
         </p>
-        {import.meta.env.DEV && (
+        {isMockPreviewEnabled && (
           <Link
             to={paths.spaces}
             className="hm-focus-ring rounded-hm-8 p-hm-12 text-center text-hm-text-brand underline"
           >
-            개발용 Mock 공간 보기
+            Mock 공간 둘러보기
           </Link>
         )}
       </BottomSheet>

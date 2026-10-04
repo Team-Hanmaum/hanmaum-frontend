@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import type { SocialProvider } from "@/components/ui";
+import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { paths } from "@/routes/paths";
 
 export function useLoginPreview() {
   const navigate = useNavigate();
-  const enabled = import.meta.env.DEV;
+  const enabled = isMockPreviewEnabled;
   const [provider, setProvider] = useState<SocialProvider | null>(null);
   const [message, setMessage] = useState(
     enabled
-      ? "개발용 화면 이동 · 실제 로그인·계정 생성 없음"
+      ? "화면 확인용 이동 · 실제 로그인·계정 생성 없음"
       : "화면 미리보기 · 실제 로그인 기능 연결 전",
   );
   const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
