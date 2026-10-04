@@ -2,29 +2,19 @@ name: CI
 
 on:
   pull_request:
-    # base 브랜치 제한 없이 스택 PR도 검사한다. edited는 아래에서 base 변경만 허용한다.
-    types: [opened, synchronize, reopened, edited]
+    # base 브랜치 제한 없이 일반 PR과 스택 PR을 동일하게 검사한다.
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
 
 concurrency:
-  # 제목·본문 수정이 진행 중인 코드 검사를 취소하지 않도록 그룹을 구분한다.
-  group: >-
-    ${{ github.workflow }}-pr-${{ github.event.pull_request.number }}-${{
-      (github.event.action != 'edited' || github.event.changes.base.ref != null)
-      && 'checks' || 'metadata'
-    }}
+  group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
   lint-and-build:
-    # skipped 결과가 기존 필수 검사의 실패를 덮지 않도록 표시 이름도 구분한다.
-    name: >-
-      ${{ (github.event.action != 'edited' || github.event.changes.base.ref != null)
-        && 'Lint and build' || 'PR metadata (CI skipped)' }}
-    if: >-
-      github.event.action != 'edited' || github.event.changes.base.ref != null
+    name: Lint and build
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
