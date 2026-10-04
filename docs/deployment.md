@@ -2,6 +2,44 @@
 
 현재 앱은 BE API를 연결하기 전의 UI 미리보기다. Vercel Preview와 Production 모두 `pnpm build`로 만든 프로덕션 번들을 사용한다. 실제 휴대폰에서 로그인 이후 화면을 확인할 수 있도록 `.env.production`의 공개 설정 `VITE_ENABLE_MOCK_PREVIEW=true`로 Mock 화면 이동을 활성화한다. 실제 인증·계정 생성·업무 API 요청은 발생하지 않으며 `/_dev/components`는 계속 로컬 개발 전용이다.
 
+## Preview와 Production 배포
+
+이 설정이 `dev`에 반영된 이후 다음 방식으로 운영한다.
+
+| 대상                       | 실행 주체                               | 빌드·배포 로그 |
+| -------------------------- | --------------------------------------- | -------------- |
+| 작업 브랜치 push           | Vercel Git 자동 Preview 배포            | Vercel         |
+| `dev` push (PR merge 포함) | GitHub Actions → Vercel Production 배포 | GitHub Actions |
+
+Vercel의 Git 연결과 Production Branch `dev`는 유지한다. `vercel.json`의 `git.deploymentEnabled.dev=false`로 `dev`의 Git 자동 배포만 제외하여 중복 배포를 막는다. 다른 브랜치는 기본값인 자동 배포를 유지한다.
+
+`.github/workflows/deploy.yml`은 다음 순서로 실행한다.
+
+1. `package.json` 기준 Node.js·pnpm 준비 및 `pnpm install --frozen-lockfile`
+2. `pnpm check`로 lint·포맷·타입 검사
+3. 고정 버전 Vercel CLI 설치 및 `vercel pull --environment=production`으로 프로젝트 설정·환경 변수 조회
+4. `vercel build --prod`로 Actions에서 `pnpm build` 실행
+5. `vercel deploy --prebuilt --prod`로 `.vercel/output` 배포 및 Production 도메인 반영
+6. Actions 실행 요약에 결과·커밋·로그 링크·배포 주소 기록
+
+`pnpm build`를 별도 단계에서 중복 실행하지 않는다. 검사나 빌드 실패 시 배포 단계는 실행하지 않는다. Production 배포는 동시에 실행하지 않으며 진행 중인 배포를 새 push로 취소하지 않는다. 대기 중인 실행은 GitHub concurrency 규칙에 따라 최신 실행으로 대체될 수 있다.
+
+워크플로우 설정은 PR 검토 후 `dev`에 반영한다. 로컬 파일 수정만으로 기존 배포 방식이나 공개 사이트가 바뀌지 않으며, 실제 Actions 실행·토큰 권한·Production 반영은 첫 실행에서 확인한다.
+
+## GitHub Actions Secrets
+
+저장소의 **Settings → Secrets and variables → Actions → New repository secret**에 등록한다.
+
+| 이름                | 용도                                            | 필수 여부 |
+| ------------------- | ----------------------------------------------- | --------- |
+| `VERCEL_TOKEN`      | 해당 Vercel 프로젝트에 접근할 수 있는 배포 토큰 | 필수      |
+| `VERCEL_ORG_ID`     | 로컬 `.vercel/project.json`의 `orgId`           | 필수      |
+| `VERCEL_PROJECT_ID` | 로컬 `.vercel/project.json`의 `projectId`       | 필수      |
+
+토큰은 [Vercel 계정의 Tokens](https://vercel.com/account/tokens)에서 생성하고 만료 전에 갱신한다. 비밀 값은 저장소·워크플로우 본문·`VITE_` 변수에 넣지 않는다. 앱의 Production 환경 변수는 Vercel 프로젝트에서 관리하며 Actions는 `vercel pull`로 가져온다. BE API 주소와 OAuth 비밀 키는 이번 설정에 추가하지 않는다.
+
+Discord 알림은 기존 GitHub 저장소 웹훅의 `check_run`·`check_suite` 이벤트 연동을 사용한다. 워크플로우에서 Discord로 직접 메시지를 전송하지 않으며 별도 알림용 Secret은 필요 없다. 실제 메시지 수신은 첫 Actions 실행 후 확인한다.
+
 ## Mock 화면 이동 설정
 
 `src/lib/mockPreview.ts`의 `isMockPreviewEnabled`를 로그인과 안내·공간 선택 페이지에서 함께 사용한다.
@@ -25,10 +63,10 @@ Vercel 프로젝트에 같은 환경 변수를 직접 등록하면 저장소의 
 - 최초 배포일: 2026-10-04
 - 최초 배포 소스: `chore/14-vercel-deployment`의 `041d72c`
 - 방식: 승인된 프로젝트 계정의 CLI로 첫 Production 배포, GitHub 저장소 연결 완료
-- 자동 Production 배포 대상: `dev`로 설정 완료
+- 최초 Git 연결 당시 Production Branch: `dev`로 설정 완료
 - 설정 반영 PR: [#15](https://github.com/Team-Hanmaum/hanmaum-frontend/pull/15). 최초 배포 시점에는 승인·머지 대기 상태이며, 팀 검토 후 `dev`에 반영하는 절차
 
-첫 배포는 `dev`의 앱 코드에 이 PR의 배포 설정을 더한 커밋을 사용했다. 아직 설정 PR이 반영되지 않은 `dev` 커밋을 다시 배포하면 SPA rewrite가 누락될 수 있으므로, `dev` 자동 배포는 PR #15 반영 후 기준으로 사용한다.
+첫 배포는 `dev`의 앱 코드에 이 PR의 배포 설정을 더한 커밋을 사용했다. PR #15에 포함된 Actions 워크플로우와 SPA rewrite를 함께 `dev`에 반영한 이후 Production 배포를 Actions에서 진행한다.
 
 ## 프로젝트 설정
 
@@ -54,7 +92,7 @@ Vercel 프로젝트의 Preview와 Production 환경에 `ENABLE_EXPERIMENTAL_CORE
 2. `Team-Hanmaum`의 소유자 또는 해당 레포 접근 권한이 있는 멤버의 GitHub 계정을 연결하고, Vercel GitHub App의 대상 레포 접근 권한을 설정한다.
 3. 기존 Vercel 프로젝트 유무를 확인한 뒤 저장소를 Import한다. 위 빌드 설정과 Corepack 환경 변수를 확인한다.
 4. 배포할 커밋에 `vercel.json`이 포함되어 있는지 확인한다. PR 승인·머지 전 설정은 해당 작업 브랜치의 배포로 검증하며 `dev`나 `main`에 직접 커밋하지 않는다.
-5. 빌드 성공 후 배포 URL에서 아래 항목을 검증한다. Git 연결을 통한 자동 배포 기준은 프로젝트의 Production Branch 및 Preview 설정을 확인한다.
+5. Actions Secrets를 등록하고 워크플로우·`dev` 자동 배포 제외 설정을 함께 반영한다. Preview는 Vercel에서, Production은 GitHub Actions에서 실행 결과를 확인한 뒤 아래 항목을 검증한다.
 
 CLI를 사용하는 경우에도 먼저 로그인 계정과 프로젝트 소유 범위를 확인한다. 로컬 프로젝트 연결 정보인 `.vercel/`은 Git에 포함하지 않는다. 배포 토큰이나 계정 인증 정보를 저장소에 저장하지 않는다.
 
@@ -93,3 +131,5 @@ SPA rewrite는 브라우저가 직접 요청한 페이지 경로에도 `index.ht
 - [Corepack 빌드 설정](https://vercel.com/docs/builds/configure-a-build#corepack)
 - [Git 배포와 Production Branch](https://vercel.com/docs/git)
 - [GitHub Organization 연결 권한](https://vercel.com/docs/git/vercel-for-github#organization-repositories)
+- [GitHub Actions에서 Vercel 배포](https://vercel.com/kb/guide/how-can-i-use-github-actions-with-vercel)
+- [브랜치별 Git 자동 배포 설정](https://vercel.com/docs/project-configuration/git-configuration#gitdeploymentenabled)
