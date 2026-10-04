@@ -33,7 +33,7 @@ React Router Data 모드 사용. `Router.tsx`에서 컴포넌트 밖에 라우�
 
 URL의 공간 ID는 접근 권한이 아니다. 실제 데이터를 연결하기 전에 세션·참여 권한 검증이 필요하다. JWT나 localStorage 인증은 사용하지 않으며 세션 쿠키·CSRF 연동은 후속 이슈 범위다.
 
-정적 호스팅 시 등록된 경로의 직접 진입·새로고침을 위해 `index.html` SPA fallback 설정이 필요하다. Vite 개발/미리보기 서버에서 먼저 확인하며 배포 설정은 이번 작업에 포함하지 않는다.
+정적 호스팅 시 등록된 경로의 직접 진입·새로고침을 위해 `index.html` SPA fallback 설정이 필요하다. Vercel에서는 루트 `vercel.json`의 rewrite로 처리한다. Vite 개발/미리보기 서버의 동작과 별도로 배포 주소의 직접 진입·새로고침을 확인한다. [배포 설정과 검증 절차](../../docs/deployment.md) 참조.
 
 ## 디자인·기능 근거
 

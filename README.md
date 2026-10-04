@@ -48,4 +48,8 @@ pnpm build
 
 `check`는 ESLint, Prettier, TypeScript를 검증한다. 화면 검증 절차와 컴포넌트 API는 [공통 컴포넌트 규격](src/components/README.md), 토큰·폰트는 [공통 스타일 규격](src/styles/README.md), 벡터 출처는 [자산 목록](src/assets/README.md) 참조.
 
-현재 작업: [이슈 #10](https://github.com/Team-Hanmaum/hanmaum-frontend/issues/10). 라우팅 기반 → 공통 레이아웃 → 랜딩 → 온보딩 안내·Mock 이동 순서로 단계별 커밋. [검증 기록과 재확인 절차](docs/verification/issue-10.md) 참조. 로컬 실행 검토를 거쳐 push·PR을 별도로 진행한다.
+라우팅·레이아웃의 구현 검증은 [이슈 #10 검증 기록과 재확인 절차](docs/verification/issue-10.md) 참조.
+
+## 배포
+
+Vercel에서 Vite 정적 앱으로 빌드한다. `vercel.json`에 빌드·출력 경로와 페이지 직접 진입을 위한 SPA rewrite를 정의한다. Node.js 24.x와 pnpm 10.18.2를 유지하며, Vercel에는 `ENABLE_EXPERIMENTAL_COREPACK=1` 설정이 필요하다. [배포 설정과 검증 절차](docs/deployment.md) 참조.
