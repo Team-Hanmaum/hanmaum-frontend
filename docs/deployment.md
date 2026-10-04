@@ -1,6 +1,22 @@
 # Vercel 배포
 
-현재 앱은 BE API를 연결하기 전의 UI 미리보기다. Vercel Preview와 Production 모두 `pnpm build`로 만든 프로덕션 번들을 사용한다. 소셜 로그인 버튼, 개발용 로그인 이동, Mock 공간 진입 링크와 `/_dev/components`는 로컬 개발 모드에서만 사용할 수 있다.
+현재 앱은 BE API를 연결하기 전의 UI 미리보기다. Vercel Preview와 Production 모두 `pnpm build`로 만든 프로덕션 번들을 사용한다. 실제 휴대폰에서 로그인 이후 화면을 확인할 수 있도록 `.env.production`의 공개 설정 `VITE_ENABLE_MOCK_PREVIEW=true`로 Mock 화면 이동을 활성화한다. 실제 인증·계정 생성·업무 API 요청은 발생하지 않으며 `/_dev/components`는 계속 로컬 개발 전용이다.
+
+## Mock 화면 이동 설정
+
+`src/lib/mockPreview.ts`의 `isMockPreviewEnabled`를 로그인과 안내·공간 선택 페이지에서 함께 사용한다.
+
+| 실행 환경                                      | 설정                                                | 동작                                            |
+| ---------------------------------------------- | --------------------------------------------------- | ----------------------------------------------- |
+| 로컬 `pnpm dev`                                | 환경 변수 없음                                      | Mock 이동 활성화                                |
+| Vercel Preview·Production 및 로컬 `pnpm build` | `.env.production`의 `VITE_ENABLE_MOCK_PREVIEW=true` | Mock 이동 활성화                                |
+| 모든 환경                                      | `VITE_ENABLE_MOCK_PREVIEW=false`                    | 소셜 버튼·핸들러 이동 차단, Mock 공간 링크 제외 |
+
+확인 경로는 랜딩 → 로그인 → 시작 전 안내 → 안내 확인하고 계속 → Mock 공간 둘러보기 → 예시 공간 1/2 → 홈·돌봄·소식·가족·전체다. 안내 확인은 동의 기록이나 공간 생성 완료가 아니며, 다섯 탭은 현재 공통 레이아웃을 확인하는 임시 화면이다.
+
+Vercel 프로젝트에 같은 환경 변수를 직접 등록하면 저장소의 `.env.production`보다 우선한다. 빌드 시 결정되므로 설정 변경 후 새 배포가 필요하다. 이 파일에는 비밀 값이 아닌 화면 미리보기 설정만 저장하며, `VITE_` 변수에 비밀 키를 넣지 않는다.
+
+실제 인증·업무 데이터 연결 전에는 저장소와 Vercel 환경 변수의 유효 값을 `false`로 맞추고 다시 빌드한다. 이 플래그는 Mock 화면 이동만 제어하며 공간 URL의 접근 권한을 검증하지 않는다. 실제 데이터는 BE의 세션·참여 권한 확인을 연결한 후 사용한다. API 응답 Mock·MSW·도메인 fixture 구성은 별도 이슈 #12 범위다.
 
 ## 최초 배포 기록
 
@@ -54,8 +70,10 @@ pnpm build
 - 파비콘·로고·폰트·JS·CSS 정적 파일의 정상 응답
 - 잘못된 주소에서 앱의 404 화면 표시
 - `/_dev/components` 접근 시 앱의 404 화면 표시
-- 소셜 로그인 버튼 비활성 및 실제 OAuth/API 요청 미발생
-- 개발용 Mock 공간 링크 제외
+- 소셜 로그인 버튼 활성, 두 제공사의 로딩·중복 클릭 차단 및 `/onboarding/guide` 이동
+- 안내 시트의 Mock 공간 둘러보기 → 예시 공간 선택 → 다섯 탭 이동
+- Mock 안내 유지 및 실제 OAuth/API 요청 미발생
+- `VITE_ENABLE_MOCK_PREVIEW=false` 별도 빌드에서 소셜 버튼·핸들러 이동 차단 및 Mock 공간 링크 제외
 
 SPA rewrite는 브라우저가 직접 요청한 페이지 경로에도 `index.html`을 제공한다. 실제 화면과 알 수 없는 경로의 404 표시는 React Router에서 처리하므로 앱의 404 화면과 HTTP 404 상태 코드는 구분한다.
 
