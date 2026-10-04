@@ -28,7 +28,7 @@ Vercel 프로젝트에 같은 환경 변수를 직접 등록하면 저장소의 
 - 자동 Production 배포 대상: `dev`로 설정 완료
 - 설정 반영 PR: [#15](https://github.com/Team-Hanmaum/hanmaum-frontend/pull/15). 최초 배포 시점에는 승인·머지 대기 상태이며, 팀 검토 후 `dev`에 반영하는 절차
 
-첫 배포는 `dev`의 앱 코드에 이 PR의 배포 설정을 더한 커밋을 사용했다. 아직 설정 PR이 반영되지 않은 `dev` 커밋을 다시 배포하면 SPA rewrite가 누락될 수 있으므로, `dev` 자동 배포는 PR #15 반영 후 기준으로 사용한다. [배포 검증 기록](verification/issue-14.md) 참조.
+첫 배포는 `dev`의 앱 코드에 이 PR의 배포 설정을 더한 커밋을 사용했다. 아직 설정 PR이 반영되지 않은 `dev` 커밋을 다시 배포하면 SPA rewrite가 누락될 수 있으므로, `dev` 자동 배포는 PR #15 반영 후 기준으로 사용한다.
 
 ## 프로젝트 설정
 

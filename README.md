@@ -50,8 +50,6 @@ pnpm build
 
 `check`는 ESLint, Prettier, TypeScript를 검증한다. 화면 검증 절차와 컴포넌트 API는 [공통 컴포넌트 규격](src/components/README.md), 토큰·폰트는 [공통 스타일 규격](src/styles/README.md), 벡터 출처는 [자산 목록](src/assets/README.md) 참조.
 
-라우팅·레이아웃의 구현 검증은 [이슈 #10 검증 기록과 재확인 절차](docs/verification/issue-10.md) 참조.
-
 ## 배포
 
 [배포 화면 열기](https://hanmaum-frontend.vercel.app/) — 현재는 실제 로그인·API 연결 전의 UI 미리보기.
