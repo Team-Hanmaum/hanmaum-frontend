@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { DetailLayout } from "@/components/layout";
 import { PagePlaceholder } from "@/components/feedback/PagePlaceholder";
+import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { paths, spacePath } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 
@@ -12,9 +13,9 @@ export function SpaceSelectionPage() {
       onBack={onBack}
     >
       <PagePlaceholder title="돌봄 공간 선택" />
-      {import.meta.env.DEV && (
+      {isMockPreviewEnabled && (
         <nav
-          aria-label="개발용 Mock 공간"
+          aria-label="화면 확인용 Mock 공간"
           className="flex flex-col gap-hm-12"
         >
           <p className="text-hm-caption-default text-hm-text-secondary">
