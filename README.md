@@ -25,6 +25,12 @@ React Router의 Data 모드를 사용하며 `src/routes/Router.tsx`에서 URL을
 
 실제 인증·업무 데이터 연결 전에는 `VITE_ENABLE_MOCK_PREVIEW=false`로 변경하고 다시 빌드한다. 이 설정은 로그인 이동과 Mock 공간 링크만 제어하며 실제 인증·접근 권한 검증을 대신하지 않는다. 개발용 컴포넌트 확인 화면의 코드와 경로는 계속 프로덕션 빌드에서 제외한다. [설정 우선순위와 검증 절차](docs/deployment.md) 참조.
 
+## 공통 API와 서버 상태
+
+Axios와 TanStack Query 기반을 사용한다. `.env.example`을 `.env.local`로 복사하면 API 서버 주소의 설정 예시를 확인할 수 있다. `VITE_API_BASE_URL`에는 서버 주소만 지정하고 `/api`는 도메인 요청 함수에 포함한다. 기존 Mock 화면은 API 주소 없이도 실행하며 실제 API 요청을 자동으로 시작하지 않는다.
+
+공통 응답은 최신 BE의 `success/code/message/data/errors/timestamp` 규격을 따른다. 도메인 API 함수는 `features/{domain}/api/`, 조회·변경 훅과 캐시 키는 `model/`에 둔다. 내 정보 조회와 로그아웃의 사용 기반은 준비했으며 실제 로그인 화면·세션 가드는 후속 연결 대상이다. [설정·호출 예시·CSRF·오류·캐시 규칙](src/lib/api/README.md) 참조.
+
 ## 파일·폴더 이름
 
 애플리케이션 소스와 직접 관리하는 자산에는 다음 규칙을 적용한다.
