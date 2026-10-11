@@ -8,5 +8,9 @@ export async function resetSessionState(
 ): Promise<void> {
   resetCsrfToken();
   await queryClient.cancelQueries();
+  // clear() alone does not update mounted observers. Reset without refetching.
+  for (const query of queryClient.getQueryCache().getAll()) {
+    query.reset();
+  }
   queryClient.clear();
 }

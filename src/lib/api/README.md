@@ -78,6 +78,8 @@ const profile = result.body.data;
 
 로그인·로그아웃 후에는 이전 토큰을 초기화하고 다음 변경 요청에서 새 토큰을 발급한다. `useLogout`은 204 성공 후 `resetSessionState`로 진행 중인 조회를 취소하고 Query 캐시와 CSRF를 정리한다. 401 `UNAUTHENTICATED`도 로컬 세션 정리 대상으로 처리하지만, 403·타임아웃·네트워크 오류는 로그아웃 성공으로 바꾸지 않는다.
 
+캐시 삭제 전 각 조회를 초기 상태로 되돌려 마운트된 구독자에도 결과 변경을 알린다. `clear()`만 호출하면 구독자가 이전 데이터를 유지할 수 있으므로 사용하지 않는다. 활성 조회를 자동 재요청하는 `resetQueries()`도 사용하지 않는다. 조회의 `initialData`는 초기화 시 복원되므로 계정에 종속된 데이터를 `initialData`로 보관하거나 이전 계정 데이터를 `placeholderData`로 전달하지 않는다.
+
 ```ts
 import { useQueryClient } from "@tanstack/react-query";
 import { resetSessionState } from "@/features/auth/model/resetSessionState";
