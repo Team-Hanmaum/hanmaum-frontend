@@ -80,7 +80,6 @@ function InvitationPreview({ token }: { token: string }) {
           <FixedBottomArea position="fixed">
             <div className="bg-hm-bg-surface px-hm-20 pt-hm-20 pb-[calc(var(--hm-spacing-20)+env(safe-area-inset-bottom))]">
               <SocialLoginOptions
-                order={["google", "kakao"]}
                 disabled={!isMockPreviewEnabled}
                 loadingProvider={provider}
                 onLogin={proceed}
