@@ -1,6 +1,6 @@
 # 공통 자산
 
-2026-10-02~03 Figma 상세 UI 및 [공통 컴포넌트 보드 176:3](https://www.figma.com/design/TNlkTZrM8NIo0jSp6tRTwH?node-id=176-3)에서 제공된 SVG를 원본 그대로 저장했다. 기본 아이콘 23종과 실제 컴포넌트의 색상 변형을 합쳐 아이콘 파일은 49개다. SVG 경로·색상·루트 크기를 수정하거나 임의 아이콘으로 대체하지 않는다.
+2026-10-02~03 Figma 상세 UI 및 [공통 컴포넌트 보드 176:3](https://www.figma.com/design/TNlkTZrM8NIo0jSp6tRTwH?node-id=176-3)에서 제공된 SVG를 원본 그대로 저장했다. 기본 아이콘 23종과 실제 컴포넌트의 색상 변형을 합쳐 아이콘 파일은 52개다. 2026-10-12 홈 상세 화면의 원본 색상 변형 3개 추가. SVG 경로·색상·루트 크기를 수정하거나 임의 아이콘으로 대체하지 않는다.
 
 `@/components/ui`의 `Icon`에서 이름으로 사용한다. 전체 이름과 파일 연결은 `components/ui/iconSources.ts`의 타입 지정 레지스트리에서 관리한다. 새 아이콘은 원본 SVG와 레지스트리 항목을 함께 추가한다. 기능 의미·버튼의 접근 가능한 이름은 호출 컴포넌트에서 제공한다.
 
@@ -72,3 +72,10 @@
 ## 소셜 로그인 연동 전 확인 사항
 
 현재 Mock UI는 Figma의 Noto Sans KR·색상·아이콘을 그대로 사용한다. [Google 공식 가이드](https://developers.google.com/identity/branding-guidelines)의 Google Sans Medium·버튼 색상·최신 G 아트워크 규격과 차이가 있어 실제 인증 출시 전에 디자인 조율이 필요하다. [카카오 공식 가이드](https://developers.kakao.com/docs/ko/kakaologin/design-guide)도 실제 인증 연동 시 함께 재확인한다. 이 구현은 제공사 브랜드 심사 완료를 의미하지 않는다.
+
+## 홈 상세 UI 추가 원본
+
+- `plus-inverse.svg`: H01 `I214:1252;184:535;178:10`의 흰색 추가 아이콘.
+- `check-secondary.svg`: H01 `I214:1243;180:368`의 할 일 아이콘.
+- `chevron-right-brand.svg`: H01 `I214:1232;180:374`의 강조 메뉴 이동 아이콘.
+- 출처: [H01 213:1233](https://www.figma.com/design/TNlkTZrM8NIo0jSp6tRTwH?node-id=213-1233). 원본 SVG를 변경하지 않고 24px 슬롯에서 사용.

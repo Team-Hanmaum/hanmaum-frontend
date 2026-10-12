@@ -4,6 +4,7 @@ export type CareCardProps = {
   title: string;
   meta: string;
   body?: string;
+  bodyTone?: "default" | "hint";
   statusLabel: string;
   statusTone?: BadgeProps["tone"];
   state?: "default" | "needs-check" | "locked";
@@ -14,6 +15,7 @@ export function CareCard({
   title,
   meta,
   body,
+  bodyTone = "default",
   statusLabel,
   statusTone = "neutral",
   state = "default",
@@ -31,7 +33,9 @@ export function CareCard({
       <h3 className="w-full text-hm-heading-section">{title}</h3>
       <p className="w-full text-hm-body-small text-hm-text-secondary">{meta}</p>
       {body && (
-        <p className="w-full text-hm-body-default whitespace-pre-wrap">
+        <p
+          className={`w-full whitespace-pre-wrap ${bodyTone === "hint" ? "text-hm-body-small text-hm-text-brand" : "text-hm-body-default"}`}
+        >
           {body}
         </p>
       )}

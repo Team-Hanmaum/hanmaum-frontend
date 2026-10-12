@@ -1,42 +1,68 @@
 # 라우팅과 페이지 레이아웃
 
-React Router Data 모드 사용. `Router.tsx`에서 컴포넌트 밖에 라우터를 한 번 생성하고, `main.tsx`에서 `RouterProvider`를 렌더링한다. [공식 설치 가이드](https://reactrouter.com/start/data/installation) 기준.
+React Router Data 모드 사용. `Router.tsx`에서 URL·페이지·레이아웃을 등록하고 `paths.ts`의 경로 상수와 생성 함수를 사용한다.
 
-## 경로 등록
+## 경로
 
-- 공통 URL은 `paths.ts`, 공간별 URL은 `spacePath(careSpaceId, tab)` 사용. ID는 URL 세그먼트로 인코딩하며 BE의 ID 형식을 임의로 제한하지 않는다.
-- `/spaces/:careSpaceId`는 해당 공간의 `/home`으로 이동한다.
-- 공간별 다섯 메인 페이지는 `TabLayout` 아래에 등록하고 `handle`에 `title`, `tab` 지정. 선택 탭은 URL에 매칭된 라우트에서 도출하며 별도 전역 상태를 두지 않는다.
-- 상세·작성 페이지는 같은 공간 경로 아래에서 `TabLayout`의 형제 라우트로 추가한다. 하단 탭과 상세 액션 바를 중복 표시하지 않는다.
-- `App.tsx`는 제목·본문 포커스·스크롤 복원 담당. 갤러리까지 모바일 너비로 제한하지 않는다.
-- 새 페이지에는 `h1`을 둔다. `PageLayout`의 `main`은 경로 전환 시 포커스 목적지다.
+| URL                                                  | 화면                    | 레이아웃                                |
+| ---------------------------------------------------- | ----------------------- | --------------------------------------- |
+| `/`                                                  | 랜딩                    | 브랜드 소개                             |
+| `/login`                                             | 일반 로그인             | 뒤로가기 헤더                           |
+| `/onboarding/guide`                                  | 기록 전 안내            | 뒤로가기 헤더 + 계속 버튼               |
+| `/spaces/new`                                        | 공간 생성               | 뒤로가기 헤더 + 고정 제출 버튼          |
+| `/spaces`                                            | 공간 선택               | 브랜드 헤더                             |
+| `/invitations/:invitationToken`                      | 초대 수신·Mock 참여     | 브랜드 헤더 + 소셜 버튼, 하단 탭 없음   |
+| `/spaces/:careSpaceId/invite`                        | 가족 초대               | 뒤로가기 헤더 + 액션 + 가족 탭          |
+| `/spaces/:careSpaceId/home`                          | 홈                      | 공간 전환 헤더 + 소식 작성 액션 + 홈 탭 |
+| `/spaces/:careSpaceId/care`, `news`, `family`, `all` | 후속 화면용 임시 페이지 | 공간 헤더 + 현재 탭                     |
+| `/_dev/components`                                   | 공통 컴포넌트 갤러리    | 개발 모드 전용                          |
 
-## 표현과 라우팅의 경계
+공간 루트(`/spaces/:careSpaceId`)는 홈으로 이동한다. 정적 `new` 경로는 공간 ID로 처리하지 않는다. 경로 생성은 `spacePath`, `spaceInvitePath`, `invitationPath`에서 세그먼트를 인코딩한다. 잘못된 경로는 404, 화면 오류는 공통 라우트 오류로 연결한다.
 
-- `components/layout/PageLayout.tsx`: 최대 너비 512px를 유지하는 유동 폭, 최소 화면 높이, 안전 영역, 헤더·본문·푸터·안내 슬롯.
-- `components/layout/DetailLayout.tsx`: 뒤로가기 헤더 조합. 이동 동작은 호출부에서 전달.
-- `routes/layouts/TabLayout.tsx`: 공간 ID와 현재 탭을 읽고 Header·Outlet·BottomNav 조합.
-- `BottomNav`/`NavItem`의 `renderLink`로 React Router `Link` 주입. 기존 기본 링크·버튼 API 유지. 일반 클릭은 SPA 이동, 새 탭 열기 같은 링크 기본 동작은 보존.
-- `ActionBar`/`BottomNav`의 `position="fixed"`는 실제 높이만큼 본문 뒤에 공간을 확보한다. `PageLayout`은 푸터가 없을 때만 하단 안전 영역을 추가한다.
+## 화면과 상태의 경계
 
-## 뒤로가기
+- `components/`: 표현·레이아웃. 라우트나 도메인에 직접 의존하지 않고 props로 동작 주입.
+- `features/carespace/`: 공간 이름·가족·생성 폼·공간 메뉴·초대 안내 UI와 명시적 Mock 메모리 데이터. `careSpaceViewTypes`는 화면 모델이며 BE DTO가 아니다.
+- `features/carespace/model/useMockInvitationLink.ts`: Mock 링크·예시 기한·재발급·복사·공유와 수동 복사 안내 상태 관리. 페이지가 URL 생성과 라우트 상태 변경 콜백을 주입하고 화면을 조합한다. 공간 ID가 바뀌면 `SpaceInvitePreview`의 key로 링크 상태를 초기화한다.
+- `features/dashboard/`: 홈 상태별 조합. 정상·빈 홈·생성/참여 직후·로딩·전체/부분 오류.
+- 홈 예시 데이터는 `features/dashboard/model/mockHomeData.ts`에서 관리한다. `HomePage`가 `HomeView` 데이터를 전달하고 `HomeContent`는 목록·건수·문구를 표시한다. API 연결 시 데이터 공급부를 교체하며 `HomeView`는 BE DTO와 구분한다.
+- `pages/`: UI 조합, 라우트 상태와 이동 연결. 현재 로그인/공간 흐름은 Mock이며 서버 요청 없음.
+- `TabLayout`: URL의 공간과 탭 판독, 공간 메뉴, Outlet context, 공통 하단 조합. 알 수 없는 Mock ID는 공간 선택 안내로 연결.
+- `SpaceBottomNavigation`: Router Link를 공통 BottomNav에 주입. 공간 ID를 유지하며 URL로 활성 탭 결정.
 
-`useBackNavigation(fallback)`은 현재 앱 실행 중에 관측한 방문 이력이 있을 때 `navigate(-1)`을 사용한다. 직접 주소 진입·새로고침 후에는 전달한 기본 경로로 `replace` 이동한다. 브라우저 전체 이력 길이로 외부 사이트 복귀를 추정하거나 쿼리의 임의 URL을 신뢰하지 않는다. 목록의 검색 조건과 스크롤 위치는 앱 내부 이력으로 복귀할 때 보존한다.
+홈과 가족 초대의 액션·BottomNav는 **하나의 FixedBottomArea** 안에 배치한다. 내부 BottomNav는 static이며 최하단에서만 safe area를 적용한다. ResizeObserver가 실제 높이를 예약하므로 작은 화면과 긴 문구에서도 본문 마지막 항목까지 스크롤할 수 있다. PageLayout은 유동 폭·최대 512px·최소 화면 높이를 유지한다.
 
-## 아직 연결하지 않은 기능
+공간 메뉴는 헤더 아래 표시하는 disclosure 영역이다. 키보드로 열면 영역에 포커스를 두고 Tab으로 항목을 탐색한다. Escape는 메뉴를 닫고 호출 버튼으로 복귀하며, 영역 밖 클릭·포커스 이동으로도 닫힌다. 전환 실패 시 기존 공간을 유지한다.
 
-랜딩(`/`) → 로그인(`/login`) → 기록 전 안내(`/onboarding/guide`) 흐름 중 소셜 로그인 이동은 `lib/mockPreview.ts`의 `isMockPreviewEnabled`로 제어한다. 현재 배포 빌드는 `.env.production`의 `VITE_ENABLE_MOCK_PREVIEW=true`로 활성화하며, 로컬 개발에서는 변수가 없으면 활성화한다. 명시적인 `false`에서는 두 환경 모두 버튼과 핸들러의 이동을 차단한다. `pages/login/useLoginPreview.ts`는 로딩·중복 클릭 방지·화면 이탈 시 타이머 취소만 담당하며 인증 상태를 생성하지 않는다. BE 연결 시 Mock 설정을 끄고 실제 OAuth·세션 확인으로 교체하며 가입/참여 상태에 따른 목적지를 연결한다.
+## Mock 확인 방법
 
-안내의 계속 버튼은 다음 공간 생성 화면이 준비 중임을 알리는 시트를 연다. Mock 미리보기가 켜져 있으면 시트의 Mock 공간 둘러보기 링크로 공간 선택 화면에 진입할 수 있다. 이 링크는 탭 검증용 경로이며 제품 온보딩 완료를 의미하지 않는다. 동의 확인·증빙·공간 생성 API를 호출하거나 완료 상태를 저장하지 않는다.
+`lib/mockPreview.ts`의 `isMockPreviewEnabled` 사용. `.env.production`은 현재 `VITE_ENABLE_MOCK_PREVIEW=true`; 로컬 개발은 변수 미지정 시 활성화된다. `false`에서는 이동 핸들러와 Mock 데이터 변경을 차단한다. 인증·접근 권한 가드는 아니다.
 
-`/spaces`와 다섯 탭은 Mock 임시 페이지다. Mock 미리보기가 켜져 있을 때 표시하는 두 예시 공간은 경로 전환 검증에만 사용하며 실제 공간 생성·참여를 의미하지 않는다. 헤더의 공간 선택은 현재 임시 선택 페이지로 연결한다. 실제 공간명·드롭다운·권한·세션 가드는 BE 연동과 화면 구현 시 추가한다. `/_dev/components`와 기존 갤러리 쿼리의 이동은 Mock 설정과 별개로 로컬 개발 전용이다.
+- 랜딩 → 로그인 → 안내 → 공간 생성 → 첫 홈.
+- 안내의 **Mock 공간 둘러보기** → 공간 선택 → 예시 홈.
+- 공간 선택의 **Mock 초대 참여 예시 보기** → `/invitations/mock-family` → 소셜 버튼 → 참여 홈. 반복 진입 시 구성원 중복 추가 없음.
+- 홈/가족 → 가족 초대 → 복사 또는 **Mock 초대받은 화면 보기**. 이미 참여한 공간의 소유자/구성원 역할 유지.
+- 상단 **화면 상태 확인**에서 화면별 상태 선택. `?mockState=`는 표시 검증용이며 인증·권한·업무 상태가 아니다.
+- 초대의 만료/사용 불가/참여 오류, 생성 오류, 목록의 빈 상태/로딩/오류, 홈과 공간 메뉴의 오류를 선택해 확인. 오류 화면의 재시도는 정상 Mock 흐름으로 이동한다.
 
-URL의 공간 ID는 접근 권한이 아니다. 실제 데이터를 연결하기 전에 세션·참여 권한 검증이 필요하다. JWT나 localStorage 인증은 사용하지 않으며 세션 쿠키·CSRF 연동은 후속 이슈 범위다.
+Mock 데이터는 모듈 메모리에서만 유지한다. 새로고침 시 직접 생성/참여한 공간은 초기화되고 기본 예시 공간 두 개로 돌아간다. 사라진 Mock 공간의 직접 주소는 선택 화면으로 돌아갈 수 있는 안내를 제공한다. 발급 화면의 기한은 UI 예시이고 실제 초대 발급·만료 검증은 수행하지 않는다. 기본 예시 공간 링크와 `/invitations/mock-family`는 직접 진입할 수 있으며, 직접 만든 공간의 Mock 링크는 해당 실행 세션에서만 확인할 수 있다.
 
-정적 호스팅 시 등록된 경로의 직접 진입·새로고침을 위해 `index.html` SPA fallback 설정이 필요하다. Vercel에서는 루트 `vercel.json`의 rewrite로 처리한다. Vite 개발/미리보기 서버의 동작과 별도로 배포 주소의 직접 진입·새로고침을 확인한다. [배포 설정과 검증 절차](../../docs/deployment.md) 참조.
+복사는 Clipboard API 사용. 지원하지 않거나 권한 오류이면 수동 복사 시트를 제공한다. 공유는 사용자가 버튼을 누를 때만 Web Share API를 호출하며, 미지원·실패 시 수동 복사로 안내한다. 공유 취소는 오류로 표시하지 않는다. 공유 문구에도 실제 참여가 아닌 Mock 링크임을 명시한다.
 
-## 디자인·기능 근거
+## 뒤로가기·새로고침
 
-- 최신 Figma 직접 조회: [HM-ON-A01 · 랜딩 206:744](https://www.figma.com/design/TNlkTZrM8NIo0jSp6tRTwH?node-id=206-744), [HM-ON-A02 · 로그인 206:749](https://www.figma.com/design/TNlkTZrM8NIo0jSp6tRTwH?node-id=206-749), [HM-ON-A03 · 정보 안내 206:754](https://www.figma.com/design/TNlkTZrM8NIo0jSp6tRTwH?node-id=206-754).
-- 관련 기능: AUTH-01·02(로그인/유지), SPACE-01·02(공간 생성/목록·진입), SPACE-11(부모님 동의 안내). 이번 작업은 화면·라우팅 준비이며 해당 업무 기능 완료를 의미하지 않는다.
-- 후속 의존성: 세션·CSRF/OAuth 성공·실패 계약, 참여 공간/권한 조회, 신규·기존 사용자 목적지, 동의 절차와 기록 규격. 공통 handoff의 O02/O05/O06 관련 미정 사항 유지.
+`useBackNavigation(fallback)`은 앱 내 관측 이력이 있으면 `navigate(-1)`, 직접 진입·새로고침이면 대체 경로로 replace 이동한다. `App`은 경로별 제목·본문 포커스·스크롤 복원을 담당한다. URL 쿼리의 임의 외부 return URL은 사용하지 않는다.
+
+정적 호스팅은 `index.html` SPA fallback 필요. 현재 Vercel rewrite 유지. 공간 ID는 권한이 아니며 실제 API 연결 시 세션·참여 검증 필요.
+
+## 디자인·기능 근거와 후속 연결
+
+상세 Figma 파일: https://www.figma.com/design/TNlkTZrM8NIo0jSp6tRTwH
+
+- 랜딩/로그인/안내: `206:744`, `206:749`, `206:754` (기존 화면).
+- 생성/오류: `206:759`, `206:802`; 선택/메뉴: `254:5548`, `375:15054`, `386:15294/15357/15432/15468`.
+- 홈: `213:1233/1248/1253`, `385:15045/15116/15182`.
+- 초대 수신: `206:773/792/797`; 발급/복사/만료/오류: `248:4555/4627/4708/4778`.
+- 기능: SPACE-01~08, DASH-01~05의 화면 표현과 SPACE-11의 기존 안내 연결. 업무 기능 구현 완료를 의미하지 않음.
+
+후속: 실제 OAuth·세션 복귀와 초대 유지, 공간 목록/생성/멤버·초대 발급/검증/참여 API, CSRF·중복 요청·오류 처리, 홈 API 연결. 신규/기존 사용자 자동 목적지와 부모님 동의 기록 절차는 미정. MSW·인증 상태 저장·실제 업무 API 호출은 추가하지 않음.

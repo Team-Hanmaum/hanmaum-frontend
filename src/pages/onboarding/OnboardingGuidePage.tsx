@@ -1,16 +1,14 @@
-import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { ActionBar, DetailLayout } from "@/components/layout";
-import { BottomSheet, Notice } from "@/components/feedback";
+import { Notice } from "@/components/feedback";
 import { MockNotice } from "@/components/feedback/MockNotice";
-import { Button } from "@/components/ui";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { paths } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 
 export function OnboardingGuidePage() {
   const onBack = useBackNavigation(paths.login);
-  const [showNextStep, setShowNextStep] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <>
@@ -23,7 +21,10 @@ export function OnboardingGuidePage() {
             position="fixed"
             primary={{
               label: "안내 확인하고 계속",
-              onClick: () => setShowNextStep(true),
+              disabled: !isMockPreviewEnabled,
+              onClick: () => {
+                if (isMockPreviewEnabled) void navigate(paths.spaceCreate);
+              },
             }}
           />
         }
@@ -51,24 +52,6 @@ export function OnboardingGuidePage() {
             "기록할 내용과 함께 볼 가족을 알리고,\n부모님의 동의를 받아 주세요."
           }
         />
-      </DetailLayout>
-      <BottomSheet
-        open={showNextStep}
-        onOpenChange={setShowNextStep}
-        title="다음 화면 준비 중"
-        footer={
-          <Button
-            className="w-full"
-            onClick={() => setShowNextStep(false)}
-          >
-            확인
-          </Button>
-        }
-      >
-        <p className="text-hm-body-default text-hm-text-secondary">
-          공간 생성은 후속 작업에서 연결해요. 지금은 실제 동의나 공간 생성을
-          처리하지 않아요.
-        </p>
         {isMockPreviewEnabled && (
           <Link
             to={paths.spaces}
@@ -77,7 +60,7 @@ export function OnboardingGuidePage() {
             Mock 공간 둘러보기
           </Link>
         )}
-      </BottomSheet>
+      </DetailLayout>
     </>
   );
 }

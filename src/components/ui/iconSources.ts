@@ -7,6 +7,9 @@ import chevronRight from "@/assets/icons/chevron-right.svg";
 import chevronLeft from "@/assets/icons/chevron-left.svg";
 import chevronDown from "@/assets/icons/chevron-down.svg";
 import plus from "@/assets/icons/plus.svg";
+import plusInverse from "@/assets/icons/plus-inverse.svg";
+import checkSecondary from "@/assets/icons/check-secondary.svg";
+import chevronRightBrand from "@/assets/icons/chevron-right-brand.svg";
 import check from "@/assets/icons/check.svg";
 import close from "@/assets/icons/close.svg";
 import edit from "@/assets/icons/edit.svg";
@@ -58,6 +61,9 @@ export const iconSources = {
   "chevron-left": chevronLeft,
   "chevron-down": chevronDown,
   plus: plus,
+  "plus-inverse": plusInverse,
+  "check-secondary": checkSecondary,
+  "chevron-right-brand": chevronRightBrand,
   check: check,
   close: close,
   edit: edit,
