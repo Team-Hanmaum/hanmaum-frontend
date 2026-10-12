@@ -16,6 +16,7 @@ import {
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import { useMockAction } from "@/lib/useMockAction";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import { newsListStates } from "@/features/record/model/newsScreenStates";
 import { NotFoundPage } from "@/pages/error/NotFoundPage";
 import { paths, spacePath, spaceTabs, type SpaceTab } from "../paths";
 import { useMockScreenState } from "../useMockScreenState";
@@ -87,6 +88,10 @@ export function TabLayout() {
     homeScreenStates,
     space?.empty ? "empty" : "default",
   );
+  const [newsState, setNewsState] = useMockScreenState(
+    newsListStates,
+    "default",
+  );
   if (!careSpaceId || !active || !spaceTabs.includes(active))
     return <NotFoundPage />;
   if (!space || !isMockPreviewEnabled)
@@ -115,6 +120,13 @@ export function TabLayout() {
             value={state}
             options={homeScreenStates}
             onChange={setState}
+          />
+        ) : active === "news" ? (
+          <MockStateSelect
+            message="소식 UI 예시 · 실제 저장·분석 없음 · 새로고침 시 초기화"
+            value={newsState}
+            options={newsListStates}
+            onChange={setNewsState}
           />
         ) : (
           <MockNotice message="화면 이동 확인용 · 실제 업무 기능 연결 전" />
