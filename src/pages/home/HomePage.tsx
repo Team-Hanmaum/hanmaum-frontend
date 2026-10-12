@@ -4,6 +4,7 @@ import { BottomSheet } from "@/components/feedback";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import { HomeContent } from "@/features/dashboard/ui/HomeContent";
 import { homeScreenStates } from "@/features/dashboard/model/homeScreenStates";
+import { getMockHomeData } from "@/features/dashboard/model/mockHomeData";
 import { spacePath, spaceInvitePath } from "@/routes/paths";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 
@@ -19,6 +20,7 @@ export function HomePage() {
     <>
       <HomeContent
         space={space}
+        data={getMockHomeData(space)}
         state={state}
         onFamily={() => void navigate(spacePath(space.id, "family"))}
         onInvite={() => void navigate(spaceInvitePath(space.id))}

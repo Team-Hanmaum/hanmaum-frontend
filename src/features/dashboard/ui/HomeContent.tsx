@@ -13,10 +13,12 @@ import {
 import { NewsCard } from "@/features/record/ui";
 import { CareCard } from "@/features/careitem/ui";
 import type { HomeScreenState } from "../model/homeScreenStates";
+import type { HomeView } from "../model/homeViewTypes";
 import { HomeFamilySection } from "./HomeFamilySection";
 
 export function HomeContent({
   space,
+  data,
   state,
   onFamily,
   onInvite,
@@ -26,6 +28,7 @@ export function HomeContent({
   onRetry,
 }: {
   space: CareSpaceView;
+  data: HomeView;
   state: HomeScreenState;
   onFamily: () => void;
   onInvite: () => void;
@@ -111,7 +114,7 @@ export function HomeContent({
         <>
           <MenuRow
             icon="news-brand"
-            title="확인할 내용 1건"
+            title={`확인할 내용 ${data.pendingCount}건`}
             description={
               space.role === "owner"
                 ? "제안과 가족의 요청을 확인해요."
@@ -125,14 +128,17 @@ export function HomeContent({
               title="최근 가족 소식"
               action={{ label: "소식 보기", onClick: onNews }}
             />
-            <NewsCard
-              title={`${space.subjectLabel} 재진 날짜가 10월 20일로 바뀌었대요`}
-              author={`${space.members.find((member) => !member.self)?.name ?? "나"} · 오늘 오전 10:20`}
-              body="“시간은 오전 10시 그대로래.”"
-              status="review"
-              statusMessage="변경 제안 1건을 확인해 주세요."
-              onAction={onNews}
-            />
+            {data.recentNews.map((news) => (
+              <NewsCard
+                key={news.id}
+                title={news.title}
+                author={news.author}
+                body={news.body}
+                status={news.status}
+                statusMessage={news.statusMessage}
+                onAction={onNews}
+              />
+            ))}
           </section>
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
@@ -152,16 +158,19 @@ export function HomeContent({
               />
             ) : (
               <>
-                <CareCard
-                  title="내과 재진"
-                  statusLabel="예정"
-                  meta="10월 15일 (목) · 오전 10:00"
-                  body="날짜 변경 제안을 확인 중이에요."
-                  bodyTone="hint"
-                />
+                {data.upcomingSchedules.map((schedule) => (
+                  <CareCard
+                    key={schedule.id}
+                    title={schedule.title}
+                    statusLabel={schedule.statusLabel}
+                    meta={schedule.meta}
+                    body={schedule.body}
+                    bodyTone="hint"
+                  />
+                ))}
                 <MenuRow
                   icon="clock"
-                  title="지난 일정 1건"
+                  title={`지난 일정 ${data.pastScheduleCount}건`}
                   description="날짜가 지났지만 아직 예정으로 남아 있어요."
                   onClick={onCare}
                 />
@@ -170,47 +179,50 @@ export function HomeContent({
           </section>
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
-              title="남은 할 일 2"
+              title={`남은 할 일 ${data.tasks.length}`}
               action={{ label: "모두 보기", onClick: onCare }}
             />
             <div className="divide-y divide-hm-divider-default overflow-hidden rounded-hm-16 bg-hm-bg-surface">
-              <MenuRow
-                icon="check-secondary"
-                title="혈압 기록 준비"
-                description="수진 · 미시작"
-                onClick={onCare}
-              />
-              <MenuRow
-                icon="check-secondary"
-                title="재진 동행"
-                description="담당 미정 · 미시작"
-                onClick={onCare}
-              />
+              {data.tasks.map((task) => (
+                <MenuRow
+                  key={task.id}
+                  icon="check-secondary"
+                  title={task.title}
+                  description={task.description}
+                  onClick={onCare}
+                />
+              ))}
             </div>
           </section>
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
-              title="미확인 질문 1"
+              title={`미확인 질문 ${data.questions.length}`}
               action={{ label: "모두 보기", onClick: onCare }}
             />
-            <MenuRow
-              icon="info-secondary"
-              title="센터를 토요일에도 이용할 수 있나요?"
-              description="미확인"
-              onClick={onCare}
-            />
+            {data.questions.map((question) => (
+              <MenuRow
+                key={question.id}
+                icon="info-secondary"
+                title={question.title}
+                description={question.description}
+                onClick={onCare}
+              />
+            ))}
           </section>
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
               title="최근 확정된 변경"
               action={{ label: "이력 보기", onClick: onPending }}
             />
-            <MenuRow
-              icon="check"
-              title="수진님이 혈압 기록 준비를 맡았어요."
-              description="오늘 오전 9:00"
-              onClick={onPending}
-            />
+            {data.recentChanges.map((change) => (
+              <MenuRow
+                key={change.id}
+                icon="check"
+                title={change.title}
+                description={change.description}
+                onClick={onPending}
+              />
+            ))}
           </section>
         </>
       )}
