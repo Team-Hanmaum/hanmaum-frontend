@@ -19,6 +19,14 @@ export function spaceInvitePath(careSpaceId: string) {
   return `${paths.spaces}/${encodeURIComponent(careSpaceId)}/invite`;
 }
 
+export function newsCreatePath(careSpaceId: string) {
+  return `${spacePath(careSpaceId, "news")}/new`;
+}
+
+export function newsDetailPath(careSpaceId: string, recordId: string) {
+  return `${spacePath(careSpaceId, "news")}/${encodeURIComponent(recordId)}`;
+}
+
 export function invitationPath(token: string) {
   return `/invitations/${encodeURIComponent(token)}`;
 }

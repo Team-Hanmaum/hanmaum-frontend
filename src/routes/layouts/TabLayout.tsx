@@ -17,8 +17,15 @@ import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewType
 import { useMockAction } from "@/lib/useMockAction";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { newsListStates } from "@/features/record/model/newsScreenStates";
+import { useMockRecords } from "@/features/record/model/useMockRecords";
 import { NotFoundPage } from "@/pages/error/NotFoundPage";
-import { paths, spacePath, spaceTabs, type SpaceTab } from "../paths";
+import {
+  paths,
+  spacePath,
+  spaceTabs,
+  newsCreatePath,
+  type SpaceTab,
+} from "../paths";
 import { useMockScreenState } from "../useMockScreenState";
 import { SpaceBottomNavigation } from "./SpaceBottomNavigation";
 
@@ -147,12 +154,16 @@ export function TabLayout() {
               <Button
                 className="w-full"
                 icon={empty ? undefined : <Icon name="plus-inverse" />}
-                onClick={() => void navigate(spacePath(space.id, "news"))}
+                onClick={() => void navigate(newsCreatePath(space.id))}
               >
                 {empty ? "첫 소식 남기기" : "소식 남기기"}
               </Button>
             </div>
           )}
+          {active === "news" &&
+            (newsState === "default" || newsState === "more-error") && (
+              <NewsCreateAction space={space} />
+            )}
           <SpaceBottomNavigation
             spaceId={space.id}
             active={active}
@@ -165,5 +176,21 @@ export function TabLayout() {
         context={space}
       />
     </PageLayout>
+  );
+}
+
+function NewsCreateAction({ space }: { space: CareSpaceView }) {
+  const records = useMockRecords(space);
+  const navigate = useNavigate();
+  if (!records.length) return null;
+  return (
+    <div className="bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-24">
+      <Button
+        className="w-full"
+        onClick={() => void navigate(newsCreatePath(space.id))}
+      >
+        소식 남기기
+      </Button>
+    </div>
   );
 }

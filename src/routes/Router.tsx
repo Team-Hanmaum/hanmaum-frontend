@@ -16,6 +16,8 @@ import { SpaceInvitePage } from "@/pages/space-invite/SpaceInvitePage";
 import { HomePage } from "@/pages/home/HomePage";
 import { CarePage } from "@/pages/care/CarePage";
 import { NewsPage } from "@/pages/news/NewsPage";
+import { NewsCreatePage } from "@/pages/news-create/NewsCreatePage";
+import { RecordRouteLayout } from "./layouts/RecordRouteLayout";
 import { FamilyPage } from "@/pages/family/FamilyPage";
 import { AllPage } from "@/pages/all/AllPage";
 
@@ -128,6 +130,16 @@ const router = createBrowserRouter([
                 path: "all",
                 Component: AllPage,
                 handle: { title: "전체", tab: "all" },
+              },
+            ],
+          },
+          {
+            Component: RecordRouteLayout,
+            children: [
+              {
+                path: "news/new",
+                Component: NewsCreatePage,
+                handle: { title: "소식 남기기" },
               },
             ],
           },
