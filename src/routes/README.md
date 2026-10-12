@@ -23,6 +23,7 @@ React Router Data 모드 사용. `Router.tsx`에서 URL·페이지·레이아웃
 
 - `components/`: 표현·레이아웃. 라우트나 도메인에 직접 의존하지 않고 props로 동작 주입.
 - `features/carespace/`: 공간 이름·가족·생성 폼·공간 메뉴·초대 안내 UI와 명시적 Mock 메모리 데이터. `careSpaceViewTypes`는 화면 모델이며 BE DTO가 아니다.
+- `features/carespace/model/useMockInvitationLink.ts`: Mock 링크·예시 기한·재발급·복사·공유와 수동 복사 안내 상태 관리. 페이지가 URL 생성과 라우트 상태 변경 콜백을 주입하고 화면을 조합한다. 공간 ID가 바뀌면 `SpaceInvitePreview`의 key로 링크 상태를 초기화한다.
 - `features/dashboard/`: 홈 상태별 조합. 정상·빈 홈·생성/참여 직후·로딩·전체/부분 오류.
 - 홈 예시 데이터는 `features/dashboard/model/mockHomeData.ts`에서 관리한다. `HomePage`가 `HomeView` 데이터를 전달하고 `HomeContent`는 목록·건수·문구를 표시한다. API 연결 시 데이터 공급부를 교체하며 `HomeView`는 BE DTO와 구분한다.
 - `pages/`: UI 조합, 라우트 상태와 이동 연결. 현재 로그인/공간 흐름은 Mock이며 서버 요청 없음.

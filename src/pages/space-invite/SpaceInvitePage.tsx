@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { useNavigate, useParams } from "react-router";
 import { DetailLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
@@ -16,30 +16,16 @@ import {
   type CareSpaceView,
 } from "@/features/carespace/model/careSpaceViewTypes";
 import { useMockCareSpaces } from "@/features/carespace/model/useMockCareSpaces";
+import { useMockInvitationLink } from "@/features/carespace/model/useMockInvitationLink";
+import { invitationScreenStates } from "@/features/carespace/model/invitationScreenStates";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
-import { useMockAction } from "@/lib/useMockAction";
 import { invitationPath, paths, spacePath } from "@/routes/paths";
 import { SpaceBottomNavigation } from "@/routes/layouts/SpaceBottomNavigation";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 
-const states = [
-  { value: "default", label: "링크 준비 완료" },
-  { value: "copied", label: "복사 완료 표시 (UI 예시)" },
-  { value: "expired", label: "기간 만료" },
-  { value: "error", label: "발급 오류" },
-  { value: "loading", label: "발급 중" },
-] as const;
-const lifetime = 24 * 60 * 60 * 1000;
-function exampleLink(spaceId: string) {
-  const issuedAt = Date.now();
-  return {
-    issuedAt,
-    url: new URL(
-      invitationPath(`mock-to-${spaceId}~${issuedAt}`),
-      window.location.origin,
-    ).href,
-  };
+function invitationUrl(token: string) {
+  return new URL(invitationPath(token), window.location.origin).href;
 }
 export function SpaceInvitePage() {
   const { careSpaceId } = useParams();
@@ -73,75 +59,32 @@ export function SpaceInvitePage() {
 function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
   const navigate = useNavigate();
   const onBack = useBackNavigation(spacePath(space.id));
-  const [state, setState] = useMockScreenState(states, "default");
-  const [link, setLink] = useState(() => exampleLink(space.id));
-  const [fallbackOpen, setFallbackOpen] = useState(false);
-  const [feedback, setFeedback] = useState("");
-  const [sharing, setSharing] = useState(false);
+  const [state, setState] = useMockScreenState(
+    invitationScreenStates,
+    "default",
+  );
+  const {
+    url,
+    expiresAt,
+    failed,
+    expired,
+    loading,
+    sharing,
+    unavailable,
+    fallbackOpen,
+    setFallbackOpen,
+    feedback,
+    changeState,
+    reissue,
+    copy,
+    share,
+  } = useMockInvitationLink({
+    spaceId: space.id,
+    state,
+    onStateChange: setState,
+    createUrl: invitationUrl,
+  });
   const field = useRef<HTMLInputElement>(null);
-  const active = useRef(true);
-  useEffect(() => {
-    active.current = true;
-    return () => {
-      active.current = false;
-    };
-  }, []);
-  const { pending, run } = useMockAction();
-  const failed = state === "error";
-  const expired = state === "expired";
-  const loading = pending || state === "loading";
-  const unavailable = failed || expired || loading || !isMockPreviewEnabled;
-  function reissue() {
-    setFeedback("");
-    run(() => {
-      setLink(exampleLink(space.id));
-      setState("default");
-    });
-  }
-  async function copy() {
-    if (unavailable || sharing) return;
-    setSharing(true);
-    setFeedback("");
-    try {
-      await navigator.clipboard.writeText(link.url);
-      if (active.current) setState("copied");
-    } catch {
-      if (!active.current) return;
-      setFeedback(
-        "자동 복사를 사용할 수 없어요. 링크를 직접 선택해 복사해 주세요.",
-      );
-      setFallbackOpen(true);
-    } finally {
-      if (active.current) setSharing(false);
-    }
-  }
-  async function share() {
-    if (unavailable || sharing) return;
-    if (!navigator.share) {
-      setFeedback(
-        "이 브라우저에서는 공유 메뉴를 지원하지 않아요. 링크를 복사해 주세요.",
-      );
-      setFallbackOpen(true);
-      return;
-    }
-    setSharing(true);
-    setFeedback("");
-    try {
-      await navigator.share({
-        title: "한마음 Mock 초대 화면",
-        text: "화면 확인용 링크예요. 실제 가족 초대나 참여는 처리되지 않아요.",
-        url: link.url,
-      });
-    } catch (error) {
-      if (!active.current) return;
-      if (!(error instanceof DOMException && error.name === "AbortError")) {
-        setFeedback("공유 메뉴를 열지 못했어요. 링크를 직접 복사해 주세요.");
-        setFallbackOpen(true);
-      }
-    } finally {
-      if (active.current) setSharing(false);
-    }
-  }
   return (
     <>
       <DetailLayout
@@ -151,13 +94,8 @@ function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
           <MockStateSelect
             message="화면 확인용 링크 · 실제 발급·참여 없음 · 새로고침 시 초기화"
             value={state}
-            options={states}
-            onChange={(value) => {
-              if (!sharing && !pending) {
-                setFeedback("");
-                setState(value);
-              }
-            }}
+            options={invitationScreenStates}
+            onChange={changeState}
           />
         }
         footer={
@@ -247,7 +185,7 @@ function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
         ) : (
           !failed && (
             <InvitationLinkCard
-              expiresAt={link.issuedAt + (expired ? -lifetime : lifetime)}
+              expiresAt={expiresAt}
               expired={expired}
             />
           )
@@ -288,7 +226,7 @@ function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
           </p>
         )}
         {!unavailable && (
-          <TextAction onClick={() => void navigate(new URL(link.url).pathname)}>
+          <TextAction onClick={() => void navigate(new URL(url).pathname)}>
             Mock 초대받은 화면 보기
           </TextAction>
         )}
@@ -302,7 +240,7 @@ function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
         <Field
           ref={field}
           label="화면 확인용 링크"
-          value={link.url}
+          value={url}
           readOnly
           onFocus={(event) => event.target.select()}
         />
