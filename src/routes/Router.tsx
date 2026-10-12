@@ -10,6 +10,7 @@ import { recordNavigation } from "./navigationHistory";
 import { paths, spacePath } from "./paths";
 import { TabLayout } from "./layouts/TabLayout";
 import { SpaceSelectionPage } from "@/pages/space-selection/SpaceSelectionPage";
+import { SpaceCreatePage } from "@/pages/space-create/SpaceCreatePage";
 import { HomePage } from "@/pages/home/HomePage";
 import { CarePage } from "@/pages/care/CarePage";
 import { NewsPage } from "@/pages/news/NewsPage";
@@ -68,6 +69,11 @@ const router = createBrowserRouter([
         path: paths.spaces,
         Component: SpaceSelectionPage,
         handle: { title: "돌봄 공간 선택" },
+      },
+      {
+        path: paths.spaceCreate,
+        Component: SpaceCreatePage,
+        handle: { title: "돌봄 공간 만들기" },
       },
       {
         path: `${paths.spaces}/:careSpaceId`,

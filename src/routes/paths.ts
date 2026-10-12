@@ -3,6 +3,7 @@ export const paths = {
   login: "/login",
   onboardingGuide: "/onboarding/guide",
   spaces: "/spaces",
+  spaceCreate: "/spaces/new",
   components: "/_dev/components",
 } as const;
 
