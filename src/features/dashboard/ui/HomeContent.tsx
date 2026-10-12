@@ -127,7 +127,7 @@ export function HomeContent({
             />
             <NewsCard
               title={`${space.subjectLabel} 재진 날짜가 10월 20일로 바뀌었대요`}
-              author="민수 · 오늘 오전 10:20"
+              author={`${space.members.find((member) => !member.self)?.name ?? "나"} · 오늘 오전 10:20`}
               body="“시간은 오전 10시 그대로래.”"
               status="review"
               statusMessage="변경 제안 1건을 확인해 주세요."

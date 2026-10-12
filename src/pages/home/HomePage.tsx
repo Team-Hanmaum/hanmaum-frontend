@@ -4,7 +4,7 @@ import { BottomSheet } from "@/components/feedback";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import { HomeContent } from "@/features/dashboard/ui/HomeContent";
 import { homeScreenStates } from "@/features/dashboard/model/homeScreenStates";
-import { spacePath } from "@/routes/paths";
+import { spacePath, spaceInvitePath } from "@/routes/paths";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 
 export function HomePage() {
@@ -21,7 +21,7 @@ export function HomePage() {
         space={space}
         state={state}
         onFamily={() => void navigate(spacePath(space.id, "family"))}
-        onInvite={() => void navigate(spacePath(space.id, "family"))}
+        onInvite={() => void navigate(spaceInvitePath(space.id))}
         onNews={() => void navigate(spacePath(space.id, "news"))}
         onCare={() => void navigate(spacePath(space.id, "care"))}
         onPending={() => setPendingOpen(true)}

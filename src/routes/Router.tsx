@@ -11,6 +11,8 @@ import { paths, spacePath } from "./paths";
 import { TabLayout } from "./layouts/TabLayout";
 import { SpaceSelectionPage } from "@/pages/space-selection/SpaceSelectionPage";
 import { SpaceCreatePage } from "@/pages/space-create/SpaceCreatePage";
+import { InvitationPage } from "@/pages/invitations/InvitationPage";
+import { SpaceInvitePage } from "@/pages/space-invite/SpaceInvitePage";
 import { HomePage } from "@/pages/home/HomePage";
 import { CarePage } from "@/pages/care/CarePage";
 import { NewsPage } from "@/pages/news/NewsPage";
@@ -61,6 +63,11 @@ const router = createBrowserRouter([
       },
       { path: paths.login, Component: LoginPage, handle: { title: "로그인" } },
       {
+        path: "/invitations/:invitationToken",
+        Component: InvitationPage,
+        handle: { title: "초대 참여" },
+      },
+      {
         path: paths.onboardingGuide,
         Component: OnboardingGuidePage,
         handle: { title: "시작 전 안내" },
@@ -78,6 +85,11 @@ const router = createBrowserRouter([
       {
         path: `${paths.spaces}/:careSpaceId`,
         children: [
+          {
+            path: "invite",
+            Component: SpaceInvitePage,
+            handle: { title: "가족 초대" },
+          },
           {
             index: true,
             loader: ({ params, request }) => {

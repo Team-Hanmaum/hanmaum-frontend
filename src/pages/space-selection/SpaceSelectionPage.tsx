@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Header, PageLayout } from "@/components/layout";
 import {
   BottomSheet,
@@ -83,6 +83,14 @@ export function SpaceSelectionPage() {
           title="내 계정"
           onClick={() => setAccountOpen(true)}
         />
+        {isMockPreviewEnabled && (
+          <Link
+            to={paths.invitationExample}
+            className="hm-focus-ring rounded-hm-8 p-hm-12 text-center text-hm-body-small text-hm-text-brand underline"
+          >
+            Mock 초대 참여 예시 보기
+          </Link>
+        )}
       </PageLayout>
       <BottomSheet
         open={accountOpen}

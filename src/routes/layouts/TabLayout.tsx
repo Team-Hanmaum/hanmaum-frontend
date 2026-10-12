@@ -61,7 +61,10 @@ function SpaceHeader({
               : "default"
       }
       onSelect={select}
-      onAllSpaces={() => void navigate(paths.spaces)}
+      onAllSpaces={() => {
+        mockCareSpaces.select(space.id);
+        void navigate(paths.spaces);
+      }}
       onRetry={() => {
         if (failed && targetId) {
           setFailed(false);

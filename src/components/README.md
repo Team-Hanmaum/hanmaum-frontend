@@ -7,7 +7,7 @@
 | 컴포넌트            | 규격                                                                                                                          |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | `BrandSymbol`       | `size="header"`(기본, 높이 28px) 또는 `"login"`(96px). 주변 문구와 의미가 중복될 때 `decorative` 사용                         |
-| `Icon`              | 기본 23종 및 색상 변형 포함 49개 SVG. `IconName` 타입으로 이름 제한, 장식 요소로 표시. 원본 크기와 슬롯 규격은 자산 목록 참조 |
+| `Icon`              | 기본 23종 및 색상 변형 포함 52개 SVG. `IconName` 타입으로 이름 제한, 장식 요소로 표시. 원본 크기와 슬롯 규격은 자산 목록 참조 |
 | `Button`            | `variant="primary" / "secondary" / "outline" / "destructive"`, `icon`, `disabled`, `loading`, `loadingLabel` 지원             |
 | `IconButton`        | `icon`과 접근 가능한 이름 `label` 필수. 44×44px 터치 영역                                                                     |
 | `SocialLoginButton` | `provider="google" / "kakao"`, `label`, `disabled`, `loading`. 일반 버튼과 분리한 브랜드 규격                                 |
@@ -38,7 +38,7 @@
 | `components/ui`         | `TextAction`      | 보조 행동 버튼. `tone="default" / "danger"`, 기본·눌림·포커스·비활성                                                                      |
 | `components/ui`         | `SelectionRow`    | 필수 `label`, 선택 `description`. 기본 checkbox / `control="radio"`일 때 `name` 필수. 네이티브 input 속성·ref 지원                        |
 | `components/ui`         | `TabItem`, `Tabs` | 단일 탭 표시 / 패널과 키보드 탐색 조합. `Tabs`는 `label`, `items`, `value`, `onValueChange` 필수                                          |
-| `components/ui`         | `MenuRow`         | 필수 `title`, 선택 `description`, `icon`, `tone="default" / "danger"`, 버튼 속성·ref                                                      |
+| `components/ui`         | `MenuRow`         | 필수 `title`, 선택 `description`, `icon`, `tone="default" / "danger" / "brand"`, 버튼 속성·ref                                            |
 | `components/ui`         | `Comparison`      | 현재/제안의 `beforeLabel`, `beforeValue`, `afterLabel`, `afterValue` 필수. 값 변경 없음                                                   |
 | `components/layout`     | `SectionHeader`   | 필수 `title`, 선택 `action`, `headingLevel`, `children`                                                                                   |
 | `components/layout`     | `NavItem`         | 필수 `label`, `icon`, 이동 `href` 또는 `onClick`. 선택 `selected`, `selectedIcon`                                                         |
@@ -85,7 +85,7 @@ import { CareCard } from "@/features/careitem/ui";
 - `features/auth/ui/SocialLoginOptions.tsx`: 카카오 → Google 버튼 순서, 로딩 중 다른 공급자 비활성 처리. 인증 API 호출 없음.
 - `pages/login/LoginPage.tsx`: 헤더·로고·안내·소셜 선택 영역 조합. 너비에 맞춰 확장하며 중앙 정렬, 작은 높이에서는 세로 스크롤 허용. 큰 화면의 읽기 영역은 임시 최대 512px이며 전역 제품 레이아웃 정책은 아님.
 - `App.tsx`: 루트 Outlet과 페이지 제목·본문 포커스·스크롤 복원 처리.
-- `pages/login/useLoginPreview.ts`: 개발 환경에서만 1초 로딩 후 안내 화면으로 이동. 중복 클릭 방지와 화면 이탈 시 타이머 취소 처리. 실제 인증·계정 생성·저장 없음.
+- `pages/login/useLoginPreview.ts`: Mock 설정이 켜진 환경에서 1초 로딩 후 안내 화면으로 이동. 중복 클릭 방지와 화면 이탈 시 타이머 취소 처리. 실제 인증·계정 생성·저장 없음.
 - `components/layout/PageLayout.tsx`, `DetailLayout.tsx`: 공통 화면 틀과 뒤로가기 헤더 조합. 공간별 탭 연결은 `routes/layouts/TabLayout.tsx`에서 처리하며 [라우팅·레이아웃 규격](../routes/README.md) 참조.
 - `pages/component-preview/ComponentPreviewPage.tsx`: 개발 전용 상태 비교. 업무 권한이나 검증 정책과 무관한 예시 값 사용.
 
@@ -98,7 +98,7 @@ import { CareCard } from "@/features/careitem/ui";
 3. `/_dev/components`에서 일반 버튼 4종, 소셜 버튼 2종, 아이콘 버튼 상태 비교. 기존 `/?preview=components` 주소도 같은 화면으로 이동. 마우스 올림·누름으로 실제 상태 확인.
 4. 입력 후 오류·비활성 체크박스 전환, 값 유지와 설명 연결 확인. 여러 줄 입력·라벨 클릭·헤더 액션 확인.
 5. 320/390/768px 너비, 짧은 화면 높이, 글자 크기 200%, 모션 줄이기 환경 확인.
-6. 전체 아이콘 49개 및 체크박스·라디오·탭 상태 전환 확인. 탭의 방향키/Home/End, 비활성 건너뛰기, 활성 패널 연결 확인.
+6. 전체 아이콘 52개 및 체크박스·라디오·탭 상태 전환 확인. 탭의 방향키/Home/End, 비활성 건너뛰기, 활성 패널 연결 확인.
 7. 하단 탭 5개 선택 후 고정 옵션 전환. 화면 아래 여백, 긴 문구·글자 확대 후 높이 재측정 확인.
 8. 일반/삭제 확인창과 담당자 선택 시트 열기. Tab/Shift+Tab 순환, Esc/취소, 호출 버튼으로 포커스 복귀, 확인 후 로딩 동안 닫기 차단 확인.
 9. Source의 원본 삭제 상태로 전환해 원문·메타·원문 버튼의 DOM 제거 확인. Proposal 선택과 ActionBar 콜백은 Mock 안내만 갱신하는지 확인.
@@ -155,6 +155,14 @@ FamilyAvatar 단독 노드는 `196:500`, NavItem은 `180:168`, BottomNav는 `180
 - 세션 확인과 `credentials: 'include'`, `/api/auth/csrf`에서 받은 headerName/token 처리, 로그인·로그아웃 후 CSRF 재발급 연동. 로컬 FE/BE 호스트는 `localhost`로 통일.
 - 인증 만료 401과 권한/CSRF 오류 403 구분 및 공개 오류 계약 확인.
 - Google 최신 공식 브랜드 가이드와 현재 Figma의 글꼴·색상·G 아트워크 차이 조율. 현 Mock은 요청대로 Figma 원본 유지. 상세 차이는 자산 목록 참조.
-- 기본 라우팅·뒤로가기·공간별 탭 연결 완료. 실제 참여 공간 조회·선택 UI와 도메인 권한 연동은 후속 작업. 구성원 요청과 소유자 최종 반영을 자동으로 합치는 동작 없음.
+- 기본 라우팅·뒤로가기·공간별 탭 연결 완료. 공간 생성·선택·초대·홈 Mock UI는 구현. 실제 참여 공간 조회와 도메인 권한 연동은 후속 작업. 구성원 요청과 소유자 최종 반영을 자동으로 합치는 동작 없음.
 - 공개 도메인 DTO의 표시 상태 매핑, 참여자 권한, 분석 상태·재시도, 제안 요청/최종 반영 경로, 편집 잠금 계약은 BE 확정 후 연결.
 - 원본 삭제 시 API 응답의 민감 정보 제거 및 FE 캐시·연결 카드 갱신. `Source`의 redacted 렌더링만으로 전체 삭제 정책을 충족하지 않음.
+
+## 공간·홈 화면 조합 확장
+
+- `MockStateSelect`: Mock 안내 안에 접힌 상태 선택 UI 제공. 값·선택지·변경 콜백은 호출부 전달.
+- `MenuRow`의 `tone=brand`: 홈 확인할 내용 카드의 강조 배경·제목·화살표 적용.
+- `CareCard`의 `bodyTone=hint`: 홈 일정 카드의 작은 청록 안내 문구 적용.
+- `SocialLoginOptions`의 `order`, `helper`, `helperAlign`: 초대 진입 화면의 Google 우선 순서와 왼쪽 안내 지원. 기본 로그인 화면 순서 유지.
+- 페이지 흐름과 상태 확인 방법은 [라우팅 규격](../routes/README.md) 참조.

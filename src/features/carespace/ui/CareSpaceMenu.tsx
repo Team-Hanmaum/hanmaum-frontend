@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Header } from "@/components/layout";
-import { Button, Icon } from "@/components/ui";
+import { Icon } from "@/components/ui";
 import { ErrorState, LoadingState } from "@/components/feedback";
 import { careSpaceName, type CareSpaceView } from "../model/careSpaceViewTypes";
 
@@ -128,16 +128,22 @@ export function CareSpaceMenu({
             ))
           )}
           <div className="border-t border-hm-border-default" />
-          <Button
-            variant="secondary"
+          <button
+            type="button"
+            className="hm-focus-ring flex min-h-18 items-center gap-hm-12 rounded-hm-8 p-hm-16 text-left text-hm-body-emphasis text-hm-text-brand disabled:opacity-40"
             disabled={Boolean(switchingId)}
             onClick={() => {
               setOpen(false);
               onAllSpaces();
             }}
           >
-            공간 전체 보기
-          </Button>
+            <span
+              className="size-6 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="min-w-0 flex-1">공간 전체 보기</span>
+            <Icon name="chevron-right-secondary" />
+          </button>
         </div>
       )}
     </div>
