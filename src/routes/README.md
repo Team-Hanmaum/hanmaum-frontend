@@ -38,6 +38,8 @@ React Router Data 모드 사용. `Router.tsx`에서 URL·페이지·레이아웃
 
 홈·가족 초대·소식의 액션·BottomNav는 **하나의 FixedBottomArea** 안에 배치한다. 내부 BottomNav는 static이며 최하단에서만 safe area를 적용한다. ResizeObserver가 실제 높이를 예약하므로 작은 화면과 긴 문구에서도 본문 마지막 항목까지 스크롤할 수 있다. PageLayout은 유동 폭·최대 512px·최소 화면 높이를 유지한다.
 
+모든 제품 화면의 상단은 `PageLayout`에서 **Mock 안내 + 헤더 + 상단 safe area**를 하나로 묶어 `sticky; top: 0`으로 고정한다. 본문 스크롤 중에도 브랜드·뒤로가기·공간 전환 버튼이 유지된다. 문서 스크롤과 기존 `ScrollRestoration`을 사용하며, 상단 높이 변화는 ResizeObserver로 감지해 문서의 `scroll-padding-top`에 반영한다. 공간 메뉴는 본문과 하단 탭 위에 표시하고, 모달은 기존 dialog 최상위 레이어를 사용한다.
+
 공간 메뉴는 헤더 아래 표시하는 disclosure 영역이다. 키보드로 열면 영역에 포커스를 두고 Tab으로 항목을 탐색한다. Escape는 메뉴를 닫고 호출 버튼으로 복귀하며, 영역 밖 클릭·포커스 이동으로도 닫힌다. 전환 실패 시 기존 공간을 유지한다.
 
 ## Mock 확인 방법

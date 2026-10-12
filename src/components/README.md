@@ -86,7 +86,7 @@ import { CareCard } from "@/features/careitem/ui";
 - `pages/login/LoginPage.tsx`: 헤더·로고·안내·소셜 선택 영역 조합. 너비에 맞춰 확장하며 중앙 정렬, 작은 높이에서는 세로 스크롤 허용. 큰 화면의 읽기 영역은 임시 최대 512px이며 전역 제품 레이아웃 정책은 아님.
 - `App.tsx`: 루트 Outlet과 페이지 제목·본문 포커스·스크롤 복원 처리.
 - `pages/login/useLoginPreview.ts`: Mock 설정이 켜진 환경에서 1초 로딩 후 안내 화면으로 이동. 중복 클릭 방지와 화면 이탈 시 타이머 취소 처리. 실제 인증·계정 생성·저장 없음.
-- `components/layout/PageLayout.tsx`, `DetailLayout.tsx`: 공통 화면 틀과 뒤로가기 헤더 조합. 공간별 탭 연결은 `routes/layouts/TabLayout.tsx`에서 처리하며 [라우팅·레이아웃 규격](../routes/README.md) 참조.
+- `components/layout/PageLayout.tsx`, `DetailLayout.tsx`: 공통 화면 틀과 뒤로가기 헤더 조합. Mock 안내·헤더·상단 safe area를 함께 고정하고 아래 본문은 스크롤 허용. 헤더 높이를 문서의 스크롤 상단 여백에 반영하며 화면 이탈 시 복원. `Header` 단독은 표현 컴포넌트이며 고정 처리는 `PageLayout`에서 담당. 공간별 탭 연결은 `routes/layouts/TabLayout.tsx`에서 처리하며 [라우팅·레이아웃 규격](../routes/README.md) 참조.
 - `pages/component-preview/ComponentPreviewPage.tsx`: 개발 전용 상태 비교. 업무 권한이나 검증 정책과 무관한 예시 값 사용.
 
 로그인 위의 Mock 알림은 Figma 제품 화면에 포함되지 않는 확인용 영역이다. Figma 화면 프레임의 바깥 테두리·모서리는 브라우저 전체 화면에 적용하지 않는다. 본문의 780px 고정 높이 대신 남은 화면 높이와 콘텐츠 높이를 사용한다.
