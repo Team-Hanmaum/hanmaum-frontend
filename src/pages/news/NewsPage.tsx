@@ -9,7 +9,7 @@ import {
   type RecordPendingAction,
 } from "@/features/record/ui/RecordPendingSheet";
 import { useMockScreenState } from "@/routes/useMockScreenState";
-import { newsCreatePath } from "@/routes/paths";
+import { newsCreatePath, newsDetailPath } from "@/routes/paths";
 
 export function NewsPage() {
   const space = useOutletContext<CareSpaceView>();
@@ -23,7 +23,7 @@ export function NewsPage() {
         records={records}
         state={state}
         onCreate={() => void navigate(newsCreatePath(space.id))}
-        onOpen={() => setAction("detail")}
+        onOpen={(id) => void navigate(newsDetailPath(space.id, id))}
         onReview={() => setAction("review")}
         onRetry={() => setState("default")}
       />

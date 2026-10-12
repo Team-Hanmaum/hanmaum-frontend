@@ -1,21 +1,23 @@
-import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import type { HomeView } from "./homeViewTypes";
+import type { RecordView } from "@/features/record/model/recordViewTypes";
+import { formatRecordDate } from "@/features/record/model/recordDates";
 
 // 화면 확인용 예시. 실제 일정·건수·담당자 정보가 아니며 API 연결 시 교체한다.
-export function getMockHomeData(space: CareSpaceView): HomeView {
-  const author = space.members.find((member) => !member.self)?.name ?? "나";
+export function getMockHomeData(records: readonly RecordView[]): HomeView {
   return {
-    pendingCount: 1,
-    recentNews: [
-      {
-        id: "mock-news-1",
-        title: `${space.subjectLabel} 재진 날짜가 10월 20일로 바뀌었대요`,
-        author: `${author} · 오늘 오전 10:20`,
-        body: "“시간은 오전 10시 그대로래.”",
-        status: "review",
-        statusMessage: "변경 제안 1건을 확인해 주세요.",
-      },
-    ],
+    pendingCount: records.filter((record) => record.analysisStatus === "review")
+      .length,
+    recentNews: records.slice(0, 1).map((record) => ({
+      id: record.id,
+      title: record.title,
+      author: `${record.author.name} · ${formatRecordDate(record.createdAt)}`,
+      body: record.body,
+      status: record.analysisStatus,
+      statusMessage:
+        record.analysisStatus === "review"
+          ? "변경 제안 1건을 확인해 주세요."
+          : undefined,
+    })),
     upcomingSchedules: [
       {
         id: "mock-schedule-1",

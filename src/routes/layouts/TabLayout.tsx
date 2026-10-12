@@ -150,19 +150,18 @@ export function TabLayout() {
       footer={
         <FixedBottomArea position="fixed">
           {active === "home" && (
-            <div className="bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-24">
-              <Button
-                className="w-full"
-                icon={empty ? undefined : <Icon name="plus-inverse" />}
-                onClick={() => void navigate(newsCreatePath(space.id))}
-              >
-                {empty ? "첫 소식 남기기" : "소식 남기기"}
-              </Button>
-            </div>
+            <NewsCreateAction
+              space={space}
+              mode="home"
+              empty={empty}
+            />
           )}
           {active === "news" &&
             (newsState === "default" || newsState === "more-error") && (
-              <NewsCreateAction space={space} />
+              <NewsCreateAction
+                space={space}
+                mode="news"
+              />
             )}
           <SpaceBottomNavigation
             spaceId={space.id}
@@ -179,17 +178,29 @@ export function TabLayout() {
   );
 }
 
-function NewsCreateAction({ space }: { space: CareSpaceView }) {
+function NewsCreateAction({
+  space,
+  mode,
+  empty = false,
+}: {
+  space: CareSpaceView;
+  mode: "home" | "news";
+  empty?: boolean;
+}) {
   const records = useMockRecords(space);
   const navigate = useNavigate();
-  if (!records.length) return null;
+  if (mode === "news" && !records.length) return null;
+  const first = empty && (!space.empty || !records.length);
   return (
     <div className="bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-24">
       <Button
         className="w-full"
+        icon={
+          mode === "home" && !first ? <Icon name="plus-inverse" /> : undefined
+        }
         onClick={() => void navigate(newsCreatePath(space.id))}
       >
-        소식 남기기
+        {first ? "첫 소식 남기기" : "소식 남기기"}
       </Button>
     </div>
   );

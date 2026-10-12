@@ -23,6 +23,7 @@ export function HomeContent({
   onFamily,
   onInvite,
   onNews,
+  onOpenNews,
   onCare,
   onPending,
   onRetry,
@@ -33,11 +34,32 @@ export function HomeContent({
   onFamily: () => void;
   onInvite: () => void;
   onNews: () => void;
+  onOpenNews: (id: string) => void;
   onCare: () => void;
   onPending: () => void;
   onRetry: () => void;
 }) {
   const empty = state === "empty" || state === "created";
+  const newsSection = (
+    <section className="flex flex-col gap-hm-12">
+      <SectionHeader
+        title="최근 가족 소식"
+        action={{ label: "소식 보기", onClick: onNews }}
+      />
+      {data.recentNews.map((news) => (
+        <NewsCard
+          key={news.id}
+          title={news.title}
+          author={news.author}
+          body={news.body}
+          status={news.status}
+          statusMessage={news.statusMessage}
+          actionLabel="소식 자세히 보기"
+          onAction={() => onOpenNews(news.id)}
+        />
+      ))}
+    </section>
+  );
   if (state === "loading")
     return (
       <>
@@ -85,11 +107,15 @@ export function HomeContent({
       />
       {empty ? (
         <>
-          <EmptyState
-            title="아직 남긴 소식이 없어요"
-            body={"병원에서 들은 이야기나\n오늘의 작은 변화를 남겨보세요."}
-            className="rounded-hm-16"
-          />
+          {space.empty && data.recentNews.length > 0 ? (
+            newsSection
+          ) : (
+            <EmptyState
+              title="아직 남긴 소식이 없어요"
+              body={"병원에서 들은 이야기나\n오늘의 작은 변화를 남겨보세요."}
+              className="rounded-hm-16"
+            />
+          )}
           <section className="flex flex-col gap-hm-12">
             <SectionHeader title="다가오는 일정" />
             <div className="flex flex-col gap-hm-12 rounded-hm-16 bg-hm-bg-surface p-hm-20">
@@ -123,23 +149,7 @@ export function HomeContent({
             tone="brand"
             onClick={onPending}
           />
-          <section className="flex flex-col gap-hm-12">
-            <SectionHeader
-              title="최근 가족 소식"
-              action={{ label: "소식 보기", onClick: onNews }}
-            />
-            {data.recentNews.map((news) => (
-              <NewsCard
-                key={news.id}
-                title={news.title}
-                author={news.author}
-                body={news.body}
-                status={news.status}
-                statusMessage={news.statusMessage}
-                onAction={onNews}
-              />
-            ))}
-          </section>
+          {newsSection}
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
               title="다가오는 일정"

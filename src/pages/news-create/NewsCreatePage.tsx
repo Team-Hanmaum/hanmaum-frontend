@@ -6,7 +6,7 @@ import { useNewsComposer } from "@/features/record/model/useNewsComposer";
 import { newsCreateStates } from "@/features/record/model/newsScreenStates";
 import { NewsForm } from "@/features/record/ui/NewsForm";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
-import { spacePath } from "@/routes/paths";
+import { newsDetailPath, spacePath } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 
@@ -18,8 +18,8 @@ export function NewsCreatePage() {
   const { body, changeBody, error, pending, canSubmit, submit } =
     useNewsComposer({
       space,
-      onCreated: () =>
-        void navigate(spacePath(space.id, "news"), { replace: true }),
+      onCreated: (id) =>
+        void navigate(newsDetailPath(space.id, id), { replace: true }),
     });
   return (
     <DetailLayout
