@@ -7,17 +7,20 @@ export function getMockHomeData(records: readonly RecordView[]): HomeView {
   return {
     pendingCount: records.filter((record) => record.analysisStatus === "review")
       .length,
-    recentNews: records.slice(0, 1).map((record) => ({
-      id: record.id,
-      title: record.title,
-      author: `${record.author.name} · ${formatRecordDate(record.createdAt)}`,
-      body: record.body,
-      status: record.analysisStatus,
-      statusMessage:
-        record.analysisStatus === "review"
-          ? "변경 제안 1건을 확인해 주세요."
-          : undefined,
-    })),
+    recentNews: [...records]
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, 1)
+      .map((record) => ({
+        id: record.id,
+        title: record.title,
+        author: `${record.author.name} · ${formatRecordDate(record.createdAt)}`,
+        body: record.body,
+        status: record.analysisStatus,
+        statusMessage:
+          record.analysisStatus === "review"
+            ? "변경 제안 1건을 확인해 주세요."
+            : undefined,
+      })),
     upcomingSchedules: [
       {
         id: "mock-schedule-1",
