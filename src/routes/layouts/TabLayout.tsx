@@ -16,8 +16,16 @@ import {
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import { useMockAction } from "@/lib/useMockAction";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import { newsListStates } from "@/features/record/model/newsScreenStates";
+import { useMockRecords } from "@/features/record/model/useMockRecords";
 import { NotFoundPage } from "@/pages/error/NotFoundPage";
-import { paths, spacePath, spaceTabs, type SpaceTab } from "../paths";
+import {
+  paths,
+  spacePath,
+  spaceTabs,
+  newsCreatePath,
+  type SpaceTab,
+} from "../paths";
 import { useMockScreenState } from "../useMockScreenState";
 import { SpaceBottomNavigation } from "./SpaceBottomNavigation";
 
@@ -87,6 +95,10 @@ export function TabLayout() {
     homeScreenStates,
     space?.empty ? "empty" : "default",
   );
+  const [newsState, setNewsState] = useMockScreenState(
+    newsListStates,
+    "default",
+  );
   if (!careSpaceId || !active || !spaceTabs.includes(active))
     return <NotFoundPage />;
   if (!space || !isMockPreviewEnabled)
@@ -116,6 +128,13 @@ export function TabLayout() {
             options={homeScreenStates}
             onChange={setState}
           />
+        ) : active === "news" ? (
+          <MockStateSelect
+            message="소식 UI 예시 · 실제 저장·분석 없음 · 새로고침 시 초기화"
+            value={newsState}
+            options={newsListStates}
+            onChange={setNewsState}
+          />
         ) : (
           <MockNotice message="화면 이동 확인용 · 실제 업무 기능 연결 전" />
         )
@@ -131,16 +150,19 @@ export function TabLayout() {
       footer={
         <FixedBottomArea position="fixed">
           {active === "home" && (
-            <div className="bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-24">
-              <Button
-                className="w-full"
-                icon={empty ? undefined : <Icon name="plus-inverse" />}
-                onClick={() => void navigate(spacePath(space.id, "news"))}
-              >
-                {empty ? "첫 소식 남기기" : "소식 남기기"}
-              </Button>
-            </div>
+            <NewsCreateAction
+              space={space}
+              mode="home"
+              empty={empty}
+            />
           )}
+          {active === "news" &&
+            (newsState === "default" || newsState === "more-error") && (
+              <NewsCreateAction
+                space={space}
+                mode="news"
+              />
+            )}
           <SpaceBottomNavigation
             spaceId={space.id}
             active={active}
@@ -153,5 +175,33 @@ export function TabLayout() {
         context={space}
       />
     </PageLayout>
+  );
+}
+
+function NewsCreateAction({
+  space,
+  mode,
+  empty = false,
+}: {
+  space: CareSpaceView;
+  mode: "home" | "news";
+  empty?: boolean;
+}) {
+  const records = useMockRecords(space);
+  const navigate = useNavigate();
+  if (mode === "news" && !records.length) return null;
+  const first = empty && (!space.empty || !records.length);
+  return (
+    <div className="bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-24">
+      <Button
+        className="w-full"
+        icon={
+          mode === "home" && !first ? <Icon name="plus-inverse" /> : undefined
+        }
+        onClick={() => void navigate(newsCreatePath(space.id))}
+      >
+        {first ? "첫 소식 남기기" : "소식 남기기"}
+      </Button>
+    </div>
   );
 }

@@ -15,7 +15,7 @@ export type HomeView = {
     author: string;
     body: string;
     status: NewsStatus;
-    statusMessage: string;
+    statusMessage?: string;
   }[];
   upcomingSchedules: {
     id: string;
