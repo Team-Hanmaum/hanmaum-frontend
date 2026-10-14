@@ -2,6 +2,8 @@
 
 React Router Data 모드 사용. `Router.tsx`에서 URL·페이지·레이아웃을 등록하고 `paths.ts`의 경로 상수와 생성 함수를 사용한다.
 
+`Router.tsx`는 이동·지연 로딩 보조 함수 → 화면별 라우트 그룹 → 최종 라우터 조합 순서로 구성한다. 공간 진입 전 화면은 `entryRoutes`, 기본 탭은 `tabRoutes`, 소식 작성·상세는 `recordRoutes`, 공간 안의 레이아웃 조합은 `spaceRoutes`, 개발 전용 화면은 `developmentRoutes`에서 관리한다. 기존 URL·등록 순서·중첩 레이아웃·제목과 활성 탭 정보는 유지하며, 새 화면은 해당 그룹에 추가한다.
+
 ## 경로
 
 | URL                                          | 화면                    | 레이아웃                                     |
