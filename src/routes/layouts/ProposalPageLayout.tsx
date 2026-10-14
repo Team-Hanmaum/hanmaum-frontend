@@ -45,7 +45,9 @@ export function ProposalPageLayout({
         (actions || tabs) && (
           <FixedBottomArea position="fixed">
             {actions && (
-              <div className="flex flex-col gap-hm-12 bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-24">
+              <div
+                className={`flex flex-col gap-hm-12 bg-hm-bg-surface px-hm-20 pt-hm-16 ${tabs ? "pb-hm-24" : "pb-[calc(var(--hm-spacing-24)+env(safe-area-inset-bottom))]"}`}
+              >
                 {actions}
               </div>
             )}

@@ -149,6 +149,38 @@ const recordRoutes: RouteObject[] = [
 // 확인할 내용은 공간 헤더 대신 뒤로가기 헤더를 사용한다.
 const proposalRoutes: RouteObject[] = [
   {
+    path: "news/:recordId/proposals",
+    lazy: async () => ({
+      Component: (await import("@/pages/proposal-review/ProposalReviewPage"))
+        .ProposalReviewPage,
+    }),
+    handle: { title: "제안 검토" },
+  },
+  {
+    path: "proposals/confirm",
+    lazy: async () => ({
+      Component: (await import("@/pages/proposal-confirm/ProposalConfirmPage"))
+        .ProposalConfirmPage,
+    }),
+    handle: { title: "반영 전 확인" },
+  },
+  {
+    path: "proposal-requests/:requestId",
+    lazy: async () => ({
+      Component: (await import("@/pages/proposal-request/ProposalRequestPage"))
+        .ProposalRequestPage,
+    }),
+    handle: { title: "요청 상태" },
+  },
+  {
+    path: "proposals/results/:resultId",
+    lazy: async () => ({
+      Component: (await import("@/pages/proposal-result/ProposalResultPage"))
+        .ProposalResultPage,
+    }),
+    handle: { title: "반영 결과" },
+  },
+  {
     path: "proposals",
     lazy: async () => ({
       Component: (await import("@/pages/proposal-list/ProposalListPage"))

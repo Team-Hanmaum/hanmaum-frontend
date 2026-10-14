@@ -7,10 +7,7 @@ import {
 import { Tabs } from "@/components/ui";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import type { RecordView } from "@/features/record/model/recordViewTypes";
-import {
-  formatRecordDate,
-  formatRecordTime,
-} from "@/features/record/model/recordDates";
+import { formatRecordDate } from "@/features/record/model/recordDates";
 import {
   proposalStatusLabel,
   proposalTabs,
@@ -47,8 +44,7 @@ export function ProposalList({
   onRetry: () => void;
 }) {
   const owner = space.members.find((member) => member.role === "owner");
-  const date = (time: number) =>
-    `${formatRecordDate(time)} ${formatRecordTime(time)}`;
+  const date = formatRecordDate;
   function panel(tab: ProposalStatus) {
     if (state === "loading")
       return <LoadingState label="확인할 내용을 불러오고 있어요" />;
@@ -188,6 +184,7 @@ export function ProposalList({
           : "공간 전체"}
       </p>
       <Tabs
+        className="[&_[role=tab]]:px-hm-4 [&_[role=tablist]]:gap-hm-4"
         label="확인할 내용 상태"
         value={status}
         onValueChange={onStatus}
