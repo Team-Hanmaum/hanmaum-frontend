@@ -40,13 +40,19 @@ export function ProposalRequestPage() {
         item.author.id === space.members.find((member) => member.self)?.id),
   );
   const remaining = data.proposals.filter(
-    (item) => item.requestId === request?.id && item.status === "requested",
+    (item) =>
+      item.requestId === request?.id &&
+      item.status === "requested" &&
+      !item.sourceDeleted,
   );
   const { selected, toggle } = useProposalSelection(remaining, data);
   const owner = space.role === "owner";
   const onBack = useBackNavigation(proposalListPath(space.id, "requested"));
   const onSource = (id: string) => void navigate(newsDetailPath(space.id, id));
   const awaiting = remaining.length > 0;
+  const removed = request?.proposals.every(
+    (proposal) => proposal.sourceDeleted,
+  );
   const ownerName =
     space.members.find((member) => member.role === "owner")?.name ?? "소유자";
   const onView = () =>
@@ -117,20 +123,24 @@ export function ProposalRequestPage() {
       ) : (
         <>
           <Badge
-            label={awaiting ? "승인 요청" : "처리 완료"}
+            label={removed ? "원본 삭제" : awaiting ? "승인 요청" : "처리 완료"}
             tone="brand"
           />
           <h1 className="text-hm-title-page whitespace-pre-line">
-            {awaiting
-              ? content
-                ? "이미 반영을\n요청한 내용이에요"
-                : "반영을 요청했어요"
-              : "요청 처리 결과를 확인해 주세요"}
+            {removed
+              ? "원본 삭제로 요청 내용을 제거했어요"
+              : awaiting
+                ? content
+                  ? "이미 반영을\n요청한 내용이에요"
+                  : "반영을 요청했어요"
+                : "요청 처리 결과를 확인해 주세요"}
           </h1>
           <p className="text-hm-body-default text-hm-text-secondary">
-            {awaiting
-              ? `${ownerName}님의 확인을 기다리고 있어요.`
-              : "소유자가 결정한 내용을 항목별로 확인할 수 있어요."}
+            {removed
+              ? "삭제된 내용은 표시하지 않으며 현재 정보에 반영할 수 없어요."
+              : awaiting
+                ? `${ownerName}님의 확인을 기다리고 있어요.`
+                : "소유자가 결정한 내용을 항목별로 확인할 수 있어요."}
           </p>
           {request.proposals.map((proposal) => {
             const current = data.proposals.find(
@@ -141,7 +151,11 @@ export function ProposalRequestPage() {
                 key={proposal.id}
                 proposal={{ ...proposal, beforeLabel: "요청 당시 정보" }}
                 label={
-                  current ? proposalStatusLabel(current.status) : "요청 내용"
+                  current?.sourceDeleted
+                    ? "원본 삭제"
+                    : current
+                      ? proposalStatusLabel(current.status)
+                      : "요청 내용"
                 }
                 afterLabel="요청한 내용"
                 meta={proposal.context}

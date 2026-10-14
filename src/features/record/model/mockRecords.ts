@@ -39,6 +39,25 @@ export const mockRecords = {
     publish(space.id, [record, ...mockRecords.getForSpace(space)]);
     return record;
   },
+  remove(space: CareSpaceView, recordId: string) {
+    if (!isMockPreviewEnabled) return false;
+    const records = mockRecords.getForSpace(space);
+    const record = records.find((entry) => entry.id === recordId);
+    const self = space.members.find(
+      (member) => member.self && member.role === space.role,
+    );
+    if (
+      !self ||
+      !record ||
+      (space.role !== "owner" && record.author.id !== self.id)
+    )
+      return false;
+    publish(
+      space.id,
+      records.filter((entry) => entry.id !== recordId),
+    );
+    return true;
+  },
   setAnalysisStatus(
     space: CareSpaceView,
     recordId: string,

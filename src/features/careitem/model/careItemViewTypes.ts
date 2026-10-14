@@ -18,6 +18,15 @@ export type CareEvidence = {
   // 직접 확인한 독립 근거만 내용 보유. 소식 근거의 원문은 record에서 조회한다.
   directContent?: string;
   fields: CareItemFields;
+  dependsOnRecordIds?: readonly string[];
+};
+export type CareReconfirmation = {
+  id: string;
+  itemId: string;
+  actor: string;
+  createdAt: number;
+  fields: CareItemFields;
+  evidence: string;
 };
 export type CareItemView = {
   id: string;

@@ -2,10 +2,16 @@ import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewType
 import { mockRecords } from "@/features/record/model/mockRecords";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { getMockProposalData } from "./mockProposalData";
-import { validateCareFields } from "@/features/careitem/model/careItemFields";
+import {
+  careMeta,
+  careValue,
+  validateCareFields,
+} from "@/features/careitem/model/careItemFields";
 import type { CareItemFields } from "@/features/careitem/model/careItemViewTypes";
 import { reviseProposal, retargetProposal } from "./proposalDrafts";
 import { applyMockProposals } from "./applyMockProposals";
+import { recordImpact, removeRecordEvidence } from "./removeRecordEvidence";
+import type { RecordDeletion } from "@/features/record/model/recordDeletionTypes";
 import type {
   ProposalFailure,
   ProposalOutcome,
@@ -38,6 +44,99 @@ export const mockProposals = {
   getForSpace(space: CareSpaceView): ProposalSpaceState {
     if (!seeds.has(space.id)) seeds.set(space.id, getMockProposalData(space));
     return snapshot[space.id] ?? seeds.get(space.id)!;
+  },
+  removeSource(space: CareSpaceView, recordId: string): RecordDeletion | null {
+    if (!isMockPreviewEnabled) return null;
+    const current = mockProposals.getForSpace(space);
+    const existing = current.deletions?.find(
+      (entry) => entry.recordId === recordId,
+    );
+    if (existing) return existing;
+    const self = space.members.find(
+      (member) => member.self && member.role === space.role,
+    );
+    const record = mockRecords
+      .getForSpace(space)
+      .find((entry) => entry.id === recordId);
+    if (
+      !self ||
+      !record ||
+      (space.role !== "owner" && record.author.id !== self.id)
+    )
+      return null;
+    const deletion: RecordDeletion = {
+      id: `mock-deletion-${crypto.randomUUID()}`,
+      recordId,
+      actor: { id: self.id, name: self.name },
+      createdAt: Date.now(),
+      itemIds: recordImpact(current, recordId).map((item) => item.id),
+    };
+    publish(space.id, removeRecordEvidence(current, deletion));
+    return deletion;
+  },
+  reconfirm(
+    space: CareSpaceView,
+    itemId: string,
+    version: number,
+    fields: CareItemFields,
+    evidence: string,
+  ): ProposalOutcome {
+    const current = mockProposals.getForSpace(space);
+    const item = current.items.find((entry) => entry.id === itemId);
+    const actor = space.members.find(
+      (member) => member.self && member.role === "owner",
+    );
+    if (!isMockPreviewEnabled || space.role !== "owner" || !actor)
+      return failure("permission");
+    if (!item?.needsReconfirmation || item.version !== version)
+      return failure("changed");
+    if (
+      !evidence.trim() ||
+      Object.keys(validateCareFields(item.kind, fields)).length ||
+      (fields.assigneeId &&
+        !space.members.some((member) => member.id === fields.assigneeId))
+    )
+      return failure("selection");
+    const id = `mock-reconfirmation-${crypto.randomUUID()}`;
+    const createdAt = Date.now();
+    publish(space.id, {
+      ...current,
+      reconfirmations: [
+        ...(current.reconfirmations ?? []),
+        {
+          id,
+          itemId,
+          actor: actor.name,
+          createdAt,
+          fields: { ...fields },
+          evidence,
+        },
+      ],
+      items: current.items.map((entry) =>
+        entry.id === itemId
+          ? {
+              ...entry,
+              fields: { ...fields },
+              title: fields.title || fields.content,
+              value: careValue(item.kind, fields),
+              meta: careMeta(item.kind, fields),
+              needsReconfirmation: false,
+              version: entry.version + 1,
+              evidence: [
+                ...entry.evidence,
+                {
+                  id,
+                  author: actor.name,
+                  createdAt,
+                  directContent: evidence,
+                  fields: { ...fields },
+                },
+              ],
+            }
+          : entry,
+      ),
+    });
+    return { ok: true, id };
   },
   revise(
     space: CareSpaceView,
@@ -119,6 +218,8 @@ export const mockProposals = {
     );
     if (proposals.some((item) => !item)) return failure("selection");
     const selected = proposals as ProposalView[];
+    if (selected.some((proposal) => proposal.sourceDeleted))
+      return failure("source", ids);
 
     // 같은 선택의 재전송은 기존 결과로 이동하고 중복 요청·이력을 만들지 않는다.
     const existing =
@@ -181,6 +282,7 @@ export const mockProposals = {
     const nextStatus = decision === "request" ? "requested" : decision;
     // 전체 검증 후 한 번만 갱신한다. 실패 시 일부만 반영하지 않는다.
     publish(space.id, {
+      ...current,
       proposals: current.proposals.map((proposal) =>
         ids.includes(proposal.id)
           ? {

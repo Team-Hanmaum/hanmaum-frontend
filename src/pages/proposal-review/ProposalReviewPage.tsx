@@ -27,7 +27,10 @@ export function ProposalReviewPage() {
   const data = useMockProposals(space);
   const records = useMockRecords(space);
   const proposals = data.proposals.filter(
-    (item) => item.recordId === recordId && item.status === "review",
+    (item) =>
+      item.recordId === recordId &&
+      item.status === "review" &&
+      !item.sourceDeleted,
   );
   const { selected, toggle } = useProposalSelection(proposals, data);
   const { pending, failure, submit } = useProposalAction(space);

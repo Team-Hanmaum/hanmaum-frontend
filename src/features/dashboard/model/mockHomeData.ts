@@ -29,7 +29,7 @@ export function getMockHomeData(
             : undefined),
       })),
     upcomingSchedules: proposals.items
-      .filter((item) => item.kind === "schedule")
+      .filter((item) => item.kind === "schedule" && !item.needsReconfirmation)
       .map((item) => ({
         id: item.id,
         title: item.title,
@@ -46,7 +46,7 @@ export function getMockHomeData(
     pastScheduleCount: 1,
     tasks: [
       ...proposals.items
-        .filter((item) => item.kind === "task")
+        .filter((item) => item.kind === "task" && !item.needsReconfirmation)
         .map((item) => ({
           id: item.id,
           title: item.title,
@@ -58,21 +58,25 @@ export function getMockHomeData(
         description: "담당 미정 · 미시작",
       },
     ],
-    questions: [
-      {
-        id: "mock-question-1",
-        title: "센터를 토요일에도 이용할 수 있나요?",
+    questions: proposals.items
+      .filter((item) => item.kind === "question" && !item.needsReconfirmation)
+      .map((item) => ({
+        id: item.id,
+        title: item.fields.content,
         description: "미확인",
-      },
-    ],
+      })),
     recentChanges: [
       ...proposals.results
-        .filter((result) => result.decision === "applied")
+        .filter(
+          (result) =>
+            result.decision === "applied" &&
+            result.proposals.some((proposal) => !proposal.sourceDeleted),
+        )
         .slice()
         .reverse()
         .map((result) => ({
           id: result.id,
-          title: `${result.actor.name}님이 ${result.proposals[0].title}${result.proposals.length > 1 ? ` 외 ${result.proposals.length - 1}건` : ""}을 반영했어요.`,
+          title: `${result.actor.name}님이 ${result.proposals.find((proposal) => !proposal.sourceDeleted)!.title}${result.proposals.filter((proposal) => !proposal.sourceDeleted).length > 1 ? " 외 항목" : ""}을 반영했어요.`,
           description: formatRecordDate(result.createdAt),
         })),
       {

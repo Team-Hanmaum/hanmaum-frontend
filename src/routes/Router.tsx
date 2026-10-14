@@ -149,6 +149,30 @@ const recordRoutes: RouteObject[] = [
 // 확인할 내용은 공간 헤더 대신 뒤로가기 헤더를 사용한다.
 const proposalRoutes: RouteObject[] = [
   {
+    path: "care/items/:itemId/reconfirm",
+    lazy: async () => ({
+      Component: (await import("@/pages/care-reconfirm/CareReconfirmPage"))
+        .CareReconfirmPage,
+    }),
+    handle: { title: "다시 확인하기" },
+  },
+  {
+    path: "news/:recordId/delete",
+    lazy: async () => ({
+      Component: (await import("@/pages/news-delete/NewsDeletePage"))
+        .NewsDeletePage,
+    }),
+    handle: { title: "소식 원본 삭제" },
+  },
+  {
+    path: "news/deletions/:deletionId",
+    lazy: async () => ({
+      Component: (await import("@/pages/news-delete/NewsDeletePage"))
+        .NewsDeletionResultPage,
+    }),
+    handle: { title: "소식 삭제 결과" },
+  },
+  {
     path: "care/items/:itemId",
     lazy: async () => ({
       Component: (await import("@/pages/care-item/CareItemPage")).CareItemPage,

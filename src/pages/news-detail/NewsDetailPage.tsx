@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router";
 import { DetailLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
@@ -12,10 +11,6 @@ import { newsDetailStates } from "@/features/record/model/newsScreenStates";
 import { useMockProposals } from "@/features/proposal/model/useMockProposals";
 import { getRecordsWithProposals } from "@/features/proposal/model/proposalSelectors";
 import { NewsDetail } from "@/features/record/ui/NewsDetail";
-import {
-  RecordPendingSheet,
-  type RecordPendingAction,
-} from "@/features/record/ui/RecordPendingSheet";
 import { SpaceBottomNavigation } from "@/routes/layouts/SpaceBottomNavigation";
 import {
   spacePath,
@@ -23,6 +18,7 @@ import {
   proposalRequestPath,
   proposalResultPath,
   proposalReviewPath,
+  newsDeletePath,
 } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
@@ -32,6 +28,9 @@ export function NewsDetailPage() {
   const { recordId = "" } = useParams();
   const records = useMockRecords(space);
   const proposals = useMockProposals(space);
+  const deleted = proposals.deletions?.some(
+    (entry) => entry.recordId === recordId,
+  );
   const record = getRecordsWithProposals(records, proposals).find(
     (item) => item.id === recordId,
   );
@@ -42,7 +41,6 @@ export function NewsDetailPage() {
     ? newsDetailStates
     : newsDetailStates.filter((item) => item.value !== "review");
   const [state, setState] = useMockScreenState(options, "default");
-  const [action, setAction] = useState<RecordPendingAction>(null);
   const { pending, retry } = useMockRecordAnalysis(space, recordId, () =>
     setState("default"),
   );
@@ -130,25 +128,27 @@ export function NewsDetailPage() {
             record={record}
             status={status}
             owner={space.role === "owner"}
-            onDelete={() => setAction("delete")}
+            onDelete={() => void navigate(newsDeletePath(space.id, recordId))}
           />
         ) : (
           <>
             <h1 className="sr-only">소식 상세</h1>
             <ErrorState
               reason="load-error"
-              title="화면 확인용 소식이 없어요"
-              body="새로고침하면 직접 남긴 Mock 소식은 초기화돼요. 목록에서 소식을 다시 선택해 주세요."
+              title={
+                deleted ? "이미 삭제된 소식이에요" : "화면 확인용 소식이 없어요"
+              }
+              body={
+                deleted
+                  ? "삭제된 원문과 인용 내용은 다시 표시하지 않아요."
+                  : "새로고침하면 직접 남긴 Mock 소식은 초기화돼요. 목록에서 소식을 다시 선택해 주세요."
+              }
               actionLabel="소식 목록으로"
               onAction={onList}
             />
           </>
         )}
       </DetailLayout>
-      <RecordPendingSheet
-        action={action}
-        onClose={() => setAction(null)}
-      />
     </>
   );
 }

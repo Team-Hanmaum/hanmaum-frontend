@@ -12,9 +12,12 @@ export function getPendingProposalCount(
   );
   return data.proposals.filter(
     (proposal) =>
-      proposal.status === "review" ||
-      (proposal.status === "requested" &&
-        visibleRequests.some((request) => request.id === proposal.requestId)),
+      !proposal.sourceDeleted &&
+      (proposal.status === "review" ||
+        (proposal.status === "requested" &&
+          visibleRequests.some(
+            (request) => request.id === proposal.requestId,
+          ))),
   ).length;
 }
 
@@ -25,7 +28,7 @@ export function getRecordsWithProposals(
 ): readonly RecordView[] {
   return records.map((record) => {
     const proposals = data.proposals.filter(
-      (item) => item.recordId === record.id,
+      (item) => item.recordId === record.id && !item.sourceDeleted,
     );
     if (!proposals.length) return record;
     const review = proposals.filter((item) => item.status === "review");

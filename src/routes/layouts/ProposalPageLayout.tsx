@@ -26,7 +26,7 @@ export function ProposalPageLayout({
     onChange: (value: string) => void;
   };
 }) {
-  const message = "제안 UI 예시 · 실제 요청·돌봄 정보 변경 없음";
+  const message = "소식·돌봄 UI 예시 · 실제 요청·돌봄 정보 변경 없음";
   return (
     <DetailLayout
       title={title}

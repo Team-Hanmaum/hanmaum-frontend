@@ -26,6 +26,12 @@ export function newsCreatePath(careSpaceId: string) {
 export function newsDetailPath(careSpaceId: string, recordId: string) {
   return `${spacePath(careSpaceId, "news")}/${encodeURIComponent(recordId)}`;
 }
+export function newsDeletePath(careSpaceId: string, recordId: string) {
+  return `${newsDetailPath(careSpaceId, recordId)}/delete`;
+}
+export function newsDeletionPath(careSpaceId: string, deletionId: string) {
+  return `${spacePath(careSpaceId, "news")}/deletions/${encodeURIComponent(deletionId)}`;
+}
 
 export function invitationPath(token: string) {
   return `/invitations/${encodeURIComponent(token)}`;
@@ -57,6 +63,9 @@ export function careItemPath(careSpaceId: string, itemId: string) {
 }
 export function careSourcesPath(careSpaceId: string, itemId: string) {
   return `${careItemPath(careSpaceId, itemId)}/sources`;
+}
+export function careReconfirmPath(careSpaceId: string, itemId: string) {
+  return `${careItemPath(careSpaceId, itemId)}/reconfirm`;
 }
 export function careHistoryPath(
   careSpaceId: string,

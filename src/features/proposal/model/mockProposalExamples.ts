@@ -54,6 +54,29 @@ export function withProposalExamples(
       },
     };
   });
+  const questionFields = {
+    ...emptyCareFields,
+    title: "센터를 토요일에도 이용할 수 있나요?",
+    content: "센터를 토요일에도 이용할 수 있나요?",
+  };
+  items.push({
+    id: "mock-question-1",
+    kind: "question",
+    title: questionFields.title,
+    value: questionFields.content,
+    fields: questionFields,
+    version: 1,
+    meta: "미확인",
+    evidence: [
+      {
+        id: "seed-question",
+        recordId: "mock-record-3",
+        author: owner.name,
+        createdAt: Date.parse("2026-09-28T14:10:00+09:00"),
+        fields: { ...questionFields },
+      },
+    ],
+  });
   const additions: ProposalView[] = [
     {
       kind: "question",

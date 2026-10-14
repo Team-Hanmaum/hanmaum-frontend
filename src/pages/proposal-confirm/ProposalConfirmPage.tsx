@@ -35,6 +35,7 @@ export function ProposalConfirmPage() {
   const request = data.requests.find((item) => item.id === draft?.requestId);
   const proposals = data.proposals.filter(
     (item) =>
+      !item.sourceDeleted &&
       draft?.selection.some((selected) => selected.id === item.id) &&
       (draft.requestId
         ? item.requestId === draft.requestId && item.status === "requested"

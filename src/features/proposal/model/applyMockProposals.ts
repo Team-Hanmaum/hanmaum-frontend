@@ -39,7 +39,24 @@ export function applyMockProposals(
           recordId: proposal.recordId,
           author: actor.name,
           createdAt,
-          fields: { ...fields },
+          fields: {
+            ...(proposal.operation === "link"
+              ? (proposal.afterFields ?? fields)
+              : fields),
+          },
+          dependsOnRecordIds:
+            proposal.operation === "link"
+              ? []
+              : [
+                  ...new Set(
+                    (previous?.evidence ?? [])
+                      .flatMap((evidence) => [
+                        evidence.recordId,
+                        ...(evidence.dependsOnRecordIds ?? []),
+                      ])
+                      .filter((id): id is string => Boolean(id)),
+                  ),
+                ],
         },
       ],
     };

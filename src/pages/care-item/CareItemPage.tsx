@@ -9,6 +9,7 @@ import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import {
   careHistoryPath,
   careSourcesPath,
+  careReconfirmPath,
   newsCreatePath,
   spacePath,
 } from "@/routes/paths";
@@ -26,7 +27,25 @@ export function CareItemPage() {
       title={`${item ? careKindLabels[item.kind] : "돌봄"} 상세`}
       spaceId={space.id}
       onBack={onBack}
-      actions={<Button onClick={onBack}>이전 화면으로</Button>}
+      actions={
+        <>
+          {item?.needsReconfirmation && space.role === "owner" && (
+            <Button
+              onClick={() =>
+                void navigate(careReconfirmPath(space.id, item.id))
+              }
+            >
+              새 내용으로 확인
+            </Button>
+          )}
+          <Button
+            variant="secondary"
+            onClick={onBack}
+          >
+            이전 화면으로
+          </Button>
+        </>
+      }
     >
       {!item ? (
         <EmptyState

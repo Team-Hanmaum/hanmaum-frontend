@@ -55,7 +55,9 @@ export function ProposalList({
           onAction={onRetry}
         />
       );
-    const pending = data.proposals.filter((item) => item.status === "review");
+    const pending = data.proposals.filter(
+      (item) => item.status === "review" && !item.sourceDeleted,
+    );
     const recordIds = [...new Set(pending.map((item) => item.recordId))];
     const requests = data.requests.filter(
       (request) =>
@@ -64,7 +66,9 @@ export function ProposalList({
             space.members.find((member) => member.self)?.id) &&
         data.proposals.some(
           (item) =>
-            item.requestId === request.id && item.status === "requested",
+            item.requestId === request.id &&
+            item.status === "requested" &&
+            !item.sourceDeleted,
         ),
     );
     const results = data.results.filter((item) => item.decision === tab);
@@ -131,7 +135,9 @@ export function ProposalList({
               const remaining = request.proposals.filter((proposal) =>
                 data.proposals.some(
                   (item) =>
-                    item.id === proposal.id && item.status === "requested",
+                    item.id === proposal.id &&
+                    item.status === "requested" &&
+                    !item.sourceDeleted,
                 ),
               );
               return (
