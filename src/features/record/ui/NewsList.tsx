@@ -17,6 +17,7 @@ export function NewsList({
   onOpen,
   onReview,
   onRetry,
+  pendingCount,
 }: {
   records: readonly RecordView[];
   state: NewsListState;
@@ -24,6 +25,7 @@ export function NewsList({
   onOpen: (id: string) => void;
   onReview: () => void;
   onRetry: () => void;
+  pendingCount: number;
 }) {
   if (state === "loading")
     return (
@@ -43,9 +45,6 @@ export function NewsList({
       </>
     );
   const empty = state === "empty" || records.length === 0;
-  const pendingCount = records.filter(
-    (record) => record.analysisStatus === "review",
-  ).length;
   if (state === "more-error" && records[0]) {
     const record = records[0];
     return (
@@ -117,11 +116,12 @@ export function NewsList({
                 title={record.title}
                 author={`${record.author.name} · ${formatRecordTime(record.createdAt)}`}
                 body={record.body}
-                status={record.analysisStatus}
+                status={record.proposalSummary?.status ?? record.analysisStatus}
                 statusMessage={
-                  record.analysisStatus === "review"
+                  record.proposalSummary?.message ??
+                  (record.analysisStatus === "review"
                     ? "변경 제안 1건을 확인해 주세요."
-                    : undefined
+                    : undefined)
                 }
                 actionLabel="소식 자세히 보기"
                 onAction={() => onOpen(record.id)}

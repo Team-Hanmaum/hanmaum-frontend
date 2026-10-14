@@ -127,20 +127,30 @@ export function ProposalList({
                 요청 내용과 근거를 확인한 뒤 반영해요.
               </p>
             )}
-            {requests.map((request) => (
-              <ProposalSummaryCard
-                key={request.id}
-                proposal={request.proposals[0]}
-                label="승인 요청"
-                afterLabel="요청한 내용"
-                meta={`${request.author.name} · ${date(request.createdAt)}\n${space.role === "member" ? `소유자 ${owner?.name ?? "가족"}님의 확인을 기다리고 있어요.` : `AI 제안 반영 요청 ${request.proposals.length}건`}`}
-                action={{
-                  label:
-                    space.role === "owner" ? "요청 검토하기" : "요청 상태 보기",
-                  onClick: () => onRequest(request.id),
-                }}
-              />
-            ))}
+            {requests.map((request) => {
+              const remaining = request.proposals.filter((proposal) =>
+                data.proposals.some(
+                  (item) =>
+                    item.id === proposal.id && item.status === "requested",
+                ),
+              );
+              return (
+                <ProposalSummaryCard
+                  key={request.id}
+                  proposal={remaining[0]}
+                  label="승인 요청"
+                  afterLabel="요청한 내용"
+                  meta={`${request.author.name} · ${date(request.createdAt)}\n${space.role === "member" ? `소유자 ${owner?.name ?? "가족"}님의 확인을 기다리고 있어요.` : `AI 제안 반영 요청 ${remaining.length}건`}`}
+                  action={{
+                    label:
+                      space.role === "owner"
+                        ? "요청 검토하기"
+                        : "요청 상태 보기",
+                    onClick: () => onRequest(request.id),
+                  }}
+                />
+              );
+            })}
           </>
         )}
         {(tab === "applied" || tab === "rejected") && (

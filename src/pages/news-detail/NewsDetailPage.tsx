@@ -9,13 +9,21 @@ import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewType
 import { useMockRecords } from "@/features/record/model/useMockRecords";
 import { useMockRecordAnalysis } from "@/features/record/model/useMockRecordAnalysis";
 import { newsDetailStates } from "@/features/record/model/newsScreenStates";
+import { useMockProposals } from "@/features/proposal/model/useMockProposals";
+import { getRecordsWithProposals } from "@/features/proposal/model/proposalSelectors";
 import { NewsDetail } from "@/features/record/ui/NewsDetail";
 import {
   RecordPendingSheet,
   type RecordPendingAction,
 } from "@/features/record/ui/RecordPendingSheet";
 import { SpaceBottomNavigation } from "@/routes/layouts/SpaceBottomNavigation";
-import { spacePath } from "@/routes/paths";
+import {
+  spacePath,
+  proposalListPath,
+  proposalRequestPath,
+  proposalResultPath,
+  proposalReviewPath,
+} from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 
@@ -23,7 +31,10 @@ export function NewsDetailPage() {
   const space = useOutletContext<CareSpaceView>();
   const { recordId = "" } = useParams();
   const records = useMockRecords(space);
-  const record = records.find((item) => item.id === recordId);
+  const proposals = useMockProposals(space);
+  const record = getRecordsWithProposals(records, proposals).find(
+    (item) => item.id === recordId,
+  );
   const navigate = useNavigate();
   const listPath = spacePath(space.id, "news");
   const onBack = useBackNavigation(listPath);
@@ -35,9 +46,29 @@ export function NewsDetailPage() {
   const { pending, retry } = useMockRecordAnalysis(space, recordId, () =>
     setState("default"),
   );
-  const status = state === "default" ? record?.analysisStatus : state;
-  const hasSecondary = status === "review" || status === "failed";
+  const status =
+    state === "default"
+      ? (record?.proposalSummary?.status ?? record?.analysisStatus)
+      : state;
+  const hasProposal = Boolean(record?.proposalSummary);
+  const hasSecondary =
+    hasProposal || status === "review" || status === "failed";
   const onList = () => void navigate(listPath);
+  function onProposals() {
+    const related = proposals.proposals.filter(
+      (item) => item.recordId === recordId,
+    );
+    const requested = related.find((item) => item.status === "requested");
+    const result = related.find((item) => item.resultId);
+    const destination = related.some((item) => item.status === "review")
+      ? proposalReviewPath(space.id, recordId)
+      : requested?.requestId
+        ? proposalRequestPath(space.id, requested.requestId)
+        : result?.resultId
+          ? proposalResultPath(space.id, result.resultId)
+          : proposalListPath(space.id);
+    void navigate(destination);
+  }
   return (
     <>
       <DetailLayout
@@ -60,8 +91,8 @@ export function NewsDetailPage() {
                   onClick={
                     status === "failed"
                       ? retry
-                      : status === "review"
-                        ? () => setAction("review")
+                      : hasProposal || status === "review"
+                        ? onProposals
                         : onList
                   }
                   loading={pending}
@@ -69,8 +100,12 @@ export function NewsDetailPage() {
                 >
                   {status === "failed"
                     ? "분석 다시 시도"
-                    : status === "review"
-                      ? "확인할 내용 보기"
+                    : hasProposal || status === "review"
+                      ? status === "pending"
+                        ? "요청 상태 보기"
+                        : status === "applied" || status === "rejected"
+                          ? "처리 결과 보기"
+                          : "확인할 내용 보기"
                       : "소식 목록으로"}
                 </Button>
                 {hasSecondary && (

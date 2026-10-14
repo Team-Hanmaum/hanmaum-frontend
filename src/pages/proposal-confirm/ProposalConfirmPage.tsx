@@ -132,7 +132,12 @@ export function ProposalConfirmPage() {
           {proposals.map((proposal) => (
             <ProposalSummaryCard
               key={proposal.id}
-              proposal={proposal}
+              proposal={{
+                ...proposal,
+                beforeValue:
+                  data.items.find((item) => item.id === proposal.targetId)
+                    ?.value ?? proposal.beforeValue,
+              }}
               label={proposal.typeLabel}
               afterLabel="반영할 내용"
               meta={proposal.context}
