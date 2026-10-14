@@ -146,16 +146,8 @@ const recordRoutes: RouteObject[] = [
   },
 ];
 
-// 확인할 내용은 공간 헤더 대신 뒤로가기 헤더를 사용한다.
-const proposalRoutes: RouteObject[] = [
-  {
-    path: "care/items/:itemId/reconfirm",
-    lazy: async () => ({
-      Component: (await import("@/pages/care-reconfirm/CareReconfirmPage"))
-        .CareReconfirmPage,
-    }),
-    handle: { title: "다시 확인하기" },
-  },
+// 소식 원본 삭제와 결과
+const recordDeletionRoutes: RouteObject[] = [
   {
     path: "news/:recordId/delete",
     lazy: async () => ({
@@ -172,6 +164,10 @@ const proposalRoutes: RouteObject[] = [
     }),
     handle: { title: "소식 삭제 결과" },
   },
+];
+
+// 소식에서 연결되는 현재 돌봄 조회·근거·이력·재확인
+const careItemRoutes: RouteObject[] = [
   {
     path: "care/items/:itemId",
     lazy: async () => ({
@@ -194,6 +190,27 @@ const proposalRoutes: RouteObject[] = [
         .CareHistoryPage,
     }),
     handle: { title: "변경 이력" },
+  },
+  {
+    path: "care/items/:itemId/reconfirm",
+    lazy: async () => ({
+      Component: (await import("@/pages/care-reconfirm/CareReconfirmPage"))
+        .CareReconfirmPage,
+    }),
+    handle: { title: "다시 확인하기" },
+  },
+];
+
+// 제안 검토·요청·결과
+const proposalRoutes: RouteObject[] = [
+  {
+    path: "proposals/:proposalId/evidence",
+    lazy: async () => ({
+      Component: (
+        await import("@/pages/proposal-evidence/ProposalEvidencePage")
+      ).ProposalEvidencePage,
+    }),
+    handle: { title: "근거 비교" },
   },
   {
     path: "proposals/:proposalId/edit",
@@ -295,7 +312,7 @@ const spaceRoutes: RouteObject[] = [
   },
   {
     Component: ProposalRouteLayout,
-    children: proposalRoutes,
+    children: [...recordDeletionRoutes, ...careItemRoutes, ...proposalRoutes],
   },
   notFoundRoute,
 ];

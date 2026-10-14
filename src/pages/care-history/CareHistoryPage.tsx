@@ -93,6 +93,7 @@ export function CareHistoryPage() {
         result ? (
           <>
             <Badge
+              className="self-start"
               label="반영된 변경"
               tone="brand"
             />
@@ -103,11 +104,13 @@ export function CareHistoryPage() {
               .filter((proposal) => proposal.targetId === itemId)
               .map((proposal) => (
                 <ProposalSummaryCard
+                  members={space.members}
                   key={proposal.id}
                   proposal={proposal}
                   label={
                     proposal.operation === "link" ? "근거 연결" : "확정된 변경"
                   }
+                  beforeLabel="변경 전"
                   afterLabel="변경 후"
                   meta={proposal.context}
                 />
@@ -123,7 +126,10 @@ export function CareHistoryPage() {
           </>
         ) : deletion ? (
           <>
-            <Badge label="원본 삭제" />
+            <Badge
+              className="self-start"
+              label="원본 삭제"
+            />
             <section className="flex flex-col gap-hm-16 rounded-hm-16 bg-hm-bg-surface p-hm-20">
               <h2 className="text-hm-heading-section">원본이 삭제됐어요</h2>
               <p className="text-hm-body-default">
@@ -135,6 +141,7 @@ export function CareHistoryPage() {
         ) : reconfirmation && item ? (
           <>
             <Badge
+              className="self-start"
               label="재확인 완료"
               tone="brand"
             />
@@ -173,7 +180,7 @@ export function CareHistoryPage() {
           {timeline.map((entry) => (
             <MenuRow
               key={entry.id}
-              icon="clock"
+              icon="clock-brand"
               title={entry.title}
               description={
                 entry.actor + " · " + formatRecordDate(entry.createdAt)
@@ -192,7 +199,7 @@ export function CareHistoryPage() {
           {deletions.length > 0 && redactionNotice}
           {item && (
             <MenuRow
-              icon="link"
+              icon="link-brand"
               title="항목의 근거 보기"
               onClick={() => void navigate(careSourcesPath(space.id, item.id))}
             />

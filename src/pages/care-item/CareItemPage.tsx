@@ -55,6 +55,7 @@ export function CareItemPage() {
       ) : (
         <>
           <Badge
+            className="self-start"
             label={
               item.needsReconfirmation
                 ? "재확인 필요"
@@ -92,19 +93,19 @@ export function CareItemPage() {
             </section>
           )}
           <MenuRow
-            icon="link"
+            icon="link-brand"
             title="근거 보기"
             description="소식 원문과 직접 확인한 근거"
             onClick={() => void navigate(careSourcesPath(space.id, item.id))}
           />
           <MenuRow
-            icon="clock"
+            icon="clock-brand"
             title="변경 이력"
             onClick={() => void navigate(careHistoryPath(space.id, item.id))}
           />
           {item.needsReconfirmation && (
             <MenuRow
-              icon="news"
+              icon="news-brand"
               title="새 소식 남기기"
               onClick={() => void navigate(newsCreatePath(space.id))}
             />

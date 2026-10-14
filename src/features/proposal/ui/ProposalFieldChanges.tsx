@@ -9,9 +9,13 @@ import type { ProposalView } from "../model/proposalViewTypes";
 export function ProposalFieldChanges({
   proposal,
   members = [],
+  beforeLabel = "현재",
+  afterLabel = "반영할 제안",
 }: {
   proposal: ProposalView;
   members?: readonly { id: string; name: string }[];
+  beforeLabel?: string;
+  afterLabel?: string;
 }) {
   const { beforeFields: before, afterFields: after } = proposal;
   if (!after || proposal.operation === "link") return null;
@@ -41,9 +45,9 @@ export function ProposalFieldChanges({
         .map((key) => (
           <Comparison
             key={key}
-            beforeLabel={`현재 · ${labels[key]}`}
+            beforeLabel={`${beforeLabel} · ${labels[key]}`}
             beforeValue={display(key, before?.[key])}
-            afterLabel="반영할 제안"
+            afterLabel={afterLabel}
             afterValue={display(key, after[key])}
           />
         ))}

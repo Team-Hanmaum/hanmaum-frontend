@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import {
+  useNavigate,
+  useOutletContext,
+  useParams,
+  useSearchParams,
+} from "react-router";
 import {
   EmptyState,
   ErrorState,
@@ -46,10 +51,46 @@ export function ProposalTargetPage() {
       item.operation !== "create" &&
       !item.sourceDeleted,
   );
-  const [selected, setSelected] = useState("");
-  const [compare, setCompare] = useState(false);
+  const [params, setParams] = useSearchParams();
+  const selected = params.get("target") ?? "";
+  const compare = params.get("view") === "compare";
+  function selectTarget(id: string) {
+    void setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        next.set("target", id);
+        next.delete("view");
+        return next;
+      },
+      { replace: true, preventScrollReset: true },
+    );
+  }
+  function setCompare(value: boolean) {
+    void setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        if (value) next.set("view", "compare");
+        else next.delete("view");
+        return next;
+      },
+      { replace: true },
+    );
+  }
   const [error, setError] = useState(false);
-  const [state, setState] = useMockScreenState(states, "default");
+  const [state] = useMockScreenState(states, "default");
+  function setState(value: string) {
+    setError(false);
+    // 두 번 탐색하면 이전 쿼리가 비교 화면을 되살리므로 한 번에 초기화한다.
+    void setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        next.set("mockState", value);
+        next.delete("view");
+        return next;
+      },
+      { replace: true },
+    );
+  }
   const navigate = useNavigate();
   const back = () =>
     void navigate(
@@ -74,7 +115,8 @@ export function ProposalTargetPage() {
     if (result.ok) back();
     else setError(true);
   }
-  const ready = state === "default" && proposal && !error;
+  const ready =
+    state === "default" && proposal && !error && (!compare || target);
   return (
     <ProposalPageLayout
       title={compare ? "연결 대상 확인" : "연결 대상 선택"}
@@ -83,11 +125,7 @@ export function ProposalTargetPage() {
       preview={{
         value: state,
         options: states,
-        onChange: (value) => {
-          setCompare(false);
-          setError(false);
-          setState(value);
-        },
+        onChange: setState,
       }}
       actions={
         ready && (
@@ -118,17 +156,13 @@ export function ProposalTargetPage() {
           reason="load-error"
           onAction={() => setState("default")}
         />
-      ) : state === "invalid" || error ? (
+      ) : state === "invalid" || error || (compare && !target) ? (
         <EmptyState
           title="대상을 다시 확인해 주세요"
           body="선택한 항목을 더 이상 연결할 수 없어요. 아직 반영되지 않았어요."
           action={{
             label: "후보 다시 확인",
-            onClick: () => {
-              setError(false);
-              setCompare(false);
-              setState("default");
-            },
+            onClick: () => setState("default"),
           }}
         />
       ) : state === "empty" || !candidates.length ? (
@@ -149,7 +183,7 @@ export function ProposalTargetPage() {
             </p>
           </section>
           <MenuRow
-            icon="link"
+            icon="link-brand"
             title="현재 항목의 근거·이력"
             onClick={() => void navigate(careItemPath(space.id, target.id))}
           />
@@ -191,7 +225,7 @@ export function ProposalTargetPage() {
               label={item.title}
               description={`${item.value} · ${item.meta}`}
               checked={selected === item.id}
-              onChange={() => setSelected(item.id)}
+              onChange={() => selectTarget(item.id)}
             />
           ))}
           <Notice

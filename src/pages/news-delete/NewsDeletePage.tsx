@@ -252,7 +252,10 @@ export function NewsDeletionResultPage() {
         />
       ) : (
         <>
-          <Badge label="삭제 완료" />
+          <Badge
+            className="self-start"
+            label="삭제 완료"
+          />
           <h1 className="text-hm-title-page">소식 원본을 삭제했어요</h1>
           <p className="text-hm-body-default text-hm-text-secondary">
             이 소식에서 복사된 연결 내용도 함께 제거했어요.
@@ -275,7 +278,7 @@ export function NewsDeletionResultPage() {
               className="flex flex-col gap-hm-12"
             >
               <MenuRow
-                icon="care"
+                icon="care-brand"
                 title={
                   item.needsReconfirmation
                     ? "재확인할 항목 보기"
@@ -289,7 +292,7 @@ export function NewsDeletionResultPage() {
                 onClick={() => void navigate(careItemPath(space.id, item.id))}
               />
               <MenuRow
-                icon="clock"
+                icon="clock-brand"
                 title="삭제 이후 이력 보기"
                 description="삭제한 사람과 시각"
                 onClick={() =>
@@ -298,7 +301,7 @@ export function NewsDeletionResultPage() {
               />
               {!item.needsReconfirmation && (
                 <MenuRow
-                  icon="link"
+                  icon="link-brand"
                   title="남아 있는 유효 근거 확인"
                   onClick={() =>
                     void navigate(careSourcesPath(space.id, item.id))

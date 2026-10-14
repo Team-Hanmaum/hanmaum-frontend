@@ -16,6 +16,8 @@ import edit from "@/assets/icons/edit.svg";
 import info from "@/assets/icons/info.svg";
 import alert from "@/assets/icons/alert.svg";
 import lock from "@/assets/icons/lock.svg";
+import clockBrand from "@/assets/icons/clock-brand.svg";
+import linkBrand from "@/assets/icons/link-brand.svg";
 import clock from "@/assets/icons/clock.svg";
 import link from "@/assets/icons/link.svg";
 import person from "@/assets/icons/person.svg";
@@ -70,6 +72,8 @@ export const iconSources = {
   info: info,
   alert: alert,
   lock: lock,
+  "clock-brand": clockBrand,
+  "link-brand": linkBrand,
   clock: clock,
   link: link,
   person: person,

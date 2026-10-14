@@ -189,6 +189,7 @@ function ProposalEditor({
       ) : (
         <>
           <Badge
+            className="self-start"
             label={review ? "내가 수정한 제안" : proposal.typeLabel}
             tone={review ? "brand" : "neutral"}
           />
@@ -218,6 +219,7 @@ function ProposalEditor({
           {review ? (
             <>
               <ProposalSummaryCard
+                members={space.members}
                 proposal={proposal}
                 label="수정 내용"
                 meta={proposal.context}

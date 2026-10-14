@@ -163,6 +163,16 @@ export const mockProposals = {
       return failure("source", [proposalId]);
     let updated: ProposalView;
     if ("fields" in change) {
+      const target = current.items.find(
+        (item) => item.id === proposal.targetId,
+      );
+      if (
+        proposal.operation !== "create" &&
+        (!target ||
+          target.needsReconfirmation ||
+          target.version !== proposal.targetVersion)
+      )
+        return failure("changed", [proposalId]);
       if (
         proposal.operation === "link" ||
         Object.keys(validateCareFields(proposal.kind, change.fields)).length
@@ -258,6 +268,7 @@ export const mockProposals = {
           ? Boolean(target) || selection[index].version !== 0
           : !target ||
             target.needsReconfirmation ||
+            target.version !== proposal.targetVersion ||
             target.version !== selection[index].version)
       );
     });

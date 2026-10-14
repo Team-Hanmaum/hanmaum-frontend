@@ -58,6 +58,9 @@ export function proposalEditPath(careSpaceId: string, proposalId: string) {
 export function proposalTargetPath(careSpaceId: string, proposalId: string) {
   return `${paths.spaces}/${encodeURIComponent(careSpaceId)}/proposals/${encodeURIComponent(proposalId)}/target`;
 }
+export function proposalEvidencePath(careSpaceId: string, proposalId: string) {
+  return `${paths.spaces}/${encodeURIComponent(careSpaceId)}/proposals/${encodeURIComponent(proposalId)}/evidence`;
+}
 export function careItemPath(careSpaceId: string, itemId: string) {
   return `${spacePath(careSpaceId, "care")}/items/${encodeURIComponent(itemId)}`;
 }

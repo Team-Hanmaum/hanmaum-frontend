@@ -4,7 +4,7 @@ import { EmptyState, Notice } from "@/components/feedback";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import { useMockRecords } from "@/features/record/model/useMockRecords";
 import { useMockProposals } from "@/features/proposal/model/useMockProposals";
-import { useProposalSelection } from "@/features/proposal/model/useProposalSelection";
+import { useProposalRouteSelection } from "@/routes/useProposalRouteSelection";
 import { useProposalAction } from "@/features/proposal/model/useProposalAction";
 import { proposalReviewStates } from "@/features/proposal/model/proposalScreenStates";
 import { ProposalReview } from "@/features/proposal/ui/ProposalReview";
@@ -16,7 +16,7 @@ import {
   proposalRequestPath,
   proposalEditPath,
   proposalTargetPath,
-  careItemPath,
+  proposalEvidencePath,
 } from "@/routes/paths";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 import { useBackNavigation } from "@/routes/useBackNavigation";
@@ -32,7 +32,7 @@ export function ProposalReviewPage() {
       item.status === "review" &&
       !item.sourceDeleted,
   );
-  const { selected, toggle } = useProposalSelection(proposals, data);
+  const { selected, toggle } = useProposalRouteSelection(proposals, data);
   const { pending, failure, submit } = useProposalAction(space);
   const [state, setState] = useMockScreenState(proposalReviewStates, "default");
   const navigate = useNavigate();
@@ -130,7 +130,9 @@ export function ProposalReviewPage() {
             requestError={requestError}
             onEdit={(id) => void navigate(proposalEditPath(space.id, id))}
             onTarget={(id) => void navigate(proposalTargetPath(space.id, id))}
-            onCurrent={(id) => void navigate(careItemPath(space.id, id))}
+            onCompare={(id) =>
+              void navigate(proposalEvidencePath(space.id, id))
+            }
           />
         </>
       )}

@@ -50,7 +50,7 @@ export function CareSourcesPage() {
             body="이전 근거가 현재 값과 다를 수 있어요. 현재 확정된 내용과 변경 이력을 함께 확인해 주세요."
           />
           <MenuRow
-            icon="clock"
+            icon="clock-brand"
             title="변경 이력 보기"
             onClick={() => void navigate(careHistoryPath(space.id, itemId))}
           />

@@ -79,3 +79,9 @@
 - `check-secondary.svg`: H01 `I214:1243;180:368`의 할 일 아이콘.
 - `chevron-right-brand.svg`: H01 `I214:1232;180:374`의 강조 메뉴 이동 아이콘.
 - 출처: [H01 213:1233](https://www.figma.com/design/TNlkTZrM8NIo0jSp6tRTwH?node-id=213-1233). 원본 SVG를 변경하지 않고 24px 슬롯에서 사용.
+
+## 소식 하위 UI 추가 원본
+
+- `clock-brand.svg`: NP01 `302:12388`의 시간 선택 아이콘.
+- `link-brand.svg`: NL03 `304:13111`의 근거 메뉴 아이콘.
+- Figma 상세 화면의 원본 SVG를 그대로 저장하고 기존 `Icon`에서 사용. 임시 Figma URL을 런타임에서 호출하지 않음.

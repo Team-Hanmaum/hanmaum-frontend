@@ -10,7 +10,7 @@ import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewType
 import { useMockRecords } from "@/features/record/model/useMockRecords";
 import { formatRecordDate } from "@/features/record/model/recordDates";
 import { useMockProposals } from "@/features/proposal/model/useMockProposals";
-import { useProposalSelection } from "@/features/proposal/model/useProposalSelection";
+import { useProposalRouteSelection } from "@/routes/useProposalRouteSelection";
 import { proposalStatusLabel } from "@/features/proposal/model/proposalViewTypes";
 import { ProposalSummaryCard } from "@/features/proposal/ui/ProposalSummaryCard";
 import { ProposalSources } from "@/features/proposal/ui/ProposalSources";
@@ -21,7 +21,7 @@ import {
   proposalConfirmPath,
   proposalListPath,
   proposalResultPath,
-  careItemPath,
+  proposalEvidencePath,
 } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 
@@ -45,7 +45,7 @@ export function ProposalRequestPage() {
       item.status === "requested" &&
       !item.sourceDeleted,
   );
-  const { selected, toggle } = useProposalSelection(remaining, data);
+  const { selected, toggle } = useProposalRouteSelection(remaining, data);
   const owner = space.role === "owner";
   const onBack = useBackNavigation(proposalListPath(space.id, "requested"));
   const onSource = (id: string) => void navigate(newsDetailPath(space.id, id));
@@ -118,7 +118,7 @@ export function ProposalRequestPage() {
           onSource={onSource}
           busy={false}
           requestError={false}
-          onCurrent={(id) => void navigate(careItemPath(space.id, id))}
+          onCompare={(id) => void navigate(proposalEvidencePath(space.id, id))}
         />
       ) : (
         <>
@@ -148,6 +148,7 @@ export function ProposalRequestPage() {
             );
             return (
               <ProposalSummaryCard
+                members={space.members}
                 key={proposal.id}
                 proposal={{ ...proposal, beforeLabel: "요청 당시 정보" }}
                 label={

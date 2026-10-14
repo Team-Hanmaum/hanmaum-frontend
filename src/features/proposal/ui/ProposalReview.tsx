@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { BottomSheet, Notice } from "@/components/feedback";
-import { Button, Icon } from "@/components/ui";
+import { Notice } from "@/components/feedback";
+import { Icon } from "@/components/ui";
 import type { RecordView } from "@/features/record/model/recordViewTypes";
 import type {
   ProposalSelection,
@@ -23,7 +22,7 @@ export function ProposalReview({
   requestError,
   onEdit,
   onTarget,
-  onCurrent,
+  onCompare,
 }: {
   subjectLabel: string;
   owner: boolean;
@@ -37,14 +36,8 @@ export function ProposalReview({
   requestError: boolean;
   onEdit?: (id: string) => void;
   onTarget?: (id: string) => void;
-  onCurrent?: (id: string) => void;
+  onCompare?: (id: string) => void;
 }) {
-  const [sheet, setSheet] = useState<{
-    kind: "current";
-    proposal: ProposalView;
-  } | null>(null);
-  const current =
-    sheet && data.items.find((item) => item.id === sheet.proposal.targetId);
   return (
     <>
       {requestError && (
@@ -83,12 +76,7 @@ export function ProposalReview({
             onSelectedChange={(checked) => onSelect(proposal.id, checked)}
             disabled={busy}
             onViewSource={
-              item
-                ? () =>
-                    onCurrent
-                      ? onCurrent(item.id)
-                      : setSheet({ kind: "current", proposal })
-                : undefined
+              item && onCompare ? () => onCompare(proposal.id) : undefined
             }
             onChangeTarget={
               onTarget && proposal.operation !== "create"
@@ -128,35 +116,6 @@ export function ProposalReview({
           {owner ? "반영할" : "요청할"} 제안을 선택해 주세요.
         </p>
       )}
-      <BottomSheet
-        open={sheet !== null}
-        onOpenChange={(open) => {
-          if (!open) setSheet(null);
-        }}
-        title="현재 정보 · 근거"
-      >
-        {sheet?.kind === "current" ? (
-          <div className="flex flex-col gap-hm-16">
-            <h2 className="text-hm-heading-section">
-              {current?.title ?? "현재 항목을 확인할 수 없어요"}
-            </h2>
-            <p className="text-hm-body-default">{current?.value}</p>
-            <p className="text-hm-body-small text-hm-text-secondary">
-              {current?.meta}
-            </p>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                const id = sheet.proposal.recordId;
-                setSheet(null);
-                onSource(id);
-              }}
-            >
-              근거 소식 보기
-            </Button>
-          </div>
-        ) : null}
-      </BottomSheet>
     </>
   );
 }

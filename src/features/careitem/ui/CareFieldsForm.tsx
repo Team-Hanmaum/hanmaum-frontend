@@ -111,10 +111,10 @@ export function CareFieldsForm({
             aria-label={`${key === "date" ? "날짜" : key === "time" ? "시간" : key === "assigneeId" ? "담당자" : "기한"} 선택`}
             icon={
               key === "time"
-                ? "clock"
+                ? "clock-brand"
                 : key === "assigneeId"
-                  ? "person"
-                  : "care"
+                  ? "person-brand"
+                  : "care-brand"
             }
             title={
               key === "assigneeId"

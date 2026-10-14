@@ -102,6 +102,7 @@ export function ProposalList({
               const record = records.find((item) => item.id === id);
               return (
                 <ProposalSummaryCard
+                  members={space.members}
                   key={id}
                   proposal={proposals[0]}
                   label={`검토 대기 · AI 제안${proposals.length > 1 ? ` ${proposals.length}건` : ""}`}
@@ -142,6 +143,7 @@ export function ProposalList({
               );
               return (
                 <ProposalSummaryCard
+                  members={space.members}
                   key={request.id}
                   proposal={remaining[0]}
                   label="승인 요청"
@@ -168,6 +170,7 @@ export function ProposalList({
             </p>
             {results.map((result) => (
               <ProposalSummaryCard
+                members={space.members}
                 key={result.id}
                 proposal={result.proposals[0]}
                 label={proposalStatusLabel(tab)}

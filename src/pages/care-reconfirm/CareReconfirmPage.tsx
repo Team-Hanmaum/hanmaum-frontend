@@ -101,7 +101,10 @@ export function CareReconfirmPage() {
         />
       ) : (
         <>
-          <Badge label="소유자" />
+          <Badge
+            className="self-start"
+            label="소유자"
+          />
           <h1 className="text-hm-title-page">
             {review
               ? "이 내용으로 확인할까요?"

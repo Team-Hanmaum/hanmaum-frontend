@@ -100,10 +100,12 @@ export function ProposalResultPage() {
           </p>
           {result.proposals.map((proposal) => (
             <ProposalSummaryCard
+              members={space.members}
               key={proposal.id}
               proposal={proposal}
               label={applied ? "반영된 내용" : "반영하지 않은 제안"}
               meta={proposal.context}
+              beforeLabel="처리 당시 정보"
               afterLabel={applied ? "반영 후" : "미적용 제안"}
             />
           ))}
@@ -145,9 +147,11 @@ export function ProposalResultPage() {
                 </p>
                 {result.proposals.map((proposal) => (
                   <ProposalSummaryCard
+                    members={space.members}
                     key={proposal.id}
                     proposal={proposal}
                     label="미적용"
+                    beforeLabel="처리 당시 정보"
                     afterLabel="반영하지 않은 제안"
                   />
                 ))}
@@ -156,7 +160,7 @@ export function ProposalResultPage() {
               items.map((item) => (
                 <MenuRow
                   key={item.id}
-                  icon={sheet === "history" ? "clock" : "care"}
+                  icon={sheet === "history" ? "clock-brand" : "care-brand"}
                   title={
                     item.needsReconfirmation
                       ? "재확인이 필요한 항목"

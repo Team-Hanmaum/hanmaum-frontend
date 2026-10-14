@@ -8,11 +8,15 @@ export function ProposalSummaryCard({
   meta,
   action,
   afterLabel,
+  beforeLabel,
+  members,
 }: {
   proposal: ProposalView;
   label: string;
   meta?: string;
   afterLabel?: string;
+  beforeLabel?: string;
+  members?: readonly { id: string; name: string }[];
   action?: { label: string; onClick: () => void };
 }) {
   if (proposal.sourceDeleted)
@@ -43,12 +47,19 @@ export function ProposalSummaryCard({
       <Badge label={label} />
       <h2 className="text-hm-heading-section">{proposal.title}</h2>
       <Comparison
-        beforeLabel={proposal.beforeLabel}
+        beforeLabel={beforeLabel ?? proposal.beforeLabel}
         beforeValue={proposal.beforeValue}
         afterLabel={afterLabel ?? proposal.afterLabel}
         afterValue={proposal.afterValue}
       />
-      {proposal.edited && <ProposalFieldChanges proposal={proposal} />}
+      {proposal.edited && (
+        <ProposalFieldChanges
+          proposal={proposal}
+          members={members}
+          beforeLabel={beforeLabel ?? proposal.beforeLabel}
+          afterLabel={afterLabel ?? proposal.afterLabel}
+        />
+      )}
       {meta && (
         <p className="text-hm-body-small whitespace-pre-wrap text-hm-text-secondary">
           {meta}

@@ -132,6 +132,7 @@ export function ProposalConfirmPage() {
           </p>
           {proposals.map((proposal) => (
             <ProposalSummaryCard
+              members={space.members}
               key={proposal.id}
               proposal={{
                 ...proposal,
