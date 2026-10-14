@@ -1,5 +1,6 @@
 import { Badge, Button, Comparison } from "@/components/ui";
 import type { ProposalView } from "../model/proposalViewTypes";
+import { ProposalFieldChanges } from "./ProposalFieldChanges";
 
 export function ProposalSummaryCard({
   proposal,
@@ -24,6 +25,7 @@ export function ProposalSummaryCard({
         afterLabel={afterLabel ?? proposal.afterLabel}
         afterValue={proposal.afterValue}
       />
+      {proposal.edited && <ProposalFieldChanges proposal={proposal} />}
       {meta && (
         <p className="text-hm-body-small whitespace-pre-wrap text-hm-text-secondary">
           {meta}

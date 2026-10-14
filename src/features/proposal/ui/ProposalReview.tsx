@@ -21,6 +21,9 @@ export function ProposalReview({
   onSource,
   busy,
   requestError,
+  onEdit,
+  onTarget,
+  onCurrent,
 }: {
   subjectLabel: string;
   owner: boolean;
@@ -32,9 +35,12 @@ export function ProposalReview({
   onSource: (id: string) => void;
   busy: boolean;
   requestError: boolean;
+  onEdit?: (id: string) => void;
+  onTarget?: (id: string) => void;
+  onCurrent?: (id: string) => void;
 }) {
   const [sheet, setSheet] = useState<{
-    kind: "current" | "future";
+    kind: "current";
     proposal: ProposalView;
   } | null>(null);
   const current =
@@ -76,9 +82,24 @@ export function ProposalReview({
             selected={selected.some((entry) => entry.id === proposal.id)}
             onSelectedChange={(checked) => onSelect(proposal.id, checked)}
             disabled={busy}
-            onViewSource={() => setSheet({ kind: "current", proposal })}
-            onChangeTarget={() => setSheet({ kind: "future", proposal })}
-            onEdit={() => setSheet({ kind: "future", proposal })}
+            onViewSource={
+              item
+                ? () =>
+                    onCurrent
+                      ? onCurrent(item.id)
+                      : setSheet({ kind: "current", proposal })
+                : undefined
+            }
+            onChangeTarget={
+              onTarget && proposal.operation !== "create"
+                ? () => onTarget(proposal.id)
+                : undefined
+            }
+            onEdit={
+              onEdit && proposal.operation !== "link"
+                ? () => onEdit(proposal.id)
+                : undefined
+            }
           />
         );
       })}
@@ -112,9 +133,7 @@ export function ProposalReview({
         onOpenChange={(open) => {
           if (!open) setSheet(null);
         }}
-        title={
-          sheet?.kind === "current" ? "현재 정보 · 근거" : "후속 화면 준비 중"
-        }
+        title="현재 정보 · 근거"
       >
         {sheet?.kind === "current" ? (
           <div className="flex flex-col gap-hm-16">
@@ -136,12 +155,7 @@ export function ProposalReview({
               근거 소식 보기
             </Button>
           </div>
-        ) : (
-          <p className="text-hm-body-default text-hm-text-secondary">
-            제안 내용 수정과 연결 대상 변경은 다음 작업에서 연결해요. 현재는
-            준비된 제안을 선택해 요청·반영하는 Mock 흐름을 확인할 수 있어요.
-          </p>
-        )}
+        ) : null}
       </BottomSheet>
     </>
   );

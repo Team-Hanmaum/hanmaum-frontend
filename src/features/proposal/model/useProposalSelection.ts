@@ -12,6 +12,7 @@ export function useProposalSelection(
   const [selection, setSelection] = useState<ProposalSelection[]>(() =>
     proposals.map((proposal) => ({
       id: proposal.id,
+      revision: proposal.revision ?? 0,
       version:
         data.items.find((item) => item.id === proposal.targetId)?.version ??
         proposal.targetVersion,
@@ -29,6 +30,7 @@ export function useProposalSelection(
             ...previous.filter((item) => item.id !== id),
             {
               id,
+              revision: proposal.revision ?? 0,
               version:
                 data.items.find((item) => item.id === proposal.targetId)
                   ?.version ?? proposal.targetVersion,

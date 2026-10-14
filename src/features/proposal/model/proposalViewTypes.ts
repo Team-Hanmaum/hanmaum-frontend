@@ -1,3 +1,8 @@
+import type {
+  CareItemFields,
+  CareItemKind,
+  CareItemView,
+} from "@/features/careitem/model/careItemViewTypes";
 // 화면 확인용 모델. 공개 API DTO·권한 계약과 구분한다.
 export type ProposalStatus = "review" | "requested" | "applied" | "rejected";
 export type ProposalActor = { id: string; name: string };
@@ -5,7 +10,13 @@ export type ProposalView = {
   id: string;
   recordId: string;
   targetId: string;
-  kind: "schedule" | "task";
+  kind: CareItemKind;
+  operation?: "create" | "update" | "link";
+  revision?: number;
+  beforeFields?: CareItemFields;
+  afterFields?: CareItemFields;
+  edited?: boolean;
+  sourceDeleted?: boolean;
   title: string;
   typeLabel: string;
   beforeLabel: string;
@@ -32,14 +43,7 @@ export type ProposalResult = {
   createdAt: number;
   proposals: readonly ProposalView[];
 };
-export type ProposalCareItem = {
-  id: string;
-  kind: "schedule" | "task";
-  title: string;
-  value: string;
-  meta: string;
-  version: number;
-};
+export type ProposalCareItem = CareItemView;
 export type ProposalSpaceState = {
   proposals: readonly ProposalView[];
   requests: readonly ProposalRequest[];
@@ -47,7 +51,11 @@ export type ProposalSpaceState = {
   // 제안·제출 내용과 현재 확정된 예시 정보를 별도로 보관한다.
   items: readonly ProposalCareItem[];
 };
-export type ProposalSelection = { id: string; version: number };
+export type ProposalSelection = {
+  id: string;
+  version: number;
+  revision?: number;
+};
 export type ProposalFailure = {
   ok: false;
   reason: "permission" | "selection" | "changed" | "source" | "conflict";

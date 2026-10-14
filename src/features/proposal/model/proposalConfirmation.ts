@@ -28,7 +28,11 @@ export function readProposalConfirmation(
         "version" in item &&
         typeof item.version === "number" &&
         Number.isInteger(item.version) &&
-        item.version > 0,
+        item.version >= 0 &&
+        (!("revision" in item) ||
+          (typeof item.revision === "number" &&
+            Number.isInteger(item.revision) &&
+            item.revision >= 0)),
     )
   )
     return null;

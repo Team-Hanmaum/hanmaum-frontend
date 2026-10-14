@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router";
-import { BottomSheet, EmptyState, Notice } from "@/components/feedback";
-import { Badge, Button, TextAction } from "@/components/ui";
+import { BottomSheet, EmptyState } from "@/components/feedback";
+import { Badge, Button, MenuRow, TextAction } from "@/components/ui";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import { formatRecordDate } from "@/features/record/model/recordDates";
 import { useMockRecords } from "@/features/record/model/useMockRecords";
@@ -9,7 +9,12 @@ import { useMockProposals } from "@/features/proposal/model/useMockProposals";
 import { ProposalSummaryCard } from "@/features/proposal/ui/ProposalSummaryCard";
 import { ProposalSources } from "@/features/proposal/ui/ProposalSources";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
-import { newsDetailPath, proposalListPath, spacePath } from "@/routes/paths";
+import {
+  careHistoryPath,
+  careItemPath,
+  newsDetailPath,
+  proposalListPath,
+} from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 
 export function ProposalResultPage() {
@@ -19,11 +24,25 @@ export function ProposalResultPage() {
   const records = useMockRecords(space);
   const result = data.results.find((item) => item.id === resultId);
   const navigate = useNavigate();
-  const [sheet, setSheet] = useState<"items" | "history" | null>(null);
+  const [sheet, setSheet] = useState<"items" | "history" | "decision" | null>(
+    null,
+  );
   const applied = result?.decision === "applied";
+  const items = data.items.filter((item) =>
+    result?.proposals.some((proposal) => proposal.targetId === item.id),
+  );
   const onBack = useBackNavigation(
     proposalListPath(space.id, applied ? "applied" : "rejected"),
   );
+  function open(kind: "items" | "history") {
+    if (items.length === 1)
+      void navigate(
+        kind === "items"
+          ? careItemPath(space.id, items[0].id)
+          : careHistoryPath(space.id, items[0].id, result?.id),
+      );
+    else setSheet(kind);
+  }
   return (
     <ProposalPageLayout
       title={applied ? "반영 완료" : "미적용 결과"}
@@ -33,9 +52,9 @@ export function ProposalResultPage() {
       actions={
         result && (
           <>
-            <Button onClick={() => setSheet("items")}>
-              현재 돌봄 정보 보기
-            </Button>
+            {items.length > 0 && (
+              <Button onClick={() => open("items")}>현재 돌봄 정보 보기</Button>
+            )}
             <TextAction
               onClick={() =>
                 void navigate(proposalListPath(space.id, result.decision))
@@ -63,12 +82,16 @@ export function ProposalResultPage() {
             tone={applied ? "brand" : "neutral"}
           />
           <h1 className="text-hm-title-page">
-            {applied
-              ? result.proposals.length === 1 &&
-                result.proposals[0].kind === "schedule"
-                ? "일정을 변경했어요"
-                : "선택한 내용을 반영했어요"
-              : "미적용 처리했어요"}
+            {!applied
+              ? "미적용 처리했어요"
+              : result.proposals.every(
+                    (proposal) => proposal.operation === "link",
+                  )
+                ? "근거를 연결했어요"
+                : result.proposals.length === 1 &&
+                    result.proposals[0].kind === "schedule"
+                  ? "일정을 변경했어요"
+                  : "선택한 내용을 반영했어요"}
           </h1>
           <p className="text-hm-body-default text-hm-text-secondary">
             {applied
@@ -76,23 +99,13 @@ export function ProposalResultPage() {
               : "현재 돌봄 정보는 바뀌지 않았어요."}
           </p>
           {result.proposals.map((proposal) => (
-            <article
+            <ProposalSummaryCard
               key={proposal.id}
-              className="flex flex-col gap-hm-16 rounded-hm-16 bg-hm-bg-surface p-hm-20 wrap-anywhere"
-            >
-              <h2 className="text-hm-title-hero">{proposal.title}</h2>
-              <p className="text-hm-body-emphasis">
-                {applied ? proposal.afterValue : proposal.beforeValue}
-              </p>
-              <p className="text-hm-body-small whitespace-pre-wrap text-hm-text-secondary">
-                {proposal.context}
-              </p>
-              <p className="text-hm-body-small text-hm-text-secondary">
-                {applied
-                  ? `${proposal.beforeValue}에서 변경됐어요.`
-                  : "제안한 내용은 반영하지 않았어요."}
-              </p>
-            </article>
+              proposal={proposal}
+              label={applied ? "반영된 내용" : "반영하지 않은 제안"}
+              meta={proposal.context}
+              afterLabel={applied ? "반영 후" : "미적용 제안"}
+            />
           ))}
           <section className="flex flex-col gap-hm-16 rounded-hm-16 bg-hm-bg-surface p-hm-20">
             <h2 className="text-hm-heading-section">
@@ -104,81 +117,62 @@ export function ProposalResultPage() {
             <p className="text-hm-body-small text-hm-text-secondary">
               {formatRecordDate(result.createdAt)} {applied ? "반영" : "미적용"}
             </p>
-            <p className="text-hm-body-default">
-              소식의 근거를 확인한 뒤 선택한 {result.proposals.length}건을{" "}
-              {applied ? "반영" : "미적용 처리"}했어요.
-            </p>
             <Button
               variant="secondary"
-              onClick={() => setSheet("history")}
+              onClick={() => (applied ? open("history") : setSheet("decision"))}
             >
               {applied ? "변경 이력 보기" : "처리 내역 보기"}
             </Button>
           </section>
+          <ProposalSources
+            proposals={result.proposals}
+            records={records}
+            onSource={(id) => void navigate(newsDetailPath(space.id, id))}
+          />
           <BottomSheet
             open={sheet !== null}
-            onOpenChange={(open) => {
-              if (!open) setSheet(null);
+            onOpenChange={(isOpen) => {
+              if (!isOpen) setSheet(null);
             }}
             title={
-              sheet === "history"
-                ? "이번 처리 내역 · Mock"
-                : "현재 돌봄 정보 · Mock"
+              sheet === "decision" ? "미적용 처리 내역" : "확인할 항목 선택"
             }
           >
-            <div className="flex flex-col gap-hm-24">
-              <Notice
-                tone="neutral"
-                title="제안 검토 흐름의 예시 정보예요"
-                body="전체 돌봄 상세와 이력 화면은 후속 작업에서 연결해요."
-              />
-              {sheet === "history" ? (
-                <>
-                  {result.proposals.map((proposal) => (
-                    <ProposalSummaryCard
-                      key={proposal.id}
-                      proposal={proposal}
-                      label={applied ? "반영" : "미적용"}
-                      afterLabel={
-                        applied ? "반영한 내용" : "반영하지 않은 제안"
-                      }
-                    />
-                  ))}
-                  <ProposalSources
-                    proposals={result.proposals}
-                    records={records}
-                    onSource={(id) => {
-                      setSheet(null);
-                      void navigate(newsDetailPath(space.id, id));
-                    }}
+            {sheet === "decision" ? (
+              <>
+                <p className="text-hm-body-default">
+                  {result.actor.name} · {formatRecordDate(result.createdAt)}
+                </p>
+                {result.proposals.map((proposal) => (
+                  <ProposalSummaryCard
+                    key={proposal.id}
+                    proposal={proposal}
+                    label="미적용"
+                    afterLabel="반영하지 않은 제안"
                   />
-                </>
-              ) : (
-                result.proposals.map((proposal) => {
-                  const item = data.items.find(
-                    (entry) => entry.id === proposal.targetId,
-                  );
-                  return (
-                    <section
-                      key={proposal.id}
-                      className="flex flex-col gap-hm-12"
-                    >
-                      <h2 className="text-hm-heading-section">{item?.title}</h2>
-                      <p className="text-hm-body-default">{item?.value}</p>
-                      <p className="text-hm-body-small text-hm-text-secondary">
-                        {item?.meta}
-                      </p>
-                    </section>
-                  );
-                })
-              )}
-              <Button
-                variant="secondary"
-                onClick={() => void navigate(spacePath(space.id))}
-              >
-                홈에서 확인하기
-              </Button>
-            </div>
+                ))}
+              </>
+            ) : (
+              items.map((item) => (
+                <MenuRow
+                  key={item.id}
+                  icon={sheet === "history" ? "clock" : "care"}
+                  title={
+                    item.needsReconfirmation
+                      ? "재확인이 필요한 항목"
+                      : item.title
+                  }
+                  onClick={() => {
+                    setSheet(null);
+                    void navigate(
+                      sheet === "history"
+                        ? careHistoryPath(space.id, item.id, result.id)
+                        : careItemPath(space.id, item.id),
+                    );
+                  }}
+                />
+              ))
+            )}
           </BottomSheet>
         </>
       )}

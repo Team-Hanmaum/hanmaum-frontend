@@ -46,3 +46,22 @@ export function proposalRequestPath(careSpaceId: string, requestId: string) {
 export function proposalResultPath(careSpaceId: string, resultId: string) {
   return `${paths.spaces}/${encodeURIComponent(careSpaceId)}/proposals/results/${encodeURIComponent(resultId)}`;
 }
+export function proposalEditPath(careSpaceId: string, proposalId: string) {
+  return `${paths.spaces}/${encodeURIComponent(careSpaceId)}/proposals/${encodeURIComponent(proposalId)}/edit`;
+}
+export function proposalTargetPath(careSpaceId: string, proposalId: string) {
+  return `${paths.spaces}/${encodeURIComponent(careSpaceId)}/proposals/${encodeURIComponent(proposalId)}/target`;
+}
+export function careItemPath(careSpaceId: string, itemId: string) {
+  return `${spacePath(careSpaceId, "care")}/items/${encodeURIComponent(itemId)}`;
+}
+export function careSourcesPath(careSpaceId: string, itemId: string) {
+  return `${careItemPath(careSpaceId, itemId)}/sources`;
+}
+export function careHistoryPath(
+  careSpaceId: string,
+  itemId: string,
+  historyId?: string,
+) {
+  return `${careItemPath(careSpaceId, itemId)}/history${historyId ? `/${encodeURIComponent(historyId)}` : ""}`;
+}

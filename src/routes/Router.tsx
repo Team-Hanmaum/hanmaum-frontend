@@ -149,6 +149,45 @@ const recordRoutes: RouteObject[] = [
 // 확인할 내용은 공간 헤더 대신 뒤로가기 헤더를 사용한다.
 const proposalRoutes: RouteObject[] = [
   {
+    path: "care/items/:itemId",
+    lazy: async () => ({
+      Component: (await import("@/pages/care-item/CareItemPage")).CareItemPage,
+    }),
+    handle: { title: "돌봄 상세" },
+  },
+  {
+    path: "care/items/:itemId/sources",
+    lazy: async () => ({
+      Component: (await import("@/pages/care-sources/CareSourcesPage"))
+        .CareSourcesPage,
+    }),
+    handle: { title: "근거 보기" },
+  },
+  {
+    path: "care/items/:itemId/history/:historyId?",
+    lazy: async () => ({
+      Component: (await import("@/pages/care-history/CareHistoryPage"))
+        .CareHistoryPage,
+    }),
+    handle: { title: "변경 이력" },
+  },
+  {
+    path: "proposals/:proposalId/edit",
+    lazy: async () => ({
+      Component: (await import("@/pages/proposal-edit/ProposalEditPage"))
+        .ProposalEditPage,
+    }),
+    handle: { title: "제안 내용 수정" },
+  },
+  {
+    path: "proposals/:proposalId/target",
+    lazy: async () => ({
+      Component: (await import("@/pages/proposal-target/ProposalTargetPage"))
+        .ProposalTargetPage,
+    }),
+    handle: { title: "연결 대상 선택" },
+  },
+  {
     path: "news/:recordId/proposals",
     lazy: async () => ({
       Component: (await import("@/pages/proposal-review/ProposalReviewPage"))

@@ -1,5 +1,6 @@
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import type { ProposalSpaceState, ProposalView } from "./proposalViewTypes";
+import { withProposalExamples } from "./mockProposalExamples";
 
 export function getMockProposalData(space: CareSpaceView): ProposalSpaceState {
   if (space.empty)
@@ -57,7 +58,7 @@ export function getMockProposalData(space: CareSpaceView): ProposalSpaceState {
     context: "준비물에 복용약 목록을 추가하는 제안이에요.",
   };
   const requester = space.members.find((member) => member.role === "member")!;
-  return {
+  return withProposalExamples(space, {
     proposals: [schedule, batchSchedule, task, requested],
     requests: [
       {
@@ -102,5 +103,5 @@ export function getMockProposalData(space: CareSpaceView): ProposalSpaceState {
         version: 1,
       },
     ],
-  };
+  });
 }

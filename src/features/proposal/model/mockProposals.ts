@@ -2,6 +2,10 @@ import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewType
 import { mockRecords } from "@/features/record/model/mockRecords";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { getMockProposalData } from "./mockProposalData";
+import { validateCareFields } from "@/features/careitem/model/careItemFields";
+import type { CareItemFields } from "@/features/careitem/model/careItemViewTypes";
+import { reviseProposal, retargetProposal } from "./proposalDrafts";
+import { applyMockProposals } from "./applyMockProposals";
 import type {
   ProposalFailure,
   ProposalOutcome,
@@ -34,6 +38,61 @@ export const mockProposals = {
   getForSpace(space: CareSpaceView): ProposalSpaceState {
     if (!seeds.has(space.id)) seeds.set(space.id, getMockProposalData(space));
     return snapshot[space.id] ?? seeds.get(space.id)!;
+  },
+  revise(
+    space: CareSpaceView,
+    proposalId: string,
+    revision: number,
+    change: { fields: CareItemFields } | { targetId: string },
+  ): ProposalOutcome {
+    const current = mockProposals.getForSpace(space);
+    const proposal = current.proposals.find((item) => item.id === proposalId);
+    if (
+      !isMockPreviewEnabled ||
+      !space.members.some((member) => member.self && member.role === space.role)
+    )
+      return failure("permission");
+    if (!proposal || proposal.status !== "review" || proposal.sourceDeleted)
+      return failure("selection");
+    if ((proposal.revision ?? 0) !== revision)
+      return failure("changed", [proposalId]);
+    if (
+      !mockRecords
+        .getForSpace(space)
+        .some((record) => record.id === proposal.recordId)
+    )
+      return failure("source", [proposalId]);
+    let updated: ProposalView;
+    if ("fields" in change) {
+      if (
+        proposal.operation === "link" ||
+        Object.keys(validateCareFields(proposal.kind, change.fields)).length
+      )
+        return failure("selection");
+      if (
+        change.fields.assigneeId &&
+        !space.members.some((member) => member.id === change.fields.assigneeId)
+      )
+        return failure("changed", [proposalId]);
+      updated = reviseProposal(proposal, change.fields, space);
+    } else {
+      const target = current.items.find(
+        (item) =>
+          item.id === change.targetId &&
+          item.kind === proposal.kind &&
+          !item.needsReconfirmation,
+      );
+      if (!target || proposal.operation === "create")
+        return failure("changed", [proposalId]);
+      updated = retargetProposal(proposal, target, space);
+    }
+    publish(space.id, {
+      ...current,
+      proposals: current.proposals.map((item) =>
+        item.id === proposalId ? updated : item,
+      ),
+    });
+    return { ok: true, id: proposalId };
   },
   submit(
     space: CareSpaceView,
@@ -91,7 +150,15 @@ export const mockProposals = {
       const target = current.items.find(
         (item) => item.id === proposal.targetId,
       );
-      return !target || target.version !== selection[index].version;
+      return (
+        proposal.sourceDeleted ||
+        (proposal.revision ?? 0) !== (selection[index].revision ?? 0) ||
+        (proposal.operation === "create"
+          ? Boolean(target) || selection[index].version !== 0
+          : !target ||
+            target.needsReconfirmation ||
+            target.version !== selection[index].version)
+      );
     });
     if (changed.length)
       return failure(
@@ -105,8 +172,11 @@ export const mockProposals = {
     const author = { id: actor.id, name: actor.name };
     const copies = selected.map((proposal) => ({
       ...proposal,
-      beforeValue: current.items.find((item) => item.id === proposal.targetId)!
-        .value,
+      beforeValue:
+        current.items.find((item) => item.id === proposal.targetId)?.value ??
+        proposal.beforeValue,
+      beforeFields: current.items.find((item) => item.id === proposal.targetId)
+        ?.fields,
     }));
     const nextStatus = decision === "request" ? "requested" : decision;
     // 전체 검증 후 한 번만 갱신한다. 실패 시 일부만 반영하지 않는다.
@@ -135,18 +205,7 @@ export const mockProposals = {
           : current.results,
       items:
         decision === "applied"
-          ? current.items.map((item) => {
-              const proposal = selected.find(
-                (entry) => entry.targetId === item.id,
-              );
-              return proposal
-                ? {
-                    ...item,
-                    value: proposal.afterValue,
-                    version: item.version + 1,
-                  }
-                : item;
-            })
+          ? applyMockProposals(current.items, selected, author, createdAt)
           : current.items,
     });
     return { ok: true, id };

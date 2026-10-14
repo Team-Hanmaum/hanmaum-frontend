@@ -21,6 +21,7 @@ import {
   proposalConfirmPath,
   proposalListPath,
   proposalResultPath,
+  careItemPath,
 } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 
@@ -111,6 +112,7 @@ export function ProposalRequestPage() {
           onSource={onSource}
           busy={false}
           requestError={false}
+          onCurrent={(id) => void navigate(careItemPath(space.id, id))}
         />
       ) : (
         <>

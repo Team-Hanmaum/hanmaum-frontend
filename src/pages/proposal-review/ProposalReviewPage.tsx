@@ -14,6 +14,9 @@ import {
   proposalConfirmPath,
   proposalListPath,
   proposalRequestPath,
+  proposalEditPath,
+  proposalTargetPath,
+  careItemPath,
 } from "@/routes/paths";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 import { useBackNavigation } from "@/routes/useBackNavigation";
@@ -122,6 +125,9 @@ export function ProposalReviewPage() {
             onSource={(id) => void navigate(newsDetailPath(space.id, id))}
             busy={pending}
             requestError={requestError}
+            onEdit={(id) => void navigate(proposalEditPath(space.id, id))}
+            onTarget={(id) => void navigate(proposalTargetPath(space.id, id))}
+            onCurrent={(id) => void navigate(careItemPath(space.id, id))}
           />
         </>
       )}
