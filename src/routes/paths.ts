@@ -30,3 +30,19 @@ export function newsDetailPath(careSpaceId: string, recordId: string) {
 export function invitationPath(token: string) {
   return `/invitations/${encodeURIComponent(token)}`;
 }
+
+export function proposalListPath(careSpaceId: string, status = "review") {
+  return `${paths.spaces}/${encodeURIComponent(careSpaceId)}/proposals?status=${encodeURIComponent(status)}`;
+}
+export function proposalReviewPath(careSpaceId: string, recordId: string) {
+  return `${newsDetailPath(careSpaceId, recordId)}/proposals`;
+}
+export function proposalConfirmPath(careSpaceId: string) {
+  return `${paths.spaces}/${encodeURIComponent(careSpaceId)}/proposals/confirm`;
+}
+export function proposalRequestPath(careSpaceId: string, requestId: string) {
+  return `${paths.spaces}/${encodeURIComponent(careSpaceId)}/proposal-requests/${encodeURIComponent(requestId)}`;
+}
+export function proposalResultPath(careSpaceId: string, resultId: string) {
+  return `${paths.spaces}/${encodeURIComponent(careSpaceId)}/proposals/results/${encodeURIComponent(resultId)}`;
+}

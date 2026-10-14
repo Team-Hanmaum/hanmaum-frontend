@@ -28,6 +28,7 @@ import { NotFoundPage } from "@/pages/error/NotFoundPage";
 import { RouteErrorPage } from "@/pages/error/RouteErrorPage";
 import { TabLayout } from "./layouts/TabLayout";
 import { RecordRouteLayout } from "./layouts/RecordRouteLayout";
+import { ProposalRouteLayout } from "./layouts/ProposalRouteLayout";
 import { recordNavigation } from "./navigationHistory";
 import { paths, spacePath } from "./paths";
 
@@ -145,6 +146,18 @@ const recordRoutes: RouteObject[] = [
   },
 ];
 
+// 확인할 내용은 공간 헤더 대신 뒤로가기 헤더를 사용한다.
+const proposalRoutes: RouteObject[] = [
+  {
+    path: "proposals",
+    lazy: async () => ({
+      Component: (await import("@/pages/proposal-list/ProposalListPage"))
+        .ProposalListPage,
+    }),
+    handle: { title: "확인할 내용" },
+  },
+];
+
 // 개발 전용 화면: 프로덕션에서는 경로와 페이지 코드 제외
 const developmentRoutes: RouteObject[] = import.meta.env.DEV
   ? [
@@ -184,6 +197,10 @@ const spaceRoutes: RouteObject[] = [
   {
     Component: RecordRouteLayout,
     children: recordRoutes,
+  },
+  {
+    Component: ProposalRouteLayout,
+    children: proposalRoutes,
   },
   notFoundRoute,
 ];
