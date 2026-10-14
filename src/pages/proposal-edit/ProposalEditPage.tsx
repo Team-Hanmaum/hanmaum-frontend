@@ -16,6 +16,7 @@ import { ProposalSources } from "@/features/proposal/ui/ProposalSources";
 import { ProposalSummaryCard } from "@/features/proposal/ui/ProposalSummaryCard";
 import { useMockAction } from "@/lib/useMockAction";
 import { useUnsavedChanges } from "@/lib/useUnsavedChanges";
+import { TimeSelectionPage } from "@/pages/time-selection/TimeSelectionPage";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import {
   newsDetailPath,
@@ -25,6 +26,7 @@ import {
   proposalReviewPath,
 } from "@/routes/paths";
 import { useMockScreenState } from "@/routes/useMockScreenState";
+import { useTimeSelectionScreen } from "@/routes/useTimeSelectionScreen";
 
 const states = [
   { value: "default", label: "기본" },
@@ -98,6 +100,9 @@ function ProposalEditor({
     state === "source-deleted" ||
     !records.some((record) => record.id === proposal.recordId);
   const busy = pending || action.pending;
+  const timeScreen = useTimeSelectionScreen(
+    proposal.kind === "schedule" && !review && !missing,
+  );
   function save() {
     const nextErrors = validateCareFields(proposal.kind, fields);
     setErrors(nextErrors);
@@ -147,6 +152,28 @@ function ProposalEditor({
         allowNavigation(() => void navigate(proposalRequestPath(space.id, id))),
       );
   }
+  const unsavedDialog = (
+    <UnsavedChangesDialog
+      open={blocker.state === "blocked"}
+      onStay={() => blocker.reset?.()}
+      onLeave={() => blocker.proceed?.()}
+    />
+  );
+  if (timeScreen.open)
+    return (
+      <>
+        <TimeSelectionPage
+          spaceId={space.id}
+          initialValue={fields.time}
+          onConfirm={(time) => {
+            setFields((previous) => ({ ...previous, time }));
+            timeScreen.close();
+          }}
+          onBack={timeScreen.close}
+        />
+        {unsavedDialog}
+      </>
+    );
   return (
     <ProposalPageLayout
       title={review ? "수정한 제안 확인" : "제안 내용 수정"}
@@ -244,6 +271,7 @@ function ProposalEditor({
                 kind={proposal.kind}
                 fields={fields}
                 onChange={setFields}
+                onTimeSelect={timeScreen.show}
                 members={space.members}
                 errors={errors}
                 disabled={busy}
@@ -257,11 +285,7 @@ function ProposalEditor({
           />
         </>
       )}
-      <UnsavedChangesDialog
-        open={blocker.state === "blocked"}
-        onStay={() => blocker.reset?.()}
-        onLeave={() => blocker.proceed?.()}
-      />
+      {unsavedDialog}
     </ProposalPageLayout>
   );
 }

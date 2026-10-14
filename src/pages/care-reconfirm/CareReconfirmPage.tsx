@@ -14,8 +14,10 @@ import {
 import { CareFieldsForm } from "@/features/careitem/ui/CareFieldsForm";
 import { useMockAction } from "@/lib/useMockAction";
 import { useUnsavedChanges } from "@/lib/useUnsavedChanges";
+import { TimeSelectionPage } from "@/pages/time-selection/TimeSelectionPage";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import { careItemPath } from "@/routes/paths";
+import { useTimeSelectionScreen } from "@/routes/useTimeSelectionScreen";
 
 export function CareReconfirmPage() {
   const space = useOutletContext<CareSpaceView>();
@@ -37,6 +39,9 @@ export function CareReconfirmPage() {
   const dirty = Boolean(evidence || Object.values(fields).some(Boolean));
   const { blocker, allowNavigation } = useUnsavedChanges(dirty);
   const allowed = item?.needsReconfirmation && space.role === "owner";
+  const timeScreen = useTimeSelectionScreen(
+    Boolean(allowed && item?.kind === "schedule" && !review),
+  );
   function check() {
     if (!item) return;
     const next = validateCareFields(item.kind, fields);
@@ -66,6 +71,28 @@ export function CareReconfirmPage() {
         );
     });
   }
+  const unsavedDialog = (
+    <UnsavedChangesDialog
+      open={blocker.state === "blocked"}
+      onStay={() => blocker.reset?.()}
+      onLeave={() => blocker.proceed?.()}
+    />
+  );
+  if (timeScreen.open)
+    return (
+      <>
+        <TimeSelectionPage
+          spaceId={space.id}
+          initialValue={fields.time}
+          onConfirm={(time) => {
+            setFields((previous) => ({ ...previous, time }));
+            timeScreen.close();
+          }}
+          onBack={timeScreen.close}
+        />
+        {unsavedDialog}
+      </>
+    );
   return (
     <ProposalPageLayout
       title={review ? "확인 내용 검토" : "다시 확인하기"}
@@ -144,6 +171,7 @@ export function CareReconfirmPage() {
                 kind={item.kind}
                 fields={fields}
                 onChange={setFields}
+                onTimeSelect={timeScreen.show}
                 members={space.members}
                 errors={errors}
                 disabled={pending}
@@ -161,11 +189,7 @@ export function CareReconfirmPage() {
           )}
         </>
       )}
-      <UnsavedChangesDialog
-        open={blocker.state === "blocked"}
-        onStay={() => blocker.reset?.()}
-        onLeave={() => blocker.proceed?.()}
-      />
+      {unsavedDialog}
     </ProposalPageLayout>
   );
 }

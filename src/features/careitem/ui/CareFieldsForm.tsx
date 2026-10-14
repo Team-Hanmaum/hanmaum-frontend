@@ -11,7 +11,7 @@ import { DatePicker } from "@/components/ui/DatePicker";
 import { formatCareDate, formatCareTime } from "../model/careItemFields";
 import type { CareItemFields, CareItemKind } from "../model/careItemViewTypes";
 
-type Picker = "date" | "time" | "assigneeId" | "dueDate";
+type Picker = "date" | "assigneeId" | "dueDate";
 const contentLabels = {
   task: "할 일",
   question: "확인할 질문",
@@ -23,6 +23,7 @@ export function CareFieldsForm({
   kind,
   fields,
   onChange,
+  onTimeSelect,
   members,
   errors = {},
   disabled = false,
@@ -31,6 +32,7 @@ export function CareFieldsForm({
   kind: CareItemKind;
   fields: CareItemFields;
   onChange: (fields: CareItemFields) => void;
+  onTimeSelect: () => void;
   members: readonly { id: string; name: string; role: string }[];
   errors?: Partial<Record<keyof CareItemFields, string>>;
   disabled?: boolean;
@@ -44,24 +46,7 @@ export function CareFieldsForm({
   }
   const update = (key: keyof CareItemFields, value: string) =>
     onChange({ ...fields, [key]: value });
-  const pickerTitle =
-    picker === "assigneeId"
-      ? "담당자 선택"
-      : picker === "time"
-        ? "시간 선택"
-        : "날짜 선택";
-  const time = (selection || "00:00").split(":").map(Number);
-  function changeTime(part: "period" | "hour" | "minute", value: number) {
-    const hour =
-      part === "period"
-        ? (time[0] % 12) + value
-        : part === "hour"
-          ? (value % 12) + (time[0] >= 12 ? 12 : 0)
-          : time[0];
-    setSelection(
-      `${String(hour).padStart(2, "0")}:${String(part === "minute" ? value : time[1]).padStart(2, "0")}`,
-    );
-  }
+  const pickerTitle = picker === "assigneeId" ? "담당자 선택" : "날짜 선택";
   return (
     <>
       {kind === "schedule" ? (
@@ -126,7 +111,7 @@ export function CareFieldsForm({
             }
             className="border border-hm-border-default"
             disabled={disabled}
-            onClick={() => open(key)}
+            onClick={() => (key === "time" ? onTimeSelect() : open(key))}
           />
           {errors[key] && (
             <p
@@ -184,11 +169,7 @@ export function CareFieldsForm({
                 setPicker(null);
               }}
             >
-              {picker === "assigneeId"
-                ? "선택 완료"
-                : picker === "time"
-                  ? "이 시간으로 선택"
-                  : "이 날짜로 선택"}
+              {picker === "assigneeId" ? "선택 완료" : "이 날짜로 선택"}
             </Button>
             <TextAction onClick={() => setPicker(null)}>돌아가기</TextAction>
           </>
@@ -210,72 +191,6 @@ export function CareFieldsForm({
                 기한 정하지 않음
               </TextAction>
             )}
-          </>
-        ) : picker === "time" ? (
-          <>
-            <p className="text-hm-title-page">몇 시인가요?</p>
-            <div className="grid grid-cols-3 gap-hm-12">
-              {(
-                [
-                  {
-                    label: "오전·오후",
-                    part: "period",
-                    value: time[0] >= 12 ? 12 : 0,
-                    options: [
-                      [0, "오전"],
-                      [12, "오후"],
-                    ],
-                  },
-                  {
-                    label: "시",
-                    part: "hour",
-                    value: time[0] % 12 || 12,
-                    options: Array.from({ length: 12 }, (_, i) => [
-                      i + 1,
-                      String(i + 1),
-                    ]),
-                  },
-                  {
-                    label: "분",
-                    part: "minute",
-                    value: time[1],
-                    options: Array.from({ length: 60 }, (_, i) => [
-                      i,
-                      String(i).padStart(2, "0"),
-                    ]),
-                  },
-                ] as const
-              ).map((column) => (
-                <label
-                  key={column.part}
-                  className="flex flex-col gap-hm-8 text-center text-hm-body-small"
-                >
-                  {column.label}
-                  <select
-                    aria-label={column.label}
-                    size={3}
-                    value={column.value}
-                    className="hm-focus-ring min-h-36 w-full rounded-hm-12 bg-hm-bg-brand-subtle p-hm-8 text-hm-body-default"
-                    onChange={(event) =>
-                      changeTime(column.part, Number(event.target.value))
-                    }
-                  >
-                    {column.options.map(([value, label]) => (
-                      <option
-                        key={value}
-                        value={value}
-                      >
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ))}
-            </div>
-            <Notice
-              title={formatCareTime(selection)}
-              body="선택한 시간이 입력 화면에 들어가요."
-            />
           </>
         ) : (
           picker === "assigneeId" && (
