@@ -16,6 +16,7 @@ import { familyListStates } from "@/features/carespace/model/familyScreenStates"
 import { useMockProposals } from "@/features/proposal/model/useMockProposals";
 import {
   familyMembersPath,
+  familyLeavePath,
   familyTransferPath,
   paths,
   spaceInvitePath,
@@ -30,18 +31,24 @@ export function FamilyPage() {
   const location = useLocation();
   const removal = (
     location.state as {
-      familyRemoval?: { name: string; released: number };
+      familyRemoval?: {
+        name: string;
+        released: number;
+        spaceId: string;
+        memberId: string;
+      };
     } | null
   )?.familyRemoval;
   return (
     <>
-      {removal && (
-        <Notice
-          role="status"
-          title={`${removal.name}님의 참여가 종료됐어요`}
-          body={`미완료 담당 할 일 ${removal.released}개가 담당자 미지정으로 바뀌었어요.`}
-        />
-      )}
+      {removal?.spaceId === space.id &&
+        !space.members.some((member) => member.id === removal.memberId) && (
+          <Notice
+            role="status"
+            title={`${removal.name}님의 참여가 종료됐어요`}
+            body={`미완료 담당 할 일 ${removal.released}개가 담당자 미지정으로 바뀌었어요.`}
+          />
+        )}
       <h1 className="text-hm-title-page">함께하는 가족</h1>
       {state === "loading" ? (
         <LoadingState label="가족 목록을 불러오고 있어요" />
@@ -98,23 +105,37 @@ export function FamilyPage() {
               </Button>
             </section>
           )}
-          {space.role === "owner" && (
-            <>
-              <h2 className="text-hm-heading-section">가족 관리</h2>
-              <MenuRow
-                icon="family-brand"
-                title="구성원 관리"
-                description="가족의 참여 권한을 관리해요"
-                onClick={() => void navigate(familyMembersPath(space.id))}
-              />
-              <MenuRow
-                icon="person"
-                title="소유권 이전"
-                description="다른 가족에게 소유자 역할을 넘겨요"
-                onClick={() => void navigate(familyTransferPath(space.id))}
-              />
-            </>
-          )}
+          <h2 className="text-hm-heading-section">
+            {space.role === "owner" ? "가족 관리" : "이 공간에서"}
+          </h2>
+          <div className="divide-y divide-hm-divider-default overflow-hidden rounded-hm-16 bg-hm-bg-surface">
+            {space.role === "owner" && (
+              <>
+                <MenuRow
+                  icon="family-brand"
+                  title="구성원 관리"
+                  description="가족의 참여 권한을 관리해요"
+                  onClick={() => void navigate(familyMembersPath(space.id))}
+                />
+                <MenuRow
+                  icon="person"
+                  title="소유권 이전"
+                  description="다른 가족에게 소유자 역할을 넘겨요"
+                  onClick={() => void navigate(familyTransferPath(space.id))}
+                />
+              </>
+            )}
+            <MenuRow
+              tone="danger"
+              title="공간 나가기"
+              description={
+                space.role === "owner"
+                  ? "소유권 이전 또는 공간 삭제 후 가능"
+                  : "내 참여를 종료해요"
+              }
+              onClick={() => void navigate(familyLeavePath(space.id))}
+            />
+          </div>
           <Notice
             tone="neutral"
             title="함께하는 가족의 역할"

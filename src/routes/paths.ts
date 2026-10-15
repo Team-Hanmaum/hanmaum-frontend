@@ -37,6 +37,12 @@ export function familyRemovePath(spaceId: string, memberId: string) {
 export function familyTransferPath(spaceId: string, memberId?: string) {
   return `${spacePath(spaceId, "family")}/transfer${memberId ? `/${encodeURIComponent(memberId)}` : ""}`;
 }
+export function familyLeavePath(spaceId: string) {
+  return `${spacePath(spaceId, "family")}/leave`;
+}
+export function familyDeletePath(spaceId: string) {
+  return `${spacePath(spaceId, "family")}/delete`;
+}
 
 export function newsDetailPath(careSpaceId: string, recordId: string) {
   return `${spacePath(careSpaceId, "news")}/${encodeURIComponent(recordId)}`;

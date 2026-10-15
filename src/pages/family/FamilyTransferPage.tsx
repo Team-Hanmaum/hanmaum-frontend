@@ -8,7 +8,12 @@ import {
 } from "@/features/carespace/model/careSpaceViewTypes";
 import { FamilyMember } from "@/features/carespace/ui/FamilyMember";
 import { FamilyPageLayout } from "@/routes/layouts/FamilyPageLayout";
-import { familyTransferPath, spaceInvitePath, spacePath } from "@/routes/paths";
+import {
+  familyDeletePath,
+  familyTransferPath,
+  spaceInvitePath,
+  spacePath,
+} from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 
 export function FamilyTransferPage() {
@@ -25,6 +30,7 @@ export function FamilyTransferPage() {
     <FamilyPageLayout
       title="소유권 이전"
       spaceId={space.id}
+      tabs={space.role === "owner" && !candidates.length}
       onBack={onBack}
       actions={
         space.role === "owner" &&
@@ -41,9 +47,17 @@ export function FamilyTransferPage() {
             <TextAction onClick={onBack}>취소</TextAction>
           </>
         ) : (
-          <Button onClick={() => void navigate(spaceInvitePath(space.id))}>
-            가족 초대하기
-          </Button>
+          <>
+            <Button onClick={() => void navigate(spaceInvitePath(space.id))}>
+              가족 초대하기
+            </Button>
+            <TextAction
+              tone="danger"
+              onClick={() => void navigate(familyDeletePath(space.id))}
+            >
+              공간 삭제 확인
+            </TextAction>
+          </>
         ))
       }
     >

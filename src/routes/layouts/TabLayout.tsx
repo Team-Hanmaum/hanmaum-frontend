@@ -31,6 +31,7 @@ import { SpaceBottomNavigation } from "./SpaceBottomNavigation";
 import { careListStates } from "@/features/careitem/model/careScreenStates";
 import { CareListAction } from "./CareListAction";
 import { familyListStates } from "@/features/carespace/model/familyScreenStates";
+import { SpaceAccessState } from "./SpaceAccessState";
 
 function SpaceHeader({
   space,
@@ -88,7 +89,7 @@ function SpaceHeader({
 
 export function TabLayout() {
   const { careSpaceId } = useParams();
-  const { spaces } = useMockCareSpaces();
+  const { spaces, ended } = useMockCareSpaces();
   const navigate = useNavigate();
   const matches = useMatches();
   const handle = matches.at(-1)?.handle as { tab?: SpaceTab } | undefined;
@@ -112,6 +113,7 @@ export function TabLayout() {
   );
   if (!careSpaceId || !active || !spaceTabs.includes(active))
     return <NotFoundPage />;
+  if (ended[careSpaceId]) return <SpaceAccessState />;
   if (!space || !isMockPreviewEnabled)
     return (
       <PageLayout

@@ -12,7 +12,7 @@ import { FamilyInfoCard } from "@/features/carespace/ui/FamilyInfoCard";
 import { FamilyMember } from "@/features/carespace/ui/FamilyMember";
 import { useMockAction } from "@/lib/useMockAction";
 import { FamilyPageLayout } from "@/routes/layouts/FamilyPageLayout";
-import { familyTransferPath, spacePath } from "@/routes/paths";
+import { familyLeavePath, familyTransferPath, spacePath } from "@/routes/paths";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 
@@ -78,7 +78,16 @@ export function FamilyTransferConfirmPage() {
       }
       actions={
         completed ? (
-          <Button onClick={toFamily}>가족 화면으로</Button>
+          <>
+            <Button onClick={toFamily}>가족 화면으로</Button>
+            <TextAction
+              onClick={() =>
+                void navigate(familyLeavePath(space.id), { replace: true })
+              }
+            >
+              이어서 공간 나가기
+            </TextAction>
+          </>
         ) : (
           !forbidden &&
           (missing ? (

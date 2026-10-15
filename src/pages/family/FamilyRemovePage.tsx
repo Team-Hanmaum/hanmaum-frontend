@@ -51,7 +51,7 @@ export function FamilyRemovePage() {
       }
       void navigate(spacePath(space.id, "family"), {
         replace: true,
-        state: { familyRemoval: result },
+        state: { familyRemoval: { ...result, spaceId: space.id, memberId } },
       });
     });
   }

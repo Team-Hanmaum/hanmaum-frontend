@@ -13,6 +13,9 @@ function publish(spaceId: string, records: readonly RecordView[]) {
 
 export const mockRecords = {
   getSnapshot: () => snapshot,
+  discardSpace(spaceId: string) {
+    if (isMockPreviewEnabled) publish(spaceId, []);
+  },
   subscribe(listener: () => void) {
     listeners.add(listener);
     return () => {

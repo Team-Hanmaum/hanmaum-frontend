@@ -6,6 +6,28 @@ import { mockRecords } from "@/features/record/model/mockRecords";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { mockCareSpaces } from "./mockCareSpaces";
 import { unfinishedMemberTasks } from "./familySelectors";
+import type { CareSpaceView } from "./careSpaceViewTypes";
+
+function releaseAssignments(space: CareSpaceView, memberId: string) {
+  const state = mockProposals.getForSpace(space);
+  const ids = new Set(
+    unfinishedMemberTasks(state.items, memberId).map((item) => item.id),
+  );
+  mockRecords.retain(space);
+  publishMockCareState(space.id, {
+    ...state,
+    items: state.items.map((item) =>
+      ids.has(item.id)
+        ? {
+            ...item,
+            version: item.version + 1,
+            fields: { ...item.fields, assigneeId: "" },
+          }
+        : item,
+    ),
+  });
+  return ids.size;
+}
 
 export type FamilyActionResult =
   | { ok: true; name: string; released: number }
@@ -26,6 +48,38 @@ export function currentFamilySpace(spaceId: string) {
 
 // API 없이 메모리만 갱신한다. 지연 처리 종료 시 현재 참여·역할·대상을 재조회한다.
 export const mockFamilyActions = {
+  leave(spaceId: string): FamilyActionResult {
+    const space = currentFamilySpace(spaceId);
+    if (!space)
+      return {
+        ok: false,
+        reason: "permission",
+        message: "현재 참여 중인 공간을 다시 확인해 주세요.",
+      };
+    if (space.role === "owner")
+      return {
+        ok: false,
+        reason: "owner",
+        message: "소유권을 이전하거나 공간 삭제를 먼저 진행해 주세요.",
+      };
+    const self = space.members.find((member) => member.self)!;
+    const released = releaseAssignments(space, self.id);
+    mockCareSpaces.endParticipation(space.id, "left");
+    return { ok: true, name: space.subjectLabel, released };
+  },
+  deleteSpace(spaceId: string): FamilyActionResult {
+    const space = currentFamilySpace(spaceId);
+    if (!space || space.role !== "owner")
+      return {
+        ok: false,
+        reason: "permission",
+        message: "현재 소유자만 공간을 삭제할 수 있어요.",
+      };
+    mockRecords.discardSpace(space.id);
+    mockProposals.discardSpace(space.id);
+    mockCareSpaces.endParticipation(space.id, "deleted");
+    return { ok: true, name: space.subjectLabel, released: 0 };
+  },
   transfer(spaceId: string, memberId: string): FamilyActionResult {
     const space = currentFamilySpace(spaceId);
     if (!space || space.role !== "owner")
@@ -80,26 +134,11 @@ export const mockFamilyActions = {
         reason: "owner",
         message: "소유자는 내보내기 대상이 아니에요.",
       };
-    const state = mockProposals.getForSpace(space);
-    const released = unfinishedMemberTasks(state.items, memberId);
-    const ids = new Set(released.map((item) => item.id));
-    mockRecords.retain(space);
-    publishMockCareState(space.id, {
-      ...state,
-      items: state.items.map((item) =>
-        ids.has(item.id)
-          ? {
-              ...item,
-              version: item.version + 1,
-              fields: { ...item.fields, assigneeId: "" },
-            }
-          : item,
-      ),
-    });
+    const released = releaseAssignments(space, memberId);
     mockCareSpaces.updateMembers(
       space.id,
       space.members.filter((entry) => entry.id !== memberId),
     );
-    return { ok: true, name: member.name, released: released.length };
+    return { ok: true, name: member.name, released };
   },
 };
