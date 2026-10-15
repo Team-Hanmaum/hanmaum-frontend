@@ -76,7 +76,8 @@ export function CareChangeSummary({
         keys
           .filter((key) =>
             draft.operation === "create"
-              ? Boolean(draft.fields[key])
+              ? (draft.kind === "task" && key === "assigneeId") ||
+                Boolean(draft.fields[key])
               : draft.fields[key] !== before?.fields[key],
           )
           .map((key) =>

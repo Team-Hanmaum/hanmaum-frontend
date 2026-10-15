@@ -24,21 +24,24 @@ export function HomePage() {
   const proposals = useMockProposals(space);
   const navigate = useNavigate();
   const now = useCareNow();
-  const [state, setState] = useMockScreenState(
-    homeScreenStates,
-    space.empty && !records.length && !proposals.items.length
-      ? "empty"
-      : "default",
+  const data = getMockHomeData(
+    getRecordsWithProposals(records, proposals),
+    proposals,
+    space,
+    now,
   );
+  const defaultState =
+    space.empty &&
+    !records.length &&
+    !proposals.items.length &&
+    !data.pendingCount
+      ? "empty"
+      : "default";
+  const [state, setState] = useMockScreenState(homeScreenStates, defaultState);
   return (
     <HomeContent
       space={space}
-      data={getMockHomeData(
-        getRecordsWithProposals(records, proposals),
-        proposals,
-        space,
-        now,
-      )}
+      data={data}
       state={state}
       onFamily={() => void navigate(spacePath(space.id, "family"))}
       onInvite={() => void navigate(spaceInvitePath(space.id))}
@@ -55,7 +58,7 @@ export function HomePage() {
             : proposalResultPath(space.id, id),
         )
       }
-      onRetry={() => setState(space.empty ? "empty" : "default")}
+      onRetry={() => setState(defaultState)}
     />
   );
 }

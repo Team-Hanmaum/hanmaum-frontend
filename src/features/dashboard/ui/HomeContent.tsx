@@ -130,9 +130,7 @@ export function HomeContent({
                 아직 등록된 일정이 없어요.
               </p>
               <p className="text-hm-body-small text-hm-text-secondary">
-                돌봄 탭에서 확정된 정보를 확인해요.
-                <br />
-                직접 추가 화면은 준비 중이에요.
+                돌봄 탭에서 일정·할 일·질문을 추가해 보세요.
               </p>
               <Button
                 variant="secondary"

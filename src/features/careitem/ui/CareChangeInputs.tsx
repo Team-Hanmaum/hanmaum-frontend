@@ -32,6 +32,7 @@ export function CareChangeInputs({
       {(operation === "create" || operation === "edit") && (
         <CareFieldsForm
           direct
+          preserveTitle={operation === "edit" && draft.kind === "task"}
           kind={draft.kind}
           fields={draft.fields}
           onChange={(fields) => onChange({ ...draft, fields })}

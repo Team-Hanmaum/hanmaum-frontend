@@ -30,6 +30,30 @@ function applyChange(
         ? { ...item!.fields, assigneeId: draft.fields.assigneeId }
         : { ...item!.fields };
   const status = nextCareStatus(draft, item);
+  const evidence = [...(item?.evidence ?? [])];
+  const directContent = draft.evidence.trim();
+  if (
+    directContent &&
+    draft.operation !== "status" &&
+    draft.operation !== "delete"
+  ) {
+    evidence.push({
+      id: `direct-${draft.id}`,
+      author: actor.name,
+      createdAt: now,
+      directContent,
+      fields: { ...fields },
+      // 기존 필드가 포함된 변경은 원본 삭제 시 함께 재검토한다.
+      dependsOnRecordIds: [
+        ...new Set(
+          item?.evidence.flatMap((entry) => [
+            ...(entry.recordId ? [entry.recordId] : []),
+            ...(entry.dependsOnRecordIds ?? []),
+          ]) ?? [],
+        ),
+      ],
+    });
+  }
   return {
     ...item,
     id: draft.itemId,
@@ -46,26 +70,7 @@ function applyChange(
         ? { content: draft.answer.trim(), confirmedBy: actor.name }
         : item?.answer,
     deletedAt: draft.operation === "delete" ? now : undefined,
-    evidence: [
-      ...(item?.evidence ?? []),
-      {
-        id: `direct-${draft.id}`,
-        author: actor.name,
-        createdAt: now,
-        directContent:
-          draft.evidence.trim() || "가족이 직접 입력하고 확인한 내용이에요.",
-        fields: { ...fields },
-        // 기존 필드가 포함된 변경은 원본 삭제 시 함께 재검토한다.
-        dependsOnRecordIds: [
-          ...new Set(
-            item?.evidence.flatMap((entry) => [
-              ...(entry.recordId ? [entry.recordId] : []),
-              ...(entry.dependsOnRecordIds ?? []),
-            ]) ?? [],
-          ),
-        ],
-      },
-    ],
+    evidence,
   };
 }
 export const mockCareChanges = {

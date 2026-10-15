@@ -72,7 +72,7 @@ export function CareHistoryPage() {
       title: "새 내용으로 재확인",
       actor: entry.actor,
     })),
-  ].toSorted((a, b) => b.createdAt - a.createdAt);
+  ].sort((a, b) => b.createdAt - a.createdAt);
   const result = results.find((entry) => entry.id === historyId);
   const change = data.careChanges?.find(
     (entry) =>

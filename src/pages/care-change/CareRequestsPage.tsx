@@ -33,7 +33,7 @@ export function CareRequestsPage() {
           change.status === "applied") &&
         (!params.get("item") || change.draft.itemId === params.get("item")),
     )
-    .toSorted(
+    .sort(
       (a, b) => (b.decidedAt ?? b.createdAt) - (a.decidedAt ?? a.createdAt),
     );
   const content = (

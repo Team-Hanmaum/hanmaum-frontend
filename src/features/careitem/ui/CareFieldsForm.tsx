@@ -29,6 +29,7 @@ export function CareFieldsForm({
   disabled = false,
   original,
   direct = false,
+  preserveTitle = false,
 }: {
   kind: CareItemKind;
   fields: CareItemFields;
@@ -39,6 +40,7 @@ export function CareFieldsForm({
   disabled?: boolean;
   original?: string;
   direct?: boolean;
+  preserveTitle?: boolean;
 }) {
   const [picker, setPicker] = useState<Picker | null>(null);
   const [selection, setSelection] = useState("");
@@ -73,7 +75,11 @@ export function CareFieldsForm({
             event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
           ) => {
             const content = event.target.value;
-            onChange({ ...fields, content, title: content });
+            onChange({
+              ...fields,
+              content,
+              title: preserveTitle ? fields.title : content,
+            });
           }}
         />
       )}
