@@ -19,7 +19,7 @@ import { ProposalSources } from "@/features/proposal/ui/ProposalSources";
 import { ProposalSummaryCard } from "@/features/proposal/ui/ProposalSummaryCard";
 import { useMockAction } from "@/lib/useMockAction";
 import { useUnsavedChanges } from "@/lib/useUnsavedChanges";
-import { TimeSelectionPage } from "@/pages/time-selection/TimeSelectionPage";
+import { CareTimeSelection } from "@/features/careitem/ui/CareTimeSelection";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import {
   newsDetailPath,
@@ -177,14 +177,23 @@ function ProposalEditor({
   if (timeScreen.open)
     return (
       <>
-        <TimeSelectionPage
-          spaceId={space.id}
+        <CareTimeSelection
           initialValue={fields.time}
           onConfirm={(time) => {
             setFields((previous) => ({ ...previous, time }));
             timeScreen.close();
           }}
           onBack={timeScreen.close}
+          renderLayout={({ content, actions }) => (
+            <ProposalPageLayout
+              title="시간 선택"
+              spaceId={space.id}
+              onBack={timeScreen.close}
+              actions={actions}
+            >
+              {content}
+            </ProposalPageLayout>
+          )}
         />
         {unsavedDialog}
       </>

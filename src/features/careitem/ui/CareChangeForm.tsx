@@ -10,7 +10,6 @@ import { useMockRecords } from "@/features/record/model/useMockRecords";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 import { useTimeSelectionScreen } from "@/routes/useTimeSelectionScreen";
-import { TimeSelectionPage } from "@/pages/time-selection/TimeSelectionPage";
 import {
   careItemPath,
   careListPath,
@@ -34,6 +33,7 @@ import { mockCareChanges } from "../model/mockCareChanges";
 import { CareChangeInputs } from "./CareChangeInputs";
 import { CareChangeSummary } from "./CareChangeSummary";
 import { CareEvidenceList } from "./CareEvidenceList";
+import { CareTimeSelection } from "./CareTimeSelection";
 
 const states = [
   { value: "default", label: "기본" },
@@ -141,14 +141,23 @@ export function CareChangeForm({
   if (timeScreen.open)
     return (
       <>
-        <TimeSelectionPage
-          spaceId={space.id}
+        <CareTimeSelection
           initialValue={draft.fields.time}
           onConfirm={(time) => {
             setDraft({ ...draft, fields: { ...draft.fields, time } });
             timeScreen.close();
           }}
           onBack={timeScreen.close}
+          renderLayout={({ content, actions }) => (
+            <ProposalPageLayout
+              title="시간 선택"
+              spaceId={space.id}
+              onBack={timeScreen.close}
+              actions={actions}
+            >
+              {content}
+            </ProposalPageLayout>
+          )}
         />
         {dialog}
       </>

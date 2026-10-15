@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Notice } from "@/components/feedback";
 import { Button, TextAction } from "@/components/ui";
 import { WheelPicker } from "@/components/ui/WheelPicker";
-import { formatCareTime } from "@/features/careitem/model/careItemFields";
-import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
+import { formatCareTime } from "../model/careItemFields";
 
 const periods = [
   { value: "0", label: "오전" },
@@ -28,16 +27,20 @@ function initialTime(value: string) {
   };
 }
 
-export function TimeSelectionPage({
-  spaceId,
+export function CareTimeSelection({
   initialValue,
   onConfirm,
   onBack,
+  renderLayout,
 }: {
-  spaceId: string;
   initialValue: string;
   onConfirm: (value: string) => void;
   onBack: () => void;
+  // 선택 UI와 하단 액션을 어느 레이아웃에 배치할지는 호출 화면이 결정한다.
+  renderLayout: (slots: {
+    content: ReactNode;
+    actions: ReactNode;
+  }) => ReactNode;
 }) {
   const [parts, setParts] = useState<
     Partial<Record<"period" | "hour" | "minute", string>>
@@ -55,23 +58,19 @@ export function TimeSelectionPage({
   const value = complete
     ? `${String((Number(parts.hour) % 12) + Number(parts.period)).padStart(2, "0")}:${String(parts.minute).padStart(2, "0")}`
     : "";
-  return (
-    <ProposalPageLayout
-      title="시간 선택"
-      spaceId={spaceId}
-      onBack={onBack}
-      actions={
-        <>
-          <Button
-            disabled={!complete || moving}
-            onClick={() => onConfirm(value)}
-          >
-            이 시간으로 선택
-          </Button>
-          <TextAction onClick={onBack}>돌아가기</TextAction>
-        </>
-      }
-    >
+  const actions = (
+    <>
+      <Button
+        disabled={!complete || moving}
+        onClick={() => onConfirm(value)}
+      >
+        이 시간으로 선택
+      </Button>
+      <TextAction onClick={onBack}>돌아가기</TextAction>
+    </>
+  );
+  const content = (
+    <>
       <h1 className="text-hm-title-page">몇 시인가요?</h1>
       <p className="text-hm-body-default text-hm-text-secondary">
         위아래로 밀거나 값을 눌러 선택해 주세요.
@@ -122,6 +121,7 @@ export function TimeSelectionPage({
         role="status"
         aria-live="polite"
       />
-    </ProposalPageLayout>
+    </>
   );
+  return renderLayout({ content, actions });
 }
