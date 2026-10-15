@@ -199,6 +199,7 @@ export function CareList({
         </p>
       )}
       <Tabs
+        tabClassName="px-hm-4"
         label="돌봄 유형"
         value={filter.type}
         onValueChange={onType}
@@ -208,6 +209,7 @@ export function CareList({
             tab.value === filter.type ? (
               statusTabs.length ? (
                 <Tabs
+                  tabClassName="px-hm-4"
                   label={`${tab.label} 상태`}
                   value={filter.status!}
                   onValueChange={onStatus}

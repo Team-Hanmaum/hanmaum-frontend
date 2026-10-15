@@ -11,6 +11,7 @@ export type TabsProps = {
     disabled?: boolean;
   }[];
   className?: string;
+  tabClassName?: string;
 };
 export function Tabs({
   label,
@@ -18,6 +19,7 @@ export function Tabs({
   onValueChange,
   items,
   className = "",
+  tabClassName = "",
 }: TabsProps) {
   const id = useId();
   const active =
@@ -65,7 +67,7 @@ export function Tabs({
               document.getElementById(`${id}-tab-${nextIndex}`)?.focus();
               onValueChange(next.value);
             }}
-            className="min-w-0 flex-1"
+            className={`min-w-0 flex-1 ${tabClassName}`}
           >
             {item.label}
           </TabItem>
