@@ -59,7 +59,7 @@
 
 공통 컨트롤의 값은 부모에서 관리한다. `SelectionRow`는 네이티브 checkbox/radio이므로 Space·방향키·폼 값·disabled 동작을 유지한다. 라벨과 설명을 분리해 접근 가능한 이름에 설명을 중복 포함하지 않는다. `Tabs`의 항목 value는 서로 달라야 하며 활성 값은 부모가 갱신한다. 좌우 방향키와 Home/End가 비활성 항목을 건너뛴다.
 
-`ui/WheelPicker`는 [C23 시간 선택 262:5870](https://www.figma.com/design/TNlkTZrM8NIo0jSp6tRTwH?node-id=262-5870)의 3행 휠이다. `label`, 비어 있지 않은 `options`, `value`, `onChange`로 사용하며 값이 없으면 자동 선택하지 않는다. 터치·휠 스크롤·탭과 방향키/Home/End/PageUp/PageDown을 지원한다. `loop`는 시·분의 끝값을 순환하고, 선택값은 중앙에 정렬한다. `onScrollingChange`로 스크롤 중 확인을 막을 수 있다. 시간 변환·확인·취소와 폼 반영은 페이지에서 관리한다.
+`ui/WheelPicker`는 [C23 시간 선택 262:5870](https://www.figma.com/design/TNlkTZrM8NIo0jSp6tRTwH?node-id=262-5870)의 3행 휠이다. `label`, 비어 있지 않은 `options`, `value`, `onChange`로 사용하며 값이 없으면 자동 선택하지 않는다. 터치·휠 스크롤·탭과 방향키/Home/End/PageUp/PageDown을 지원한다. `loop`는 시·분의 끝값을 순환하고, 선택값은 중앙에 정렬한다. `onScrollingChange`로 스크롤 중 확인을 막을 수 있다. 돌봄 시간의 변환·임시 선택·확인·취소 UI는 `features/careitem/ui/CareTimeSelection.tsx`에서 조합하며, 화면 레이아웃·이동과 확정값의 폼 반영은 호출 화면에서 관리한다.
 
 `BottomNav`와 `ActionBar`의 `position` 기본값은 `"static"`이다. `"fixed"`일 때 safe area 및 실제 높이만큼 공간을 예약하고, ResizeObserver로 글자 확대에 대응한다. 하단 고정 영역은 화면의 마지막 자식으로 배치하고 두 고정 영역을 동시에 겹치지 않는다. 최대 너비 512px은 현재 모바일 조합 기준이며 전역 제품 breakpoint 정책을 확정한 것은 아니다.
 

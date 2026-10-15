@@ -10,13 +10,13 @@ import App from "@/App";
 // 공간 진입 전 화면
 import { LandingPage } from "@/pages/landing/LandingPage";
 import { LoginPage } from "@/pages/login/LoginPage";
-import { InvitationPage } from "@/pages/invitations/InvitationPage";
+import { InvitationPage } from "@/pages/space/InvitationPage";
 import { OnboardingGuidePage } from "@/pages/onboarding/OnboardingGuidePage";
-import { SpaceSelectionPage } from "@/pages/space-selection/SpaceSelectionPage";
-import { SpaceCreatePage } from "@/pages/space-create/SpaceCreatePage";
+import { SpaceSelectionPage } from "@/pages/space/SpaceSelectionPage";
+import { SpaceCreatePage } from "@/pages/space/SpaceCreatePage";
 
 // 공간 안의 화면
-import { SpaceInvitePage } from "@/pages/space-invite/SpaceInvitePage";
+import { SpaceInvitePage } from "@/pages/space/SpaceInvitePage";
 import { HomePage } from "@/pages/home/HomePage";
 import { CarePage } from "@/pages/care/CarePage";
 import { NewsPage } from "@/pages/news/NewsPage";
@@ -48,17 +48,17 @@ function redirectToSpaceHome({ params, request }: LoaderFunctionArgs) {
 
 // 소식 페이지 지연 로딩
 async function loadNewsCreatePage() {
-  const { NewsCreatePage } = await import("@/pages/news-create/NewsCreatePage");
+  const { NewsCreatePage } = await import("@/pages/news/NewsCreatePage");
   return { Component: NewsCreatePage };
 }
 
 async function loadNewsDetailPage() {
-  const { NewsDetailPage } = await import("@/pages/news-detail/NewsDetailPage");
+  const { NewsDetailPage } = await import("@/pages/news/NewsDetailPage");
   return { Component: NewsDetailPage };
 }
 async function loadCareChangePage() {
   return {
-    Component: (await import("@/pages/care-change/CareChangePage"))
+    Component: (await import("@/pages/care/change/CareChangePage"))
       .CareChangePage,
   };
 }
@@ -157,15 +157,14 @@ const recordDeletionRoutes: RouteObject[] = [
   {
     path: "news/:recordId/delete",
     lazy: async () => ({
-      Component: (await import("@/pages/news-delete/NewsDeletePage"))
-        .NewsDeletePage,
+      Component: (await import("@/pages/news/NewsDeletePage")).NewsDeletePage,
     }),
     handle: { title: "소식 원본 삭제" },
   },
   {
     path: "news/deletions/:deletionId",
     lazy: async () => ({
-      Component: (await import("@/pages/news-delete/NewsDeletePage"))
+      Component: (await import("@/pages/news/NewsDeletePage"))
         .NewsDeletionResultPage,
     }),
     handle: { title: "소식 삭제 결과" },
@@ -177,7 +176,7 @@ const careItemRoutes: RouteObject[] = [
   {
     path: "care/items/:itemId/share",
     lazy: async () => ({
-      Component: (await import("@/pages/care-share/CareSharePage"))
+      Component: (await import("@/pages/care/share/CareSharePage"))
         .CareSharePage,
     }),
     handle: { title: "공유" },
@@ -185,7 +184,7 @@ const careItemRoutes: RouteObject[] = [
   {
     path: "care/items/:itemId/shared",
     lazy: async () => ({
-      Component: (await import("@/pages/care-share/SharedCarePage"))
+      Component: (await import("@/pages/care/share/SharedCarePage"))
         .SharedCarePage,
     }),
     handle: { title: "공유된 돌봄" },
@@ -193,7 +192,7 @@ const careItemRoutes: RouteObject[] = [
   {
     path: "care/requests",
     lazy: async () => ({
-      Component: (await import("@/pages/care-change/CareRequestsPage"))
+      Component: (await import("@/pages/care/change/CareRequestsPage"))
         .CareRequestsPage,
     }),
     handle: { title: "돌봄 요청·변경" },
@@ -231,7 +230,7 @@ const careItemRoutes: RouteObject[] = [
   {
     path: "care/requests/:changeId",
     lazy: async () => ({
-      Component: (await import("@/pages/care-change/CareChangeDetailPage"))
+      Component: (await import("@/pages/care/change/CareChangeDetailPage"))
         .CareChangeDetailPage,
     }),
     handle: { title: "돌봄 요청·결과" },
@@ -239,38 +238,35 @@ const careItemRoutes: RouteObject[] = [
   {
     path: "care/items/:itemId/manage",
     lazy: async () => ({
-      Component: (await import("@/pages/care-manage/CareManagePage"))
-        .CareManagePage,
+      Component: (await import("@/pages/care/CareManagePage")).CareManagePage,
     }),
     handle: { title: "항목 관리" },
   },
   {
     path: "care/items/:itemId",
     lazy: async () => ({
-      Component: (await import("@/pages/care-item/CareItemPage")).CareItemPage,
+      Component: (await import("@/pages/care/CareItemPage")).CareItemPage,
     }),
     handle: { title: "돌봄 상세" },
   },
   {
     path: "care/items/:itemId/sources",
     lazy: async () => ({
-      Component: (await import("@/pages/care-sources/CareSourcesPage"))
-        .CareSourcesPage,
+      Component: (await import("@/pages/care/CareSourcesPage")).CareSourcesPage,
     }),
     handle: { title: "근거 보기" },
   },
   {
     path: "care/items/:itemId/history/:historyId?",
     lazy: async () => ({
-      Component: (await import("@/pages/care-history/CareHistoryPage"))
-        .CareHistoryPage,
+      Component: (await import("@/pages/care/CareHistoryPage")).CareHistoryPage,
     }),
     handle: { title: "변경 이력" },
   },
   {
     path: "care/items/:itemId/reconfirm",
     lazy: async () => ({
-      Component: (await import("@/pages/care-reconfirm/CareReconfirmPage"))
+      Component: (await import("@/pages/care/CareReconfirmPage"))
         .CareReconfirmPage,
     }),
     handle: { title: "다시 확인하기" },
@@ -282,16 +278,15 @@ const proposalRoutes: RouteObject[] = [
   {
     path: "proposals/:proposalId/evidence",
     lazy: async () => ({
-      Component: (
-        await import("@/pages/proposal-evidence/ProposalEvidencePage")
-      ).ProposalEvidencePage,
+      Component: (await import("@/pages/proposal/ProposalEvidencePage"))
+        .ProposalEvidencePage,
     }),
     handle: { title: "근거 비교" },
   },
   {
     path: "proposals/:proposalId/edit",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal-edit/ProposalEditPage"))
+      Component: (await import("@/pages/proposal/ProposalEditPage"))
         .ProposalEditPage,
     }),
     handle: { title: "제안 내용 수정" },
@@ -299,7 +294,7 @@ const proposalRoutes: RouteObject[] = [
   {
     path: "proposals/:proposalId/target",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal-target/ProposalTargetPage"))
+      Component: (await import("@/pages/proposal/ProposalTargetPage"))
         .ProposalTargetPage,
     }),
     handle: { title: "연결 대상 선택" },
@@ -307,7 +302,7 @@ const proposalRoutes: RouteObject[] = [
   {
     path: "news/:recordId/proposals",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal-review/ProposalReviewPage"))
+      Component: (await import("@/pages/proposal/ProposalReviewPage"))
         .ProposalReviewPage,
     }),
     handle: { title: "제안 검토" },
@@ -315,7 +310,7 @@ const proposalRoutes: RouteObject[] = [
   {
     path: "proposals/confirm",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal-confirm/ProposalConfirmPage"))
+      Component: (await import("@/pages/proposal/ProposalConfirmPage"))
         .ProposalConfirmPage,
     }),
     handle: { title: "반영 전 확인" },
@@ -323,7 +318,7 @@ const proposalRoutes: RouteObject[] = [
   {
     path: "proposal-requests/:requestId",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal-request/ProposalRequestPage"))
+      Component: (await import("@/pages/proposal/ProposalRequestPage"))
         .ProposalRequestPage,
     }),
     handle: { title: "요청 상태" },
@@ -331,7 +326,7 @@ const proposalRoutes: RouteObject[] = [
   {
     path: "proposals/results/:resultId",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal-result/ProposalResultPage"))
+      Component: (await import("@/pages/proposal/ProposalResultPage"))
         .ProposalResultPage,
     }),
     handle: { title: "반영 결과" },
@@ -339,7 +334,7 @@ const proposalRoutes: RouteObject[] = [
   {
     path: "proposals",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal-list/ProposalListPage"))
+      Component: (await import("@/pages/proposal/ProposalListPage"))
         .ProposalListPage,
     }),
     handle: { title: "확인할 내용" },

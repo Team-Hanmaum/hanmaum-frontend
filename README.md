@@ -59,6 +59,14 @@ Axios와 TanStack Query 기반을 사용한다. `.env.example`을 `.env.local`�
 
 BE와 맞춘 도메인 이름 `carespace`, `careitem`은 하나의 도메인 식별자로 유지한다. `README.md`, `.gitkeep`, 도구 설정·GitHub 템플릿과 외부 라이선스 문서는 위 소스 이름 규칙으로 일괄 변경하지 않는다.
 
+## 페이지 구성
+
+`src/pages/`는 화면 영역별로 묶고, 관련된 페이지 파일을 같은 폴더에 둔다. 예를 들어 `care/`에는 돌봄 목록·상세·근거·이력 페이지를 두며, 변경 요청과 공유 흐름은 각각 `care/change/`, `care/share/`로 묶는다. `news/`, `proposal/`, `space/`도 각 영역의 페이지를 모은다.
+
+여러 페이지에서 재사용하는 도메인 UI와 상태는 `features/`, 범용 UI는 `components/`에 둔다. 시간 선택 UI는 `features/careitem/ui/CareTimeSelection.tsx`에서 공유하며, 호출 화면이 레이아웃과 이동을 연결한다. `features`와 `components`는 `pages`를 가져오지 않는다.
+
+폴더 경로는 URL을 결정하지 않는다. 기존 주소는 `src/routes/Router.tsx`와 `src/routes/paths.ts`에서 관리한다. 새 페이지를 추가할 때는 [AGENTS.md의 페이지 폴더 규칙](AGENTS.md#페이지-폴더-규칙)을 따른다.
+
 ## 검증 명령
 
 ```sh
