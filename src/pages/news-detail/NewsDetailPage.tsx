@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router";
 import { DetailLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
@@ -9,13 +8,18 @@ import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewType
 import { useMockRecords } from "@/features/record/model/useMockRecords";
 import { useMockRecordAnalysis } from "@/features/record/model/useMockRecordAnalysis";
 import { newsDetailStates } from "@/features/record/model/newsScreenStates";
+import { useMockProposals } from "@/features/proposal/model/useMockProposals";
+import { getRecordsWithProposals } from "@/features/proposal/model/proposalSelectors";
 import { NewsDetail } from "@/features/record/ui/NewsDetail";
-import {
-  RecordPendingSheet,
-  type RecordPendingAction,
-} from "@/features/record/ui/RecordPendingSheet";
 import { SpaceBottomNavigation } from "@/routes/layouts/SpaceBottomNavigation";
-import { spacePath } from "@/routes/paths";
+import {
+  spacePath,
+  proposalListPath,
+  proposalRequestPath,
+  proposalResultPath,
+  proposalReviewPath,
+  newsDeletePath,
+} from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 
@@ -23,7 +27,13 @@ export function NewsDetailPage() {
   const space = useOutletContext<CareSpaceView>();
   const { recordId = "" } = useParams();
   const records = useMockRecords(space);
-  const record = records.find((item) => item.id === recordId);
+  const proposals = useMockProposals(space);
+  const deleted = proposals.deletions?.some(
+    (entry) => entry.recordId === recordId,
+  );
+  const record = getRecordsWithProposals(records, proposals).find(
+    (item) => item.id === recordId,
+  );
   const navigate = useNavigate();
   const listPath = spacePath(space.id, "news");
   const onBack = useBackNavigation(listPath);
@@ -31,13 +41,32 @@ export function NewsDetailPage() {
     ? newsDetailStates
     : newsDetailStates.filter((item) => item.value !== "review");
   const [state, setState] = useMockScreenState(options, "default");
-  const [action, setAction] = useState<RecordPendingAction>(null);
   const { pending, retry } = useMockRecordAnalysis(space, recordId, () =>
     setState("default"),
   );
-  const status = state === "default" ? record?.analysisStatus : state;
-  const hasSecondary = status === "review" || status === "failed";
+  const status =
+    state === "default"
+      ? (record?.proposalSummary?.status ?? record?.analysisStatus)
+      : state;
+  const hasProposal = Boolean(record?.proposalSummary);
+  const hasSecondary =
+    hasProposal || status === "review" || status === "failed";
   const onList = () => void navigate(listPath);
+  function onProposals() {
+    const related = proposals.proposals.filter(
+      (item) => item.recordId === recordId,
+    );
+    const requested = related.find((item) => item.status === "requested");
+    const result = related.find((item) => item.resultId);
+    const destination = related.some((item) => item.status === "review")
+      ? proposalReviewPath(space.id, recordId)
+      : requested?.requestId
+        ? proposalRequestPath(space.id, requested.requestId)
+        : result?.resultId
+          ? proposalResultPath(space.id, result.resultId)
+          : proposalListPath(space.id);
+    void navigate(destination);
+  }
   return (
     <>
       <DetailLayout
@@ -60,8 +89,8 @@ export function NewsDetailPage() {
                   onClick={
                     status === "failed"
                       ? retry
-                      : status === "review"
-                        ? () => setAction("review")
+                      : hasProposal || status === "review"
+                        ? onProposals
                         : onList
                   }
                   loading={pending}
@@ -69,8 +98,12 @@ export function NewsDetailPage() {
                 >
                   {status === "failed"
                     ? "분석 다시 시도"
-                    : status === "review"
-                      ? "확인할 내용 보기"
+                    : hasProposal || status === "review"
+                      ? status === "pending"
+                        ? "요청 상태 보기"
+                        : status === "applied" || status === "rejected"
+                          ? "처리 결과 보기"
+                          : "확인할 내용 보기"
                       : "소식 목록으로"}
                 </Button>
                 {hasSecondary && (
@@ -95,25 +128,27 @@ export function NewsDetailPage() {
             record={record}
             status={status}
             owner={space.role === "owner"}
-            onDelete={() => setAction("delete")}
+            onDelete={() => void navigate(newsDeletePath(space.id, recordId))}
           />
         ) : (
           <>
             <h1 className="sr-only">소식 상세</h1>
             <ErrorState
               reason="load-error"
-              title="화면 확인용 소식이 없어요"
-              body="새로고침하면 직접 남긴 Mock 소식은 초기화돼요. 목록에서 소식을 다시 선택해 주세요."
+              title={
+                deleted ? "이미 삭제된 소식이에요" : "화면 확인용 소식이 없어요"
+              }
+              body={
+                deleted
+                  ? "삭제된 원문과 인용 내용은 다시 표시하지 않아요."
+                  : "새로고침하면 직접 남긴 Mock 소식은 초기화돼요. 목록에서 소식을 다시 선택해 주세요."
+              }
               actionLabel="소식 목록으로"
               onAction={onList}
             />
           </>
         )}
       </DetailLayout>
-      <RecordPendingSheet
-        action={action}
-        onClose={() => setAction(null)}
-      />
     </>
   );
 }

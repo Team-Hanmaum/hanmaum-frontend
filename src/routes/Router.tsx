@@ -28,6 +28,7 @@ import { NotFoundPage } from "@/pages/error/NotFoundPage";
 import { RouteErrorPage } from "@/pages/error/RouteErrorPage";
 import { TabLayout } from "./layouts/TabLayout";
 import { RecordRouteLayout } from "./layouts/RecordRouteLayout";
+import { ProposalRouteLayout } from "./layouts/ProposalRouteLayout";
 import { recordNavigation } from "./navigationHistory";
 import { paths, spacePath } from "./paths";
 
@@ -145,6 +146,130 @@ const recordRoutes: RouteObject[] = [
   },
 ];
 
+// 소식 원본 삭제와 결과
+const recordDeletionRoutes: RouteObject[] = [
+  {
+    path: "news/:recordId/delete",
+    lazy: async () => ({
+      Component: (await import("@/pages/news-delete/NewsDeletePage"))
+        .NewsDeletePage,
+    }),
+    handle: { title: "소식 원본 삭제" },
+  },
+  {
+    path: "news/deletions/:deletionId",
+    lazy: async () => ({
+      Component: (await import("@/pages/news-delete/NewsDeletePage"))
+        .NewsDeletionResultPage,
+    }),
+    handle: { title: "소식 삭제 결과" },
+  },
+];
+
+// 소식에서 연결되는 현재 돌봄 조회·근거·이력·재확인
+const careItemRoutes: RouteObject[] = [
+  {
+    path: "care/items/:itemId",
+    lazy: async () => ({
+      Component: (await import("@/pages/care-item/CareItemPage")).CareItemPage,
+    }),
+    handle: { title: "돌봄 상세" },
+  },
+  {
+    path: "care/items/:itemId/sources",
+    lazy: async () => ({
+      Component: (await import("@/pages/care-sources/CareSourcesPage"))
+        .CareSourcesPage,
+    }),
+    handle: { title: "근거 보기" },
+  },
+  {
+    path: "care/items/:itemId/history/:historyId?",
+    lazy: async () => ({
+      Component: (await import("@/pages/care-history/CareHistoryPage"))
+        .CareHistoryPage,
+    }),
+    handle: { title: "변경 이력" },
+  },
+  {
+    path: "care/items/:itemId/reconfirm",
+    lazy: async () => ({
+      Component: (await import("@/pages/care-reconfirm/CareReconfirmPage"))
+        .CareReconfirmPage,
+    }),
+    handle: { title: "다시 확인하기" },
+  },
+];
+
+// 제안 검토·요청·결과
+const proposalRoutes: RouteObject[] = [
+  {
+    path: "proposals/:proposalId/evidence",
+    lazy: async () => ({
+      Component: (
+        await import("@/pages/proposal-evidence/ProposalEvidencePage")
+      ).ProposalEvidencePage,
+    }),
+    handle: { title: "근거 비교" },
+  },
+  {
+    path: "proposals/:proposalId/edit",
+    lazy: async () => ({
+      Component: (await import("@/pages/proposal-edit/ProposalEditPage"))
+        .ProposalEditPage,
+    }),
+    handle: { title: "제안 내용 수정" },
+  },
+  {
+    path: "proposals/:proposalId/target",
+    lazy: async () => ({
+      Component: (await import("@/pages/proposal-target/ProposalTargetPage"))
+        .ProposalTargetPage,
+    }),
+    handle: { title: "연결 대상 선택" },
+  },
+  {
+    path: "news/:recordId/proposals",
+    lazy: async () => ({
+      Component: (await import("@/pages/proposal-review/ProposalReviewPage"))
+        .ProposalReviewPage,
+    }),
+    handle: { title: "제안 검토" },
+  },
+  {
+    path: "proposals/confirm",
+    lazy: async () => ({
+      Component: (await import("@/pages/proposal-confirm/ProposalConfirmPage"))
+        .ProposalConfirmPage,
+    }),
+    handle: { title: "반영 전 확인" },
+  },
+  {
+    path: "proposal-requests/:requestId",
+    lazy: async () => ({
+      Component: (await import("@/pages/proposal-request/ProposalRequestPage"))
+        .ProposalRequestPage,
+    }),
+    handle: { title: "요청 상태" },
+  },
+  {
+    path: "proposals/results/:resultId",
+    lazy: async () => ({
+      Component: (await import("@/pages/proposal-result/ProposalResultPage"))
+        .ProposalResultPage,
+    }),
+    handle: { title: "반영 결과" },
+  },
+  {
+    path: "proposals",
+    lazy: async () => ({
+      Component: (await import("@/pages/proposal-list/ProposalListPage"))
+        .ProposalListPage,
+    }),
+    handle: { title: "확인할 내용" },
+  },
+];
+
 // 개발 전용 화면: 프로덕션에서는 경로와 페이지 코드 제외
 const developmentRoutes: RouteObject[] = import.meta.env.DEV
   ? [
@@ -184,6 +309,10 @@ const spaceRoutes: RouteObject[] = [
   {
     Component: RecordRouteLayout,
     children: recordRoutes,
+  },
+  {
+    Component: ProposalRouteLayout,
+    children: [...recordDeletionRoutes, ...careItemRoutes, ...proposalRoutes],
   },
   notFoundRoute,
 ];

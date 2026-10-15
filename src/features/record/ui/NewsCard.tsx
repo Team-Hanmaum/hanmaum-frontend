@@ -1,6 +1,12 @@
 import { Badge, Button, type BadgeProps } from "@/components/ui";
 export type NewsStatus =
-  "analyzing" | "review" | "pending" | "applied" | "no-change" | "failed";
+  | "analyzing"
+  | "review"
+  | "pending"
+  | "applied"
+  | "rejected"
+  | "no-change"
+  | "failed";
 const statuses: Record<
   NewsStatus,
   { label: string; tone: BadgeProps["tone"]; message: string }
@@ -24,6 +30,11 @@ const statuses: Record<
     label: "반영",
     tone: "brand",
     message: "검토한 제안이 반영됐어요.",
+  },
+  rejected: {
+    label: "미적용",
+    tone: "neutral",
+    message: "제안을 미적용 처리했어요. 현재 돌봄 정보는 유지돼요.",
   },
   "no-change": {
     label: "제안 없음",

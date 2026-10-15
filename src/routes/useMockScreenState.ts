@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router";
+import { useLocation, useSearchParams } from "react-router";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
 
 export function useMockScreenState<T extends string>(
@@ -6,6 +6,7 @@ export function useMockScreenState<T extends string>(
   fallback: T,
 ) {
   const [params, setParams] = useSearchParams();
+  const { state: navigationState } = useLocation();
   const requested = params.get("mockState");
   const state = isMockPreviewEnabled
     ? (options.find((option) => option.value === requested)?.value ?? fallback)
@@ -22,7 +23,7 @@ export function useMockScreenState<T extends string>(
         next.set("mockState", value);
         return next;
       },
-      { replace: true, preventScrollReset: true },
+      { replace: true, preventScrollReset: true, state: navigationState },
     );
   }
   return [state, setState] as const;

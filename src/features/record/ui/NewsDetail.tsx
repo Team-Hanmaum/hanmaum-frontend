@@ -1,9 +1,7 @@
 import { LoadingState, Notice } from "@/components/feedback";
 import { Badge, Comparison, TextAction } from "@/components/ui";
-import type {
-  RecordAnalysisStatus,
-  RecordView,
-} from "../model/recordViewTypes";
+import type { RecordView } from "../model/recordViewTypes";
+import type { NewsStatus } from "./NewsCard";
 import { RecordOriginalCard } from "./RecordOriginalCard";
 
 const presentations = {
@@ -30,11 +28,21 @@ const presentations = {
   },
   applied: {
     badge: "반영",
-    title: "검토한 제안이\n반영됐어요",
+    title: "제안 검토를\n마쳤어요",
     description: "남긴 소식은 가족과 계속 함께 볼 수 있어요.",
   },
+  pending: {
+    badge: "승인 요청",
+    title: "소유자의 확인을\n기다리고 있어요",
+    description: "요청만으로 현재 돌봄 정보는 바뀌지 않아요.",
+  },
+  rejected: {
+    badge: "미적용",
+    title: "제안을\n미적용 처리했어요",
+    description: "현재 돌봄 정보는 바뀌지 않았어요.",
+  },
 } satisfies Record<
-  RecordAnalysisStatus,
+  NewsStatus,
   { badge: string; title: string; description: string }
 >;
 
@@ -45,7 +53,7 @@ export function NewsDetail({
   onDelete,
 }: {
   record: RecordView;
-  status: RecordAnalysisStatus;
+  status: NewsStatus;
   owner: boolean;
   onDelete: () => void;
 }) {
@@ -59,11 +67,18 @@ export function NewsDetail({
           tone="brand"
         />
         <h1 className="text-hm-title-page whitespace-pre-line">
-          {presentation.title}
+          {status === "review"
+            ? `확인할 제안이\n${record.proposalSummary?.count ?? 1}건 있어요`
+            : presentation.title}
         </h1>
         <p className="text-hm-body-default text-hm-text-secondary">
           {presentation.description}
         </p>
+        {record.proposalSummary && (
+          <p className="text-hm-body-small text-hm-text-secondary">
+            {record.proposalSummary.message}
+          </p>
+        )}
       </div>
       {status === "analyzing" && (
         <LoadingState

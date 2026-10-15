@@ -14,6 +14,7 @@ export type RecordView = {
   author: { id: string; name: string; self: boolean };
   createdAt: number;
   analysisStatus: RecordAnalysisStatus;
+  proposalSummary?: { status: NewsStatus; count: number; message: string };
   proposal?: {
     typeLabel: string;
     title: string;

@@ -26,6 +26,7 @@ export function HomeContent({
   onOpenNews,
   onCare,
   onPending,
+  onHistory,
   onRetry,
 }: {
   space: CareSpaceView;
@@ -37,6 +38,7 @@ export function HomeContent({
   onOpenNews: (id: string) => void;
   onCare: () => void;
   onPending: () => void;
+  onHistory: () => void;
   onRetry: () => void;
 }) {
   const empty = state === "empty" || state === "created";
@@ -222,7 +224,7 @@ export function HomeContent({
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
               title="최근 확정된 변경"
-              action={{ label: "이력 보기", onClick: onPending }}
+              action={{ label: "이력 보기", onClick: onHistory }}
             />
             {data.recentChanges.map((change) => (
               <MenuRow
@@ -230,7 +232,7 @@ export function HomeContent({
                 icon="check"
                 title={change.title}
                 description={change.description}
-                onClick={onPending}
+                onClick={onHistory}
               />
             ))}
           </section>
