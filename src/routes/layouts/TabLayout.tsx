@@ -28,6 +28,8 @@ import {
 } from "../paths";
 import { useMockScreenState } from "../useMockScreenState";
 import { SpaceBottomNavigation } from "./SpaceBottomNavigation";
+import { careListStates } from "@/features/careitem/model/careScreenStates";
+import { CareListAction } from "./CareListAction";
 
 function SpaceHeader({
   space,
@@ -99,6 +101,10 @@ export function TabLayout() {
     newsListStates,
     "default",
   );
+  const [careState, setCareState] = useMockScreenState(
+    careListStates,
+    "default",
+  );
   if (!careSpaceId || !active || !spaceTabs.includes(active))
     return <NotFoundPage />;
   if (!space || !isMockPreviewEnabled)
@@ -135,6 +141,13 @@ export function TabLayout() {
             options={newsListStates}
             onChange={setNewsState}
           />
+        ) : active === "care" ? (
+          <MockStateSelect
+            message="돌봄 UI 예시 · 실제 저장 없음 · 새로고침 시 초기화"
+            value={careState}
+            options={careListStates}
+            onChange={setCareState}
+          />
         ) : (
           <MockNotice message="화면 이동 확인용 · 실제 업무 기능 연결 전" />
         )
@@ -163,6 +176,7 @@ export function TabLayout() {
                 mode="news"
               />
             )}
+          {active === "care" && <CareListAction spaceId={space.id} />}
           <SpaceBottomNavigation
             spaceId={space.id}
             active={active}

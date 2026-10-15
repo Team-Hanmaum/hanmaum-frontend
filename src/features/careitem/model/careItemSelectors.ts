@@ -155,6 +155,12 @@ export function careCardMeta(
 export function careCardBody(item: CareItemView) {
   if (item.needsReconfirmation)
     return "소유자가 새 내용을 확인하기 전까지 기존 내용은 표시하지 않아요.";
+  if (
+    item.kind === "task" &&
+    item.status === "completed" &&
+    item.statusChangedAt
+  )
+    return `${new Intl.DateTimeFormat("ko-KR", { month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }).format(item.statusChangedAt)}에 완료했어요.`;
   if (item.kind === "task")
     return item.fields.dueDate
       ? `기한 ${formatCareDate(item.fields.dueDate)}`
