@@ -21,7 +21,10 @@ import {
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import { useMockProposals } from "@/features/proposal/model/useMockProposals";
 import { mockProposals } from "@/features/proposal/model/mockProposals";
-import { retargetProposal } from "@/features/proposal/model/proposalDrafts";
+import {
+  retargetProposal,
+  isConfirmedQuestionChange,
+} from "@/features/proposal/model/proposalDrafts";
 import { useMockRecords } from "@/features/record/model/useMockRecords";
 import { ProposalSources } from "@/features/proposal/ui/ProposalSources";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
@@ -99,7 +102,11 @@ export function ProposalTargetPage() {
         : proposalListPath(space.id),
     );
   const candidates = data.items.filter(
-    (item) => item.kind === proposal?.kind && !item.needsReconfirmation,
+    (item) =>
+      proposal &&
+      item.kind === proposal.kind &&
+      !item.needsReconfirmation &&
+      !isConfirmedQuestionChange(proposal, item),
   );
   const target = candidates.find((item) => item.id === selected);
   const projected =

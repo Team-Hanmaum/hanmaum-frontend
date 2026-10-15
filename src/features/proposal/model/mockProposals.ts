@@ -8,7 +8,12 @@ import {
   validateCareFields,
 } from "@/features/careitem/model/careItemFields";
 import type { CareItemFields } from "@/features/careitem/model/careItemViewTypes";
-import { reviseProposal, retargetProposal } from "./proposalDrafts";
+import {
+  reviseProposal,
+  retargetProposal,
+  isConfirmedQuestionChange,
+} from "./proposalDrafts";
+import { isConfirmedQuestion } from "@/features/careitem/model/careItemStatus";
 import { applyMockProposals } from "./applyMockProposals";
 import { recordImpact, removeRecordEvidence } from "./removeRecordEvidence";
 import type { RecordDeletion } from "@/features/record/model/recordDeletionTypes";
@@ -90,6 +95,7 @@ export const mockProposals = {
       return failure("permission");
     if (!item?.needsReconfirmation || item.version !== version)
       return failure("changed");
+    if (isConfirmedQuestion(item)) return failure("confirmed-question");
     if (
       !evidence.trim() ||
       Object.keys(validateCareFields(item.kind, fields)).length ||
@@ -166,6 +172,8 @@ export const mockProposals = {
       const target = current.items.find(
         (item) => item.id === proposal.targetId,
       );
+      if (isConfirmedQuestionChange(proposal, target))
+        return failure("confirmed-question", [proposalId]);
       if (
         proposal.operation !== "create" &&
         (!target ||
@@ -193,6 +201,8 @@ export const mockProposals = {
       );
       if (!target || proposal.operation === "create")
         return failure("changed", [proposalId]);
+      if (isConfirmedQuestionChange(proposal, target))
+        return failure("confirmed-question", [proposalId]);
       updated = retargetProposal(proposal, target, space);
     }
     publish(space.id, {
@@ -279,9 +289,33 @@ export const mockProposals = {
       );
     if (new Set(selected.map((item) => item.targetId)).size !== selected.length)
       return failure("conflict", ids);
+    if (decision !== "rejected") {
+      const locked = selected.filter((proposal) =>
+        isConfirmedQuestionChange(
+          proposal,
+          current.items.find((item) => item.id === proposal.targetId),
+        ),
+      );
+      if (locked.length)
+        return failure(
+          "confirmed-question",
+          locked.map((proposal) => proposal.id),
+        );
+    }
     const id = `mock-${decision}-${crypto.randomUUID()}`;
     const createdAt = Date.now();
     const author = { id: actor.id, name: actor.name };
+    let items = current.items;
+    if (decision === "applied") {
+      const application = applyMockProposals(
+        items,
+        selected,
+        author,
+        createdAt,
+      );
+      if (!application.ok) return application;
+      items = application.items;
+    }
     const copies = selected.map((proposal) => ({
       ...proposal,
       beforeValue:
@@ -316,10 +350,7 @@ export const mockProposals = {
               { id, decision, actor: author, createdAt, proposals: copies },
             ]
           : current.results,
-      items:
-        decision === "applied"
-          ? applyMockProposals(current.items, selected, author, createdAt)
-          : current.items,
+      items,
     });
     return { ok: true, id };
   },

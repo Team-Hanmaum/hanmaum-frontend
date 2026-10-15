@@ -1,6 +1,7 @@
 import { Button, TextAction } from "@/components/ui";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import type { CareItemView } from "../model/careItemViewTypes";
+import { isConfirmedQuestion } from "../model/careItemStatus";
 
 // 아직 구현하지 않은 관리 흐름은 요청이나 성공으로 가장하지 않는다.
 export function CareItemActions({
@@ -12,6 +13,7 @@ export function CareItemActions({
   space: CareSpaceView;
   onReconfirm: () => void;
 }) {
+  if (isConfirmedQuestion(item)) return null;
   if (item.needsReconfirmation)
     return space.role === "owner" ? (
       <Button onClick={onReconfirm}>새 내용으로 확인</Button>

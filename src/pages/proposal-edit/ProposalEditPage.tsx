@@ -9,7 +9,10 @@ import { CareFieldsForm } from "@/features/careitem/ui/CareFieldsForm";
 import { useMockRecords } from "@/features/record/model/useMockRecords";
 import { useMockProposals } from "@/features/proposal/model/useMockProposals";
 import { mockProposals } from "@/features/proposal/model/mockProposals";
-import { proposalFields } from "@/features/proposal/model/proposalDrafts";
+import {
+  proposalFields,
+  isConfirmedQuestionChange,
+} from "@/features/proposal/model/proposalDrafts";
 import type { ProposalView } from "@/features/proposal/model/proposalViewTypes";
 import { useProposalAction } from "@/features/proposal/model/useProposalAction";
 import { ProposalSources } from "@/features/proposal/ui/ProposalSources";
@@ -46,7 +49,13 @@ export function ProposalEditPage() {
       item.operation !== "link",
   );
   const navigate = useNavigate();
-  if (!proposal)
+  const locked =
+    proposal &&
+    isConfirmedQuestionChange(
+      proposal,
+      data.items.find((item) => item.id === proposal.targetId),
+    );
+  if (!proposal || locked)
     return (
       <ProposalPageLayout
         title="제안 내용 수정"
@@ -54,8 +63,14 @@ export function ProposalEditPage() {
         onBack={() => void navigate(proposalListPath(space.id))}
       >
         <EmptyState
-          title="수정할 제안을 확인할 수 없어요"
-          body="원본이 삭제되었거나 이미 요청·처리된 제안은 수정할 수 없어요."
+          title={
+            locked ? "이미 확인된 질문이에요" : "수정할 제안을 확인할 수 없어요"
+          }
+          body={
+            locked
+              ? "답변 확인이 끝난 질문은 내용을 수정할 수 없어요."
+              : "원본이 삭제되었거나 이미 요청·처리된 제안은 수정할 수 없어요."
+          }
           action={{
             label: "확인할 내용으로",
             onClick: () => void navigate(proposalListPath(space.id)),

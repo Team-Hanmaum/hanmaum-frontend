@@ -7,6 +7,7 @@ import { getCarePendingProposals } from "@/features/proposal/model/proposalSelec
 import { CarePendingNotice } from "@/features/proposal/ui/CarePendingNotice";
 import { careKindLabels } from "@/features/careitem/model/careItemViewTypes";
 import { careItemListFilter } from "@/features/careitem/model/careItemSelectors";
+import { isConfirmedQuestion } from "@/features/careitem/model/careItemStatus";
 import { useCareNow } from "@/features/careitem/model/useCareNow";
 import { CareItemContent } from "@/features/careitem/ui/CareItemContent";
 import { CareItemActions } from "@/features/careitem/ui/CareItemActions";
@@ -33,8 +34,10 @@ export function CareItemPage() {
   );
   const onProposal = useCareProposalNavigation(space.id);
   const label = item ? careKindLabels[item.kind] : "돌봄";
+  const locked = isConfirmedQuestion(item);
   const hasActions =
     item &&
+    !locked &&
     (item.needsReconfirmation
       ? space.role === "owner"
       : item.kind === "task" ||
@@ -97,7 +100,7 @@ export function CareItemPage() {
               <MenuRow
                 icon="edit"
                 title={`${label} 관리 · 준비 중`}
-                description="내용 변경 · 공유 · 삭제"
+                description={locked ? "공유 · 삭제" : "내용 변경 · 공유 · 삭제"}
                 disabled
               />
             )}

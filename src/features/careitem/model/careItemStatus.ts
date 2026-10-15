@@ -1,4 +1,13 @@
-import type { CareItemKind, CareItemStatus } from "./careItemViewTypes";
+import type {
+  CareItemKind,
+  CareItemStatus,
+  CareItemView,
+} from "./careItemViewTypes";
+
+// 소유자가 답을 확인한 질문은 종료된 항목으로 취급한다.
+export function isConfirmedQuestion(item: CareItemView | undefined): boolean {
+  return item?.kind === "question" && item.status === "confirmed";
+}
 
 export const careStatusLabels: Record<CareItemStatus, string> = {
   scheduled: "예정",
