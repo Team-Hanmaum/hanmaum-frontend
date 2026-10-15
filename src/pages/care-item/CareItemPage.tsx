@@ -19,6 +19,8 @@ import {
   newsCreatePath,
   careListPath,
   careManagePath,
+  careItemPath,
+  careRequestsPath,
 } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useCareProposalNavigation } from "@/routes/useCareProposalNavigation";
@@ -38,6 +40,7 @@ export function CareItemPage() {
   const locked = isConfirmedQuestion(item);
   const hasActions =
     item &&
+    !item.deletedAt &&
     !locked &&
     (item.needsReconfirmation
       ? space.role === "owner"
@@ -56,6 +59,11 @@ export function CareItemPage() {
           <CareItemActions
             item={item}
             space={space}
+            onAction={(action, next) =>
+              void navigate(
+                `${careItemPath(space.id, item.id)}/${action}${action === "status" && next ? `?next=${next}` : ""}`,
+              )
+            }
             onReconfirm={() =>
               void navigate(careReconfirmPath(space.id, item.id))
             }
@@ -64,18 +72,27 @@ export function CareItemPage() {
       }
     >
       {!item || item.deletedAt ? (
-        <EmptyState
-          title={
-            item?.deletedAt
-              ? "삭제된 항목이에요"
-              : "돌봄 항목을 확인할 수 없어요"
-          }
-          body="현재 목록에서 제외된 항목이에요. 일반 삭제의 변경 이력은 유지돼요."
-          action={{
-            label: "돌봄 목록 보기",
-            onClick: () => void navigate(careListPath(space.id)),
-          }}
-        />
+        <>
+          <EmptyState
+            title={
+              item?.deletedAt
+                ? "삭제된 항목이에요"
+                : "돌봄 항목을 확인할 수 없어요"
+            }
+            body="현재 목록에서 제외된 항목이에요. 일반 삭제의 변경 이력은 유지돼요."
+            action={{
+              label: "돌봄 목록 보기",
+              onClick: () => void navigate(careListPath(space.id)),
+            }}
+          />
+          {item?.deletedAt && (
+            <MenuRow
+              icon="clock-brand"
+              title="변경 이력 보기"
+              onClick={() => void navigate(careHistoryPath(space.id, item.id))}
+            />
+          )}
+        </>
       ) : (
         <>
           <CareItemContent
@@ -89,6 +106,24 @@ export function CareItemPage() {
             />
           )}
           <div className="divide-y divide-hm-divider-default overflow-hidden rounded-hm-16 bg-hm-bg-surface">
+            {data.careChanges?.some(
+              (change) =>
+                change.draft.itemId === item.id &&
+                change.status === "requested" &&
+                (space.role === "owner" ||
+                  change.author.id ===
+                    space.members.find((member) => member.self)?.id),
+            ) && (
+              <MenuRow
+                icon="news-brand"
+                title="확인 중인 요청 보기"
+                onClick={() =>
+                  void navigate(
+                    `${careRequestsPath(space.id)}?item=${encodeURIComponent(item.id)}`,
+                  )
+                }
+              />
+            )}
             <MenuRow
               icon="link-brand"
               title="근거 보기"

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { Badge, Button, MenuRow, TextAction } from "@/components/ui";
 import { BottomSheet, Notice } from "@/components/feedback";
 import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog";
@@ -28,6 +28,7 @@ import {
   careDraftError,
   canApplyCareChange,
   careChangeTitle,
+  careStatusChoices,
 } from "../model/careChangeRules";
 import { mockCareChanges } from "../model/mockCareChanges";
 import { CareChangeInputs } from "./CareChangeInputs";
@@ -53,18 +54,25 @@ export function CareChangeForm({
   item?: CareItemView;
   space: CareSpaceView;
 }) {
-  const [initial] = useState(() => makeCareDraft(kind, operation, item));
+  const [params] = useSearchParams();
+  const [initial] = useState(() => {
+    const value = makeCareDraft(kind, operation, item);
+    if (operation === "status" && item)
+      value.nextStatus = careStatusChoices(item).find(
+        (status) => status === params.get("next"),
+      );
+    return value;
+  });
   const [draft, setDraft] = useState(initial);
   const [review, setReview] = useState(operation === "delete");
   const [error, setError] = useState("");
-  const [unknown, setUnknown] = useState(false);
   const [sources, setSources] = useState(false);
   const [state, setState] = useMockScreenState(states, "default");
   const { pending, run } = useMockAction();
   const navigate = useNavigate();
   const records = useMockRecords(space);
   const { blocker, allowNavigation } = useUnsavedChanges(
-    !unknown && JSON.stringify(draft) !== JSON.stringify(initial),
+    JSON.stringify(draft) !== JSON.stringify(initial),
   );
   const timeScreen = useTimeSelectionScreen(kind === "schedule" && !review);
   const back = () =>
@@ -114,13 +122,12 @@ export function CareChangeForm({
         setError(result.message);
         return;
       }
-      if (state === "unknown") {
-        setUnknown(true);
-        return;
-      }
       allowNavigation(
         () =>
-          void navigate(careChangePath(space.id, result.id), { replace: true }),
+          void navigate(
+            `${careChangePath(space.id, result.id)}${state === "unknown" ? "?pendingResult=1" : ""}`,
+            { replace: true },
+          ),
       );
     });
   }
@@ -168,20 +175,7 @@ export function CareChangeForm({
         },
       }}
       actions={
-        unknown ? (
-          <Button
-            onClick={() =>
-              allowNavigation(
-                () =>
-                  void navigate(careChangePath(space.id, draft.id), {
-                    replace: true,
-                  }),
-              )
-            }
-          >
-            처리 결과 확인
-          </Button>
-        ) : blocked ? (
+        blocked ? (
           <Button onClick={back}>항목으로 돌아가기</Button>
         ) : (
           <>
@@ -222,14 +216,10 @@ export function CareChangeForm({
           }
           body="지금은 변경할 수 없어요. 이 상태는 Mock 예시이며 실제 잠금·권한 확인은 API 연결 후 적용해요."
         />
-      ) : unknown ? (
-        <Notice
-          title="처리 결과를 확인하고 있어요"
-          body="다시 제출하지 말고 기존 처리 결과를 확인해 주세요. Mock에서 저장한 결과를 조회해요."
-        />
       ) : (
         <>
           <Badge
+            className="self-start"
             label={
               review
                 ? direct
@@ -271,6 +261,7 @@ export function CareChangeForm({
               onChange={setDraft}
               onTimeSelect={timeScreen.show}
               disabled={pending}
+              showErrors={Boolean(error)}
             />
           )}
           {!review && operation === "edit" && item && (

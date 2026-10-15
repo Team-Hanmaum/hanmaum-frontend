@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import {
+  useNavigate,
+  useOutletContext,
+  useParams,
+  useSearchParams,
+} from "react-router";
 import { EmptyState, Notice } from "@/components/feedback";
 import { Badge, Button, MenuRow, TextAction } from "@/components/ui";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -23,6 +28,7 @@ import {
 export function CareChangeDetailPage() {
   const space = useOutletContext<CareSpaceView>();
   const { changeId } = useParams();
+  const [params, setParams] = useSearchParams();
   const data = useMockProposals(space);
   const change = data.careChanges?.find((entry) => entry.id === changeId);
   const [ownerPreview, setOwnerPreview] = useState(false);
@@ -62,6 +68,35 @@ export function CareChangeDetailPage() {
       if (!result.ok) setError(result.message);
     });
   }
+  if (visible && params.get("pendingResult") === "1")
+    return (
+      <ProposalPageLayout
+        title="처리 결과 확인"
+        spaceId={space.id}
+        onBack={() => void navigate(careRequestsPath(space.id))}
+        actions={
+          <Button
+            onClick={() =>
+              void setParams(
+                (previous) => {
+                  const next = new URLSearchParams(previous);
+                  next.delete("pendingResult");
+                  return next;
+                },
+                { replace: true },
+              )
+            }
+          >
+            처리 결과 확인
+          </Button>
+        }
+      >
+        <Notice
+          title="처리 결과를 확인하고 있어요"
+          body="다시 제출하지 말고 기존 처리 결과를 확인해 주세요. Mock에서 저장한 결과를 조회해요."
+        />
+      </ProposalPageLayout>
+    );
   return (
     <ProposalPageLayout
       title={canDecide ? "요청 검토" : waiting ? "요청 상태" : "처리 결과"}
@@ -114,6 +149,7 @@ export function CareChangeDetailPage() {
       ) : (
         <>
           <Badge
+            className="self-start"
             label={
               waiting
                 ? "승인 대기"

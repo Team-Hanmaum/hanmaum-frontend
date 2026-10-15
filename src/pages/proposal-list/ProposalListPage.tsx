@@ -15,6 +15,8 @@ import {
 } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
+import { MenuRow } from "@/components/ui";
+import { careRequestsPath } from "@/routes/paths";
 
 export function ProposalListPage() {
   const space = useOutletContext<CareSpaceView>();
@@ -39,6 +41,15 @@ export function ProposalListPage() {
         onChange: setState,
       }}
     >
+      <MenuRow
+        icon="care-brand"
+        title="돌봄에서 직접 남긴 요청·변경"
+        onClick={() =>
+          void navigate(
+            `${careRequestsPath(space.id)}?status=${status === "applied" ? "applied" : status === "rejected" ? "rejected" : "requested"}`,
+          )
+        }
+      />
       <ProposalList
         space={space}
         data={data}

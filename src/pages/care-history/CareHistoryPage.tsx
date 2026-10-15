@@ -16,6 +16,8 @@ import {
   newsDetailPath,
 } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
+import { CareChangeSummary } from "@/features/careitem/ui/CareChangeSummary";
+import { careChangeTitle } from "@/features/careitem/model/careChangeRules";
 
 export function CareHistoryPage() {
   const space = useOutletContext<CareSpaceView>();
@@ -35,6 +37,19 @@ export function CareHistoryPage() {
     (entry) => entry.itemId === itemId,
   );
   const timeline = [
+    ...(data.careChanges ?? [])
+      .filter(
+        (change) =>
+          change.status === "applied" && change.draft.itemId === itemId,
+      )
+      .map((change) => ({
+        id: change.id,
+        createdAt: change.decidedAt ?? change.createdAt,
+        title: change.redacted
+          ? "원본이 삭제된 변경"
+          : careChangeTitle(change.draft),
+        actor: change.decidedBy?.name ?? change.author.name,
+      })),
     ...results.map((result) => ({
       id: result.id,
       createdAt: result.createdAt,
@@ -59,6 +74,12 @@ export function CareHistoryPage() {
     })),
   ].toSorted((a, b) => b.createdAt - a.createdAt);
   const result = results.find((entry) => entry.id === historyId);
+  const change = data.careChanges?.find(
+    (entry) =>
+      entry.id === historyId &&
+      entry.status === "applied" &&
+      entry.draft.itemId === itemId,
+  );
   const deletion = deletions.find((entry) => entry.id === historyId);
   const reconfirmation = reconfirmations.find(
     (entry) => entry.id === historyId,
@@ -90,7 +111,27 @@ export function CareHistoryPage() {
         {item?.needsReconfirmation ? "변경 기록" : (item?.title ?? "변경 이력")}
       </h1>
       {historyId ? (
-        result ? (
+        change ? (
+          <>
+            <Badge
+              label="반영된 변경"
+              tone="brand"
+            />
+            <p className="text-hm-body-small">
+              {change.decidedBy?.name ?? change.author.name} ·{" "}
+              {formatRecordDate(change.decidedAt ?? change.createdAt)}
+            </p>
+            {change.redacted ? (
+              redactionNotice
+            ) : (
+              <CareChangeSummary
+                draft={change.draft}
+                before={change.before}
+                space={space}
+              />
+            )}
+          </>
+        ) : result ? (
           <>
             <Badge
               className="self-start"

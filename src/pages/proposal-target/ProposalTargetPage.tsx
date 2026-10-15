@@ -105,6 +105,7 @@ export function ProposalTargetPage() {
     (item) =>
       proposal &&
       item.kind === proposal.kind &&
+      !item.deletedAt &&
       !item.needsReconfirmation &&
       !isConfirmedQuestionChange(proposal, item),
   );

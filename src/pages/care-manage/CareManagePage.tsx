@@ -40,7 +40,10 @@ export function CareManagePage() {
         />
       ) : (
         <>
-          <Badge label={owner ? "소유자" : "구성원"} />
+          <Badge
+            className="self-start"
+            label={owner ? "소유자" : "구성원"}
+          />
           <h1 className="text-hm-title-page">{item.title}</h1>
           <CareSection title={`현재 ${careKindLabels[item.kind]}`}>
             {describeCareFields(item.kind, item.fields, space.members)}

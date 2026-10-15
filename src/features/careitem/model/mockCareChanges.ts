@@ -55,6 +55,15 @@ function applyChange(
         directContent:
           draft.evidence.trim() || "가족이 직접 입력하고 확인한 내용이에요.",
         fields: { ...fields },
+        // 기존 필드가 포함된 변경은 원본 삭제 시 함께 재검토한다.
+        dependsOnRecordIds: [
+          ...new Set(
+            item?.evidence.flatMap((entry) => [
+              ...(entry.recordId ? [entry.recordId] : []),
+              ...(entry.dependsOnRecordIds ?? []),
+            ]) ?? [],
+          ),
+        ],
       },
     ],
   };

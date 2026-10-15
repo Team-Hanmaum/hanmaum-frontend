@@ -29,6 +29,7 @@ export function HomeContent({
   onOpenCare,
   onPending,
   onHistory,
+  onChange,
   onRetry,
 }: {
   space: CareSpaceView;
@@ -42,6 +43,7 @@ export function HomeContent({
   onOpenCare: (id: string) => void;
   onPending: () => void;
   onHistory: () => void;
+  onChange: (id: string) => void;
   onRetry: () => void;
 }) {
   const empty = state === "empty" || state === "created";
@@ -270,7 +272,7 @@ export function HomeContent({
                 icon="check"
                 title={change.title}
                 description={change.description}
-                onClick={onHistory}
+                onClick={() => onChange(change.id)}
               />
             ))}
           </section>

@@ -102,6 +102,9 @@ export function careChangePath(spaceId: string, changeId: string) {
 export function careSharePath(spaceId: string, itemId: string) {
   return `${careItemPath(spaceId, itemId)}/share`;
 }
+export function careSharedPath(spaceId: string, itemId: string) {
+  return `${careItemPath(spaceId, itemId)}/shared`;
+}
 export function careHistoryPath(
   careSpaceId: string,
   itemId: string,

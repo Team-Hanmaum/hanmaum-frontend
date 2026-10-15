@@ -101,7 +101,11 @@ export const mockProposals = {
     );
     if (!isMockPreviewEnabled || space.role !== "owner" || !actor)
       return failure("permission");
-    if (!item?.needsReconfirmation || item.version !== version)
+    if (
+      item?.deletedAt ||
+      !item?.needsReconfirmation ||
+      item.version !== version
+    )
       return failure("changed");
     if (isConfirmedQuestion(item)) return failure("confirmed-question");
     if (
@@ -185,6 +189,7 @@ export const mockProposals = {
       if (
         proposal.operation !== "create" &&
         (!target ||
+          target.deletedAt ||
           target.needsReconfirmation ||
           target.version !== proposal.targetVersion)
       )
@@ -205,6 +210,7 @@ export const mockProposals = {
         (item) =>
           item.id === change.targetId &&
           item.kind === proposal.kind &&
+          !item.deletedAt &&
           !item.needsReconfirmation,
       );
       if (!target || proposal.operation === "create")
@@ -285,6 +291,7 @@ export const mockProposals = {
         (proposal.operation === "create"
           ? Boolean(target) || selection[index].version !== 0
           : !target ||
+            target.deletedAt ||
             target.needsReconfirmation ||
             target.version !== proposal.targetVersion ||
             target.version !== selection[index].version)

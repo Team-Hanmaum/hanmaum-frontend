@@ -175,6 +175,30 @@ const recordDeletionRoutes: RouteObject[] = [
 // 홈·돌봄·소식에서 연결되는 현재 돌봄 조회·근거·이력·재확인
 const careItemRoutes: RouteObject[] = [
   {
+    path: "care/items/:itemId/share",
+    lazy: async () => ({
+      Component: (await import("@/pages/care-share/CareSharePage"))
+        .CareSharePage,
+    }),
+    handle: { title: "공유" },
+  },
+  {
+    path: "care/items/:itemId/shared",
+    lazy: async () => ({
+      Component: (await import("@/pages/care-share/SharedCarePage"))
+        .SharedCarePage,
+    }),
+    handle: { title: "공유된 돌봄" },
+  },
+  {
+    path: "care/requests",
+    lazy: async () => ({
+      Component: (await import("@/pages/care-change/CareRequestsPage"))
+        .CareRequestsPage,
+    }),
+    handle: { title: "돌봄 요청·변경" },
+  },
+  {
     path: "care/new/:kind",
     lazy: loadCareChangePage,
     handle: { title: "돌봄 추가", operation: "create" },

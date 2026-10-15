@@ -123,6 +123,9 @@ export function CareItemContent({
             : "정해진 기한이 없어요"}
         </DetailSection>
       )}
+      {fields.note && (
+        <DetailSection label="추가 설명">{fields.note}</DetailSection>
+      )}
       {kind === "guidance" && (
         <DetailSection label="안내받은 날짜">
           {fields.date ? formatCareDate(fields.date) : "안내 날짜 미정"}
@@ -136,15 +139,15 @@ export function CareItemContent({
           }
           body={
             canChangeTask
-              ? "진행 시작을 누르지 않아도 바로 완료로 표시할 수 있어요. 상태 변경 화면은 준비 중이에요."
-              : "소유자 또는 담당자는 바로 상태를 바꿀 수 있어요. 다른 가족은 변경을 요청해 주세요. 상태 변경 화면은 준비 중이에요."
+              ? "진행 시작을 누르지 않아도 바로 완료로 표시할 수 있어요."
+              : "소유자 또는 담당자는 바로 상태를 바꿀 수 있어요. 다른 가족은 변경을 요청해 주세요."
           }
         />
       )}
       {kind === "question" && item.status === "unconfirmed" && (
         <Notice
           title="답변 후 소유자가 확인해요"
-          body="가족이 답변을 남기면 소유자가 확인한 뒤 ‘확인됨’으로 바뀌어요. 답변 화면은 준비 중이에요."
+          body="가족이 답변을 남기면 소유자가 확인한 뒤 ‘확인됨’으로 바뀌어요."
         />
       )}
     </>

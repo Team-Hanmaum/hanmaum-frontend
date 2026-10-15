@@ -11,6 +11,8 @@ import {
   spaceInvitePath,
   newsDetailPath,
   proposalListPath,
+  proposalResultPath,
+  careChangePath,
 } from "@/routes/paths";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 import { careItemPath, careListPath } from "@/routes/paths";
@@ -24,7 +26,9 @@ export function HomePage() {
   const now = useCareNow();
   const [state, setState] = useMockScreenState(
     homeScreenStates,
-    space.empty ? "empty" : "default",
+    space.empty && !records.length && !proposals.items.length
+      ? "empty"
+      : "default",
   );
   return (
     <HomeContent
@@ -44,6 +48,13 @@ export function HomePage() {
       onOpenCare={(id) => void navigate(careItemPath(space.id, id))}
       onPending={() => void navigate(proposalListPath(space.id))}
       onHistory={() => void navigate(proposalListPath(space.id, "applied"))}
+      onChange={(id) =>
+        void navigate(
+          proposals.careChanges?.some((change) => change.id === id)
+            ? careChangePath(space.id, id)
+            : proposalResultPath(space.id, id),
+        )
+      }
       onRetry={() => setState(space.empty ? "empty" : "default")}
     />
   );

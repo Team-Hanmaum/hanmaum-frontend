@@ -26,7 +26,11 @@ export function CareChangeSummary({
         ? ["title", "date", "time", "location"]
         : draft.kind === "task"
           ? ["content", "assigneeId", "dueDate", "note"]
-          : ["content", "note"];
+          : draft.kind === "observation"
+            ? ["content", "date"]
+            : draft.kind === "guidance"
+              ? ["content", "location", "date"]
+              : ["content", "note"];
   const labels: Record<keyof CareItemFields, string> = {
     title: "이름",
     content: "내용",

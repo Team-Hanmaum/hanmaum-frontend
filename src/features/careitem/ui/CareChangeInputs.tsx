@@ -7,6 +7,7 @@ import { careStatusLabels } from "../model/careItemStatus";
 import { careStatusChoices } from "../model/careChangeRules";
 import { CareFieldsForm } from "./CareFieldsForm";
 import { CareSection } from "./CareSection";
+import { validateCareFields } from "../model/careItemFields";
 
 export function CareChangeInputs({
   draft,
@@ -15,6 +16,7 @@ export function CareChangeInputs({
   onChange,
   onTimeSelect,
   disabled,
+  showErrors = false,
 }: {
   draft: CareChangeDraft;
   item?: CareItemView;
@@ -22,6 +24,7 @@ export function CareChangeInputs({
   onChange: (draft: CareChangeDraft) => void;
   onTimeSelect: () => void;
   disabled: boolean;
+  showErrors?: boolean;
 }) {
   const { operation } = draft;
   return (
@@ -35,6 +38,11 @@ export function CareChangeInputs({
           members={space.members}
           onTimeSelect={onTimeSelect}
           disabled={disabled}
+          errors={
+            showErrors
+              ? validateCareFields(draft.kind, draft.fields)
+              : undefined
+          }
         />
       )}
       {operation === "assignee" && (
@@ -103,6 +111,11 @@ export function CareChangeInputs({
           <CareSection title="질문">{item?.fields.content}</CareSection>
           <Field
             label="답변"
+            error={
+              showErrors && !draft.answer.trim()
+                ? "답변을 입력해 주세요."
+                : undefined
+            }
             multiline
             rows={5}
             value={draft.answer}
@@ -116,6 +129,11 @@ export function CareChangeInputs({
       {(["edit", "assignee", "answer"] as string[]).includes(operation) && (
         <Field
           label={operation === "answer" ? "어떻게 확인했나요?" : "변경 근거"}
+          error={
+            showErrors && operation === "answer" && !draft.evidence.trim()
+              ? "확인한 근거를 입력해 주세요."
+              : undefined
+          }
           multiline
           rows={5}
           value={draft.evidence}
