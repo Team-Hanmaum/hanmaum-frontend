@@ -1,9 +1,7 @@
-import type {
-  CareItemKind,
-  CareItemStatus,
-  CareItemView,
-} from "./careItemViewTypes";
+import type { CareItemKind, CareItemView } from "./careItemViewTypes";
 import { formatCareDate, formatCareTime } from "./careItemFields";
+import { careStatusLabels } from "./careItemStatus";
+export { initialCareStatus } from "./careItemStatus";
 
 export const careTypeTabs = [
   { value: "schedule", label: "일정" },
@@ -45,30 +43,38 @@ export function readCareListFilter(params: URLSearchParams): CareListFilter {
       tabs[0]?.value,
   };
 }
-export function initialCareStatus(kind: CareItemKind): CareItemStatus {
-  return kind === "schedule"
-    ? "scheduled"
-    : kind === "task"
-      ? "not-started"
-      : kind === "question"
-        ? "unconfirmed"
-        : "recorded";
-}
 export function careStatusLabel(item: CareItemView) {
   if (item.needsReconfirmation) return "재확인 필요";
   if (item.kind === "observation") return "가족의 관찰";
   if (item.kind === "guidance") return "전달받은 안내";
-  const labels: Record<CareItemStatus, string> = {
-    scheduled: "예정",
-    completed: "완료",
-    cancelled: "취소",
-    "not-started": "미시작",
-    "in-progress": "진행 중",
-    unconfirmed: "미확인",
-    confirmed: "확인됨",
-    recorded: "확정",
-  };
-  return labels[item.status];
+  return careStatusLabels[item.status];
+}
+
+export function careItemListFilter(
+  item: CareItemView,
+  now: number,
+): CareListFilter {
+  if (item.kind === "schedule")
+    return {
+      type: "schedule",
+      status:
+        item.status === "completed" || item.status === "cancelled"
+          ? "closed"
+          : isPastSchedule(item, now)
+            ? "past"
+            : "upcoming",
+    };
+  if (item.kind === "task")
+    return {
+      type: "task",
+      status: item.status === "completed" ? "completed" : "remaining",
+    };
+  if (item.kind === "question")
+    return {
+      type: "question",
+      status: item.status === "confirmed" ? "confirmed" : "unconfirmed",
+    };
+  return { type: item.kind };
 }
 
 // 지난 일정은 표시 분류일 뿐 상태를 변경하지 않는다. 시간 미정이면 날짜만 비교한다.

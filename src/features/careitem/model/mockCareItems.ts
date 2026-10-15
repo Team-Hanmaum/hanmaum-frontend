@@ -31,7 +31,7 @@ export function getMockCareItems(
       title: value.title || value.content,
       fields: value,
       value: careValue(kind, value),
-      meta: careMeta(kind, value),
+      meta: careMeta(kind, value, status),
       version: 1,
       evidence: [
         {
@@ -118,6 +118,19 @@ export function getMockCareItems(
   ];
   return items.map((item) => ({
     ...item,
+    // 관찰·안내의 확정 예시는 소식 원문에 연결한다. 직접 등록 경로가 아니다.
+    ...(item.kind === "observation" || item.kind === "guidance"
+      ? {
+          evidence: item.evidence.map((evidence) => ({
+            ...evidence,
+            directContent: undefined,
+            recordId:
+              item.kind === "observation"
+                ? "mock-record-confirmed-observation"
+                : "mock-record-confirmed-guidance",
+          })),
+        }
+      : {}),
     ...(item.status === "completed"
       ? { statusChangedAt: Date.parse("2026-09-30T13:00:00+09:00") }
       : {}),
@@ -127,6 +140,11 @@ export function getMockCareItems(
             content: "센터는 일요일에 운영하지 않아요.",
             confirmedBy: owner.name,
           },
+          evidence: item.evidence.map((evidence) => ({
+            ...evidence,
+            directContent:
+              "센터에 문의해 일요일에는 운영하지 않는다는 답변을 확인했어요. (화면 확인용 예시)",
+          })),
         }
       : {}),
   }));

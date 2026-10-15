@@ -166,7 +166,7 @@ const recordDeletionRoutes: RouteObject[] = [
   },
 ];
 
-// 소식에서 연결되는 현재 돌봄 조회·근거·이력·재확인
+// 홈·돌봄·소식에서 연결되는 현재 돌봄 조회·근거·이력·재확인
 const careItemRoutes: RouteObject[] = [
   {
     path: "care/items/:itemId",

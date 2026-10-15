@@ -1,4 +1,9 @@
-import type { CareItemFields, CareItemKind } from "./careItemViewTypes";
+import type {
+  CareItemFields,
+  CareItemKind,
+  CareItemStatus,
+} from "./careItemViewTypes";
+import { careStatusLabels, initialCareStatus } from "./careItemStatus";
 
 export const emptyCareFields: CareItemFields = {
   title: "",
@@ -32,23 +37,25 @@ export function careValue(kind: CareItemKind, fields: CareItemFields) {
   const [, month, day] = fields.date.split("-");
   return `${Number(month)}월 ${Number(day)}일`;
 }
-export function careMeta(kind: CareItemKind, fields: CareItemFields) {
+export function careMeta(
+  kind: CareItemKind,
+  fields: CareItemFields,
+  status: CareItemStatus = initialCareStatus(kind),
+) {
   if (kind === "schedule")
     return [
       fields.date.slice(0, 4) && `${fields.date.slice(0, 4)}년`,
       formatCareTime(fields.time),
-      "예정",
+      careStatusLabels[status],
       fields.location,
     ]
       .filter(Boolean)
       .join(" · ");
-  return kind === "task"
-    ? "미시작"
-    : kind === "question"
-      ? "미확인"
-      : kind === "observation"
-        ? "가족의 관찰"
-        : "전달받은 안내";
+  return kind === "observation"
+    ? "가족의 관찰"
+    : kind === "guidance"
+      ? "전달받은 안내"
+      : careStatusLabels[status];
 }
 export function validateCareFields(kind: CareItemKind, fields: CareItemFields) {
   const errors: Partial<Record<keyof CareItemFields, string>> = {};

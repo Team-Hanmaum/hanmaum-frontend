@@ -33,7 +33,7 @@ export function applyMockProposals(
       answer: previous?.answer,
       title: fields.title || fields.content,
       value: careValue(proposal.kind, fields),
-      meta: careMeta(proposal.kind, fields),
+      meta: careMeta(proposal.kind, fields, previous?.status),
       fields: { ...fields },
       version: (previous?.version ?? 0) + 1,
       evidence: [

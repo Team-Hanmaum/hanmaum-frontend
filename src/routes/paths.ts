@@ -1,3 +1,8 @@
+import {
+  careStatusTabs,
+  type CareListFilter,
+} from "@/features/careitem/model/careItemSelectors";
+
 export const paths = {
   landing: "/",
   login: "/login",
@@ -63,6 +68,18 @@ export function proposalEvidencePath(careSpaceId: string, proposalId: string) {
 }
 export function careItemPath(careSpaceId: string, itemId: string) {
   return `${spacePath(careSpaceId, "care")}/items/${encodeURIComponent(itemId)}`;
+}
+export function careListPath(
+  careSpaceId: string,
+  filter: CareListFilter = { type: "schedule" },
+) {
+  const params = new URLSearchParams({ type: filter.type });
+  if (
+    filter.status &&
+    careStatusTabs[filter.type].some((tab) => tab.value === filter.status)
+  )
+    params.set("status", filter.status);
+  return `${spacePath(careSpaceId, "care")}?${params}`;
 }
 export function careSourcesPath(careSpaceId: string, itemId: string) {
   return `${careItemPath(careSpaceId, itemId)}/sources`;

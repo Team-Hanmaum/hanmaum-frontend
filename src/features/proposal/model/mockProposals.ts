@@ -119,7 +119,7 @@ export const mockProposals = {
               fields: { ...fields },
               title: fields.title || fields.content,
               value: careValue(item.kind, fields),
-              meta: careMeta(item.kind, fields),
+              meta: careMeta(item.kind, fields, item.status),
               needsReconfirmation: false,
               version: entry.version + 1,
               evidence: [

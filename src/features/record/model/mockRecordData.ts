@@ -23,6 +23,24 @@ export function getMockRecordData(space: CareSpaceView): readonly RecordView[] {
     self: Boolean(member?.self),
   });
   return [
+    {
+      id: "mock-record-confirmed-observation",
+      spaceId: space.id,
+      title: "저녁에 산책했어요",
+      body: "저녁 식사 후 가족과 함께 산책했어요.",
+      author: author(other),
+      createdAt: Date.parse("2026-09-27T20:00:00+09:00"),
+      analysisStatus: "applied",
+    },
+    {
+      id: "mock-record-confirmed-guidance",
+      spaceId: space.id,
+      title: "센터 첫 방문 준비 안내",
+      body: "첫 방문 때 신분증을 가져오라고 센터에서 안내했어요.",
+      author: author(other),
+      createdAt: Date.parse("2026-09-29T10:00:00+09:00"),
+      analysisStatus: "applied",
+    },
     ...[
       [
         "mock-record-type-0",

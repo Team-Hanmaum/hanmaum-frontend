@@ -4,6 +4,7 @@ import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
 import { MockStateSelect } from "@/components/feedback/MockStateSelect";
 import { MockNotice } from "@/components/feedback/MockNotice";
 import { SpaceBottomNavigation } from "./SpaceBottomNavigation";
+import type { SpaceTab } from "../paths";
 
 export function ProposalPageLayout({
   title,
@@ -12,6 +13,7 @@ export function ProposalPageLayout({
   children,
   actions,
   tabs = false,
+  activeTab = "news",
   preview,
 }: {
   title: string;
@@ -20,6 +22,7 @@ export function ProposalPageLayout({
   children: ReactNode;
   actions?: ReactNode;
   tabs?: boolean;
+  activeTab?: SpaceTab;
   preview?: {
     value: string;
     options: readonly { value: string; label: string }[];
@@ -54,7 +57,7 @@ export function ProposalPageLayout({
             {tabs && (
               <SpaceBottomNavigation
                 spaceId={spaceId}
-                active="news"
+                active={activeTab}
               />
             )}
           </FixedBottomArea>

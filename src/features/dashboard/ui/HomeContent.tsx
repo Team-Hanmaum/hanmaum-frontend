@@ -15,6 +15,7 @@ import { CareCard } from "@/features/careitem/ui";
 import type { HomeScreenState } from "../model/homeScreenStates";
 import type { HomeView } from "../model/homeViewTypes";
 import { HomeFamilySection } from "./HomeFamilySection";
+import type { CareListFilter } from "@/features/careitem/model/careItemSelectors";
 
 export function HomeContent({
   space,
@@ -25,6 +26,7 @@ export function HomeContent({
   onNews,
   onOpenNews,
   onCare,
+  onOpenCare,
   onPending,
   onHistory,
   onRetry,
@@ -36,7 +38,8 @@ export function HomeContent({
   onInvite: () => void;
   onNews: () => void;
   onOpenNews: (id: string) => void;
-  onCare: () => void;
+  onCare: (filter?: CareListFilter) => void;
+  onOpenCare: (id: string) => void;
   onPending: () => void;
   onHistory: () => void;
   onRetry: () => void;
@@ -125,13 +128,13 @@ export function HomeContent({
                 아직 등록된 일정이 없어요.
               </p>
               <p className="text-hm-body-small text-hm-text-secondary">
-                일정·할 일·질문은 돌봄 탭에서
+                돌봄 탭에서 확정된 정보를 확인해요.
                 <br />
-                직접 추가할 수도 있어요.
+                직접 추가 화면은 준비 중이에요.
               </p>
               <Button
                 variant="secondary"
-                onClick={onCare}
+                onClick={() => onCare()}
               >
                 돌봄 목록 보기
               </Button>
@@ -158,7 +161,11 @@ export function HomeContent({
               action={
                 state === "section-error"
                   ? undefined
-                  : { label: "모두 보기", onClick: onCare }
+                  : {
+                      label: "모두 보기",
+                      onClick: () =>
+                        onCare({ type: "schedule", status: "upcoming" }),
+                    }
               }
             />
             {state === "section-error" ? (
@@ -170,6 +177,11 @@ export function HomeContent({
               />
             ) : (
               <>
+                {!data.upcomingSchedules.length && (
+                  <p className="text-hm-body-default text-hm-text-secondary">
+                    다가오는 일정이 없어요.
+                  </p>
+                )}
                 {data.upcomingSchedules.map((schedule) => (
                   <CareCard
                     key={schedule.id}
@@ -178,13 +190,17 @@ export function HomeContent({
                     meta={schedule.meta}
                     body={schedule.body}
                     bodyTone="hint"
+                    action={{
+                      label: "일정 자세히 보기",
+                      onClick: () => onOpenCare(schedule.id),
+                    }}
                   />
                 ))}
                 <MenuRow
                   icon="clock"
                   title={`지난 일정 ${data.pastScheduleCount}건`}
                   description="날짜가 지났지만 아직 예정으로 남아 있어요."
-                  onClick={onCare}
+                  onClick={() => onCare({ type: "schedule", status: "past" })}
                 />
               </>
             )}
@@ -192,16 +208,24 @@ export function HomeContent({
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
               title={`남은 할 일 ${data.tasks.length}`}
-              action={{ label: "모두 보기", onClick: onCare }}
+              action={{
+                label: "모두 보기",
+                onClick: () => onCare({ type: "task", status: "remaining" }),
+              }}
             />
             <div className="divide-y divide-hm-divider-default overflow-hidden rounded-hm-16 bg-hm-bg-surface">
+              {!data.tasks.length && (
+                <p className="p-hm-16 text-hm-body-default text-hm-text-secondary">
+                  남은 할 일이 없어요.
+                </p>
+              )}
               {data.tasks.map((task) => (
                 <MenuRow
                   key={task.id}
                   icon="check-secondary"
                   title={task.title}
                   description={task.description}
-                  onClick={onCare}
+                  onClick={() => onOpenCare(task.id)}
                 />
               ))}
             </div>
@@ -209,15 +233,24 @@ export function HomeContent({
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
               title={`미확인 질문 ${data.questions.length}`}
-              action={{ label: "모두 보기", onClick: onCare }}
+              action={{
+                label: "모두 보기",
+                onClick: () =>
+                  onCare({ type: "question", status: "unconfirmed" }),
+              }}
             />
+            {!data.questions.length && (
+              <p className="text-hm-body-default text-hm-text-secondary">
+                미확인 질문이 없어요.
+              </p>
+            )}
             {data.questions.map((question) => (
               <MenuRow
                 key={question.id}
                 icon="info-secondary"
                 title={question.title}
                 description={question.description}
-                onClick={onCare}
+                onClick={() => onOpenCare(question.id)}
               />
             ))}
           </section>
@@ -226,6 +259,11 @@ export function HomeContent({
               title="최근 확정된 변경"
               action={{ label: "이력 보기", onClick: onHistory }}
             />
+            {!data.recentChanges.length && (
+              <p className="text-hm-body-default text-hm-text-secondary">
+                아직 반영된 변경이 없어요.
+              </p>
+            )}
             {data.recentChanges.map((change) => (
               <MenuRow
                 key={change.id}

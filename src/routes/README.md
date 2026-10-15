@@ -29,14 +29,27 @@ React Router Data 모드 사용. `Router.tsx`에서 URL·페이지·레이아웃
 | `/spaces/:careSpaceId/proposals/:proposalId/evidence`         | 현재 근거·제안 근거 비교           | 뒤로가기 헤더 + 작업 버튼                    |
 | `/spaces/:careSpaceId/news/:recordId/delete`                  | 원본 삭제 영향·오류·결과 조회      | 뒤로가기 헤더 + 작업 버튼                    |
 | `/spaces/:careSpaceId/news/deletions/:deletionId`             | 원본 삭제 결과·영향 항목           | 뒤로가기 헤더 + 작업 버튼                    |
-| `/spaces/:careSpaceId/care/items/:itemId`                     | 연결된 현재 돌봄 상세              | 뒤로가기 헤더 + 작업 버튼                    |
+| `/spaces/:careSpaceId/care`                                   | 유형별 돌봄 목록·상태 필터         | 공간 헤더 + 유형별 액션 + 돌봄 탭            |
+| `/spaces/:careSpaceId/care/items/:itemId`                     | 유형별 현재 돌봄 상세              | 뒤로가기 헤더 + 액션 + 돌봄 탭               |
 | `/spaces/:careSpaceId/care/items/:itemId/sources`             | 유효한 근거                        | 뒤로가기 헤더 + 작업 버튼                    |
 | `/spaces/:careSpaceId/care/items/:itemId/history/:historyId?` | 이력 목록·전후 비교·최소 삭제 기록 | 뒤로가기 헤더 + 작업 버튼                    |
 | `/spaces/:careSpaceId/care/items/:itemId/reconfirm`           | 소유자 새 입력·근거·재확인         | 뒤로가기 헤더 + 작업 버튼                    |
-| `/spaces/:careSpaceId/care`, `family`, `all`                  | 후속 화면용 임시 페이지            | 공간 헤더 + 현재 탭                          |
+| `/spaces/:careSpaceId/family`, `all`                          | 후속 화면용 임시 페이지            | 공간 헤더 + 현재 탭                          |
 | `/_dev/components`                                            | 공통 컴포넌트 갤러리               | 개발 모드 전용                               |
 
 공간 루트(`/spaces/:careSpaceId`)는 홈으로 이동한다. 정적 `new` 경로는 공간/소식 ID로 처리하지 않는다. 경로 생성은 `spacePath`, `spaceInvitePath`, `invitationPath`, `newsCreatePath`, `newsDetailPath`에서 세그먼트를 인코딩한다. 잘못된 경로는 404, 화면 오류는 공통 라우트 오류로 연결한다. 소식 작성·상세 페이지는 진입 시 코드를 로드한다.
+
+## 돌봄 목록
+
+`/spaces/:careSpaceId/care`에서 유형과 상태를 쿼리로 전환한다. `type`은 `schedule / task / question / observation / guidance`, `status`는 일정 `upcoming / past / closed`, 할 일 `remaining / completed`, 질문 `unconfirmed / confirmed`다. 누락되거나 잘못된 값은 해당 유형의 기본 목록으로 표시한다. `careListPath`로 URL을 만들고 기존 항목 상세·근거·이력·재확인 URL은 유지한다.
+
+`CarePage`는 기존 제안 저장소의 확정 항목을 `CareList`에 전달한다. `careItemSelectors`의 같은 기준을 홈에서도 사용하며 완료·취소 일정, 완료한 할 일, 확인된 질문과 재확인 필요 항목은 각 홈 요약에서 제외한다. 날짜가 지난 예정 일정은 자동 완료하지 않는다. 예시의 정렬은 입력 순서이며 실제 정렬·페이지 크기는 API 계약 확정 후 적용한다. 일부 일정 예시 날짜는 목록 확인 시점의 이틀 뒤로 생성한다.
+
+`mockState=empty / no-results / loading / error / more-error`로 상태를 확인한다. 추가 조회 실패 예시는 이미 보이는 항목을 유지하며 재시도하면 나머지가 추가된다. 실제 네트워크 요청이나 페이지네이션 구현이 아니다. 목록에서 상세에 들어간 뒤 헤더 뒤로가기로 복귀하면 기존 쿼리·스크롤 위치를 복원한다. 상세 직접 접속 시에는 항목에 맞는 목록으로 복귀한다.
+
+일정·할 일·질문의 직접 추가, 항목 관리·상태 변경·답변·삭제·공유는 후속 범위로 준비 중 표시한다. 관찰·안내의 소식 남기기, 제안 검토, 근거·이력·재확인은 기존 Mock 흐름에 연결한다. 실제 업무 API·권한 검증은 미연동이다.
+
+Figma 직접 확인: C01~C15 중 유형별 목록·상세 및 빈 목록/실패, L01~L09 상태. 기능 기준: ITEM-01·02·09, DASH-01~05, HIST-01~03 연결.
 
 ## 화면과 상태의 경계
 

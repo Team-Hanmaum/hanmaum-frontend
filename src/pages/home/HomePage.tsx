@@ -13,12 +13,15 @@ import {
   proposalListPath,
 } from "@/routes/paths";
 import { useMockScreenState } from "@/routes/useMockScreenState";
+import { careItemPath, careListPath } from "@/routes/paths";
+import { useCareNow } from "@/features/careitem/model/useCareNow";
 
 export function HomePage() {
   const space = useOutletContext<CareSpaceView>();
   const records = useMockRecords(space);
   const proposals = useMockProposals(space);
   const navigate = useNavigate();
+  const now = useCareNow();
   const [state, setState] = useMockScreenState(
     homeScreenStates,
     space.empty ? "empty" : "default",
@@ -30,13 +33,15 @@ export function HomePage() {
         getRecordsWithProposals(records, proposals),
         proposals,
         space,
+        now,
       )}
       state={state}
       onFamily={() => void navigate(spacePath(space.id, "family"))}
       onInvite={() => void navigate(spaceInvitePath(space.id))}
       onNews={() => void navigate(spacePath(space.id, "news"))}
       onOpenNews={(id) => void navigate(newsDetailPath(space.id, id))}
-      onCare={() => void navigate(spacePath(space.id, "care"))}
+      onCare={(filter) => void navigate(careListPath(space.id, filter))}
+      onOpenCare={(id) => void navigate(careItemPath(space.id, id))}
       onPending={() => void navigate(proposalListPath(space.id))}
       onHistory={() => void navigate(proposalListPath(space.id, "applied"))}
       onRetry={() => setState(space.empty ? "empty" : "default")}
