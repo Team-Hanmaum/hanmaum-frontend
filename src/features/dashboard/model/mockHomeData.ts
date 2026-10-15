@@ -4,6 +4,7 @@ import { formatRecordDate } from "@/features/record/model/recordDates";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import type { ProposalSpaceState } from "@/features/proposal/model/proposalViewTypes";
 import { getPendingProposalCount } from "@/features/proposal/model/proposalSelectors";
+import { careChangeTitle } from "@/features/careitem/model/careChangeRules";
 import {
   careAssignee,
   careCardMeta,
@@ -76,18 +77,29 @@ export function getMockHomeData(
       title: item.fields.content,
       description: "미확인",
     })),
-    recentChanges: proposals.results
-      .filter(
-        (result) =>
-          result.decision === "applied" &&
-          result.proposals.some((proposal) => !proposal.sourceDeleted),
-      )
-      .slice()
-      .reverse()
-      .map((result) => ({
-        id: result.id,
-        title: `${result.actor.name}님이 ${result.proposals.find((proposal) => !proposal.sourceDeleted)!.title}${result.proposals.filter((proposal) => !proposal.sourceDeleted).length > 1 ? " 외 항목" : ""}을 반영했어요.`,
-        description: formatRecordDate(result.createdAt),
-      })),
+    recentChanges: [
+      ...proposals.results
+        .filter(
+          (result) =>
+            result.decision === "applied" &&
+            result.proposals.some((proposal) => !proposal.sourceDeleted),
+        )
+        .slice()
+        .reverse()
+        .map((result) => ({
+          id: result.id,
+          title: `${result.actor.name}님이 ${result.proposals.find((proposal) => !proposal.sourceDeleted)!.title}${result.proposals.filter((proposal) => !proposal.sourceDeleted).length > 1 ? " 외 항목" : ""}을 반영했어요.`,
+          description: formatRecordDate(result.createdAt),
+          createdAt: result.createdAt,
+        })),
+      ...(proposals.careChanges ?? [])
+        .filter((change) => change.status === "applied" && !change.redacted)
+        .map((change) => ({
+          id: change.id,
+          title: `${change.decidedBy?.name ?? change.author.name}님이 ${careChangeTitle(change.draft)}을 반영했어요.`,
+          description: formatRecordDate(change.decidedAt ?? change.createdAt),
+          createdAt: change.decidedAt ?? change.createdAt,
+        })),
+    ].sort((a, b) => b.createdAt - a.createdAt),
   };
 }

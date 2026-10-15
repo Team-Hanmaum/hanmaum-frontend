@@ -92,5 +92,21 @@ export function removeRecordEvidence(
       proposals: result.proposals.map(sanitize),
     })),
     items,
+    careChanges: state.careChanges?.map((change) =>
+      affected.has(change.draft.itemId)
+        ? {
+            ...change,
+            redacted: true,
+            before: undefined,
+            after: undefined,
+            draft: {
+              ...change.draft,
+              fields: { ...emptyCareFields },
+              answer: "",
+              evidence: "",
+            },
+          }
+        : change,
+    ),
   };
 }

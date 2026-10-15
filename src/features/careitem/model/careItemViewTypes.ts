@@ -19,6 +19,7 @@ export type CareItemFields = {
   location: string;
   assigneeId: string;
   dueDate: string;
+  note: string;
 };
 export type CareEvidence = {
   id: string;
@@ -51,6 +52,7 @@ export type CareItemView = {
   fields: CareItemFields;
   evidence: readonly CareEvidence[];
   needsReconfirmation?: boolean;
+  deletedAt?: number;
 };
 export const careKindLabels: Record<CareItemKind, string> = {
   schedule: "일정",

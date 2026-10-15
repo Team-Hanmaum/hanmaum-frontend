@@ -9,7 +9,8 @@ import { CarePendingNotice } from "@/features/proposal/ui/CarePendingNotice";
 import { useCareListFilter } from "@/routes/useCareListFilter";
 import { useCareProposalNavigation } from "@/routes/useCareProposalNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
-import { careItemPath } from "@/routes/paths";
+import { careItemPath, careRequestsPath } from "@/routes/paths";
+import { MenuRow } from "@/components/ui";
 
 export function CarePage() {
   const space = useOutletContext<CareSpaceView>();
@@ -20,22 +21,30 @@ export function CarePage() {
   const onProposal = useCareProposalNavigation(space.id);
   const now = useCareNow();
   return (
-    <CareList
-      items={data.items}
-      members={space.members}
-      filter={filter}
-      state={state}
-      now={now}
-      onType={setType}
-      onStatus={setStatus}
-      onOpen={(id) => void navigate(careItemPath(space.id, id))}
-      onRetry={() => setState("default")}
-      proposalNotice={(item) => (
-        <CarePendingNotice
-          proposals={getCarePendingProposals(data, item.id, space)}
-          onOpen={onProposal}
-        />
-      )}
-    />
+    <>
+      <MenuRow
+        icon="news-brand"
+        title="돌봄 요청·변경 확인"
+        description="직접 남긴 요청과 반영 결과"
+        onClick={() => void navigate(careRequestsPath(space.id))}
+      />
+      <CareList
+        items={data.items}
+        members={space.members}
+        filter={filter}
+        state={state}
+        now={now}
+        onType={setType}
+        onStatus={setStatus}
+        onOpen={(id) => void navigate(careItemPath(space.id, id))}
+        onRetry={() => setState("default")}
+        proposalNotice={(item) => (
+          <CarePendingNotice
+            proposals={getCarePendingProposals(data, item.id, space)}
+            onOpen={onProposal}
+          />
+        )}
+      />
+    </>
   );
 }

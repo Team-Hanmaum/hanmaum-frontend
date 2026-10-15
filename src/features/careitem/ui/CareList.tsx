@@ -40,7 +40,9 @@ export function CareList({
   onRetry: () => void;
   proposalNotice: (item: CareItemView) => ReactNode;
 }) {
-  const typeItems = items.filter((item) => item.kind === filter.type);
+  const typeItems = items.filter(
+    (item) => item.kind === filter.type && !item.deletedAt,
+  );
   const first = state === "empty" || !typeItems.length;
   const filtered =
     first || state === "no-results" ? [] : selectCareItems(items, filter, now);

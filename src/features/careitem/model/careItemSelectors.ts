@@ -103,7 +103,8 @@ export function selectCareItems(
 ) {
   // 예시 데이터의 순서 유지. 제품 정렬·페이지 크기는 API 계약 확정 후 적용한다.
   return items.filter((item) => {
-    if (item.kind !== filter.type || item.needsReconfirmation) return false;
+    if (item.kind !== filter.type || item.needsReconfirmation || item.deletedAt)
+      return false;
     if (filter.type === "schedule") {
       if (filter.status === "closed")
         return item.status === "completed" || item.status === "cancelled";

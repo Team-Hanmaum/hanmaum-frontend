@@ -37,6 +37,14 @@ const failure = (
   proposalIds: readonly string[] = [],
 ): ProposalFailure => ({ ok: false, reason, proposalIds });
 
+// 직접 변경과 제안 반영이 같은 현재 항목을 갱신하도록 하나의 Mock 저장소 사용.
+export function publishMockCareState(
+  spaceId: string,
+  state: ProposalSpaceState,
+) {
+  if (isMockPreviewEnabled) publish(spaceId, state);
+}
+
 // 메모리 기반 화면 검증 전용. 권한·버전·원본·멱등성의 최종 보장은 BE에서 처리한다.
 export const mockProposals = {
   getSnapshot: () => snapshot,
@@ -93,7 +101,11 @@ export const mockProposals = {
     );
     if (!isMockPreviewEnabled || space.role !== "owner" || !actor)
       return failure("permission");
-    if (!item?.needsReconfirmation || item.version !== version)
+    if (
+      item?.deletedAt ||
+      !item?.needsReconfirmation ||
+      item.version !== version
+    )
       return failure("changed");
     if (isConfirmedQuestion(item)) return failure("confirmed-question");
     if (
@@ -177,6 +189,7 @@ export const mockProposals = {
       if (
         proposal.operation !== "create" &&
         (!target ||
+          target.deletedAt ||
           target.needsReconfirmation ||
           target.version !== proposal.targetVersion)
       )
@@ -197,6 +210,7 @@ export const mockProposals = {
         (item) =>
           item.id === change.targetId &&
           item.kind === proposal.kind &&
+          !item.deletedAt &&
           !item.needsReconfirmation,
       );
       if (!target || proposal.operation === "create")
@@ -277,6 +291,7 @@ export const mockProposals = {
         (proposal.operation === "create"
           ? Boolean(target) || selection[index].version !== 0
           : !target ||
+            target.deletedAt ||
             target.needsReconfirmation ||
             target.version !== proposal.targetVersion ||
             target.version !== selection[index].version)

@@ -5,6 +5,7 @@ import type {
   CareReconfirmation,
 } from "@/features/careitem/model/careItemViewTypes";
 import type { RecordDeletion } from "@/features/record/model/recordDeletionTypes";
+import type { CareChange } from "@/features/careitem/model/careChangeTypes";
 // 화면 확인용 모델. 공개 API DTO·권한 계약과 구분한다.
 export type ProposalStatus = "review" | "requested" | "applied" | "rejected";
 export type ProposalActor = { id: string; name: string };
@@ -47,6 +48,7 @@ export type ProposalResult = {
 };
 export type ProposalCareItem = CareItemView;
 export type ProposalSpaceState = {
+  careChanges?: readonly CareChange[];
   deletions?: readonly RecordDeletion[];
   reconfirmations?: readonly CareReconfirmation[];
   proposals: readonly ProposalView[];

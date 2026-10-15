@@ -11,6 +11,8 @@ import {
   spaceInvitePath,
   newsDetailPath,
   proposalListPath,
+  proposalResultPath,
+  careChangePath,
 } from "@/routes/paths";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 import { careItemPath, careListPath } from "@/routes/paths";
@@ -22,19 +24,24 @@ export function HomePage() {
   const proposals = useMockProposals(space);
   const navigate = useNavigate();
   const now = useCareNow();
-  const [state, setState] = useMockScreenState(
-    homeScreenStates,
-    space.empty ? "empty" : "default",
+  const data = getMockHomeData(
+    getRecordsWithProposals(records, proposals),
+    proposals,
+    space,
+    now,
   );
+  const defaultState =
+    space.empty &&
+    !records.length &&
+    !proposals.items.length &&
+    !data.pendingCount
+      ? "empty"
+      : "default";
+  const [state, setState] = useMockScreenState(homeScreenStates, defaultState);
   return (
     <HomeContent
       space={space}
-      data={getMockHomeData(
-        getRecordsWithProposals(records, proposals),
-        proposals,
-        space,
-        now,
-      )}
+      data={data}
       state={state}
       onFamily={() => void navigate(spacePath(space.id, "family"))}
       onInvite={() => void navigate(spaceInvitePath(space.id))}
@@ -44,7 +51,14 @@ export function HomePage() {
       onOpenCare={(id) => void navigate(careItemPath(space.id, id))}
       onPending={() => void navigate(proposalListPath(space.id))}
       onHistory={() => void navigate(proposalListPath(space.id, "applied"))}
-      onRetry={() => setState(space.empty ? "empty" : "default")}
+      onChange={(id) =>
+        void navigate(
+          proposals.careChanges?.some((change) => change.id === id)
+            ? careChangePath(space.id, id)
+            : proposalResultPath(space.id, id),
+        )
+      }
+      onRetry={() => setState(defaultState)}
     />
   );
 }

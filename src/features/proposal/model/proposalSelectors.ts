@@ -30,15 +30,22 @@ export function getPendingProposalCount(
   const visibleRequests = data.requests.filter(
     (request) => space.role === "owner" || request.author.id === selfId,
   );
-  return data.proposals.filter(
-    (proposal) =>
-      !proposal.sourceDeleted &&
-      (proposal.status === "review" ||
-        (proposal.status === "requested" &&
-          visibleRequests.some(
-            (request) => request.id === proposal.requestId,
-          ))),
-  ).length;
+  return (
+    data.proposals.filter(
+      (proposal) =>
+        !proposal.sourceDeleted &&
+        (proposal.status === "review" ||
+          (proposal.status === "requested" &&
+            visibleRequests.some(
+              (request) => request.id === proposal.requestId,
+            ))),
+    ).length +
+    (data.careChanges ?? []).filter(
+      (change) =>
+        change.status === "requested" &&
+        (space.role === "owner" || change.author.id === selfId),
+    ).length
+  );
 }
 
 // 원본·분석 저장 상태를 수정하지 않고 목록/상세/홈에 같은 처리 상태를 투영한다.

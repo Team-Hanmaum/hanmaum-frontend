@@ -7,8 +7,15 @@ import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { paths } from "../paths";
 
 export function ProposalRouteLayout() {
-  const { careSpaceId, recordId, requestId, resultId, proposalId, itemId } =
-    useParams();
+  const {
+    careSpaceId,
+    recordId,
+    requestId,
+    resultId,
+    proposalId,
+    itemId,
+    changeId,
+  } = useParams();
   const { spaces } = useMockCareSpaces();
   const navigate = useNavigate();
   const space = spaces.find((item) => item.id === careSpaceId);
@@ -30,7 +37,7 @@ export function ProposalRouteLayout() {
     );
   return (
     <Outlet
-      key={`${space.id}:${recordId ?? requestId ?? resultId ?? proposalId ?? itemId ?? "list"}`}
+      key={`${space.id}:${recordId ?? requestId ?? resultId ?? proposalId ?? itemId ?? changeId ?? "list"}`}
       context={space}
     />
   );
