@@ -4,6 +4,7 @@ import {
   emptyCareFields,
 } from "@/features/careitem/model/careItemFields";
 import type { CareItemView } from "@/features/careitem/model/careItemViewTypes";
+import { initialCareStatus } from "@/features/careitem/model/careItemSelectors";
 import type { ProposalActor, ProposalView } from "./proposalViewTypes";
 
 export function applyMockProposals(
@@ -27,6 +28,9 @@ export function applyMockProposals(
     const item: CareItemView = {
       id: proposal.targetId,
       kind: proposal.kind,
+      status: previous?.status ?? initialCareStatus(proposal.kind),
+      statusChangedAt: previous?.statusChangedAt,
+      answer: previous?.answer,
       title: fields.title || fields.content,
       value: careValue(proposal.kind, fields),
       meta: careMeta(proposal.kind, fields),

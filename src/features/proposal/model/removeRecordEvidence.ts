@@ -63,6 +63,7 @@ export function removeRecordEvidence(
           value: "",
           meta: "재확인 필요",
           fields: { ...emptyCareFields },
+          answer: undefined,
           evidence,
           needsReconfirmation: true,
           version: item.version + 1,

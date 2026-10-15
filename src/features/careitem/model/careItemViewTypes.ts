@@ -1,6 +1,16 @@
 // 화면 검증용 모델. 공개 API의 필드·상태 계약과 구분한다.
 export type CareItemKind =
   "schedule" | "task" | "question" | "observation" | "guidance";
+// 화면 확인용 상태. BE enum과 별도로 관리한다.
+export type CareItemStatus =
+  | "scheduled"
+  | "completed"
+  | "cancelled"
+  | "not-started"
+  | "in-progress"
+  | "unconfirmed"
+  | "confirmed"
+  | "recorded";
 export type CareItemFields = {
   title: string;
   content: string;
@@ -31,6 +41,9 @@ export type CareReconfirmation = {
 export type CareItemView = {
   id: string;
   kind: CareItemKind;
+  status: CareItemStatus;
+  statusChangedAt?: number;
+  answer?: { content: string; confirmedBy: string };
   title: string;
   value: string;
   meta: string;

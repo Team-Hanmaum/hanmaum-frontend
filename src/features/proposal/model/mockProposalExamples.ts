@@ -1,5 +1,7 @@
 import { emptyCareFields } from "@/features/careitem/model/careItemFields";
 import type { CareItemView } from "@/features/careitem/model/careItemViewTypes";
+import { initialCareStatus } from "@/features/careitem/model/careItemSelectors";
+import { getMockCareItems } from "@/features/careitem/model/mockCareItems";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import type { ProposalSpaceState, ProposalView } from "./proposalViewTypes";
 
@@ -7,7 +9,7 @@ import type { ProposalSpaceState, ProposalView } from "./proposalViewTypes";
 export function withProposalExamples(
   space: CareSpaceView,
   seed: Omit<ProposalSpaceState, "items"> & {
-    items: Omit<CareItemView, "fields" | "evidence">[];
+    items: Omit<CareItemView, "fields" | "evidence" | "status">[];
   },
 ): ProposalSpaceState {
   const owner = space.members.find((member) => member.role === "owner")!;
@@ -16,6 +18,7 @@ export function withProposalExamples(
       ...emptyCareFields,
       title: item.title,
       content: item.kind === "schedule" ? "" : item.value,
+      assigneeId: item.kind === "task" ? owner.id : "",
       ...(item.kind === "schedule"
         ? {
             date: item.id === "mock-schedule-1" ? "2026-10-15" : "2026-10-16",
@@ -25,6 +28,7 @@ export function withProposalExamples(
     };
     return {
       ...item,
+      status: initialCareStatus(item.kind),
       fields,
       evidence: [
         {
@@ -62,6 +66,7 @@ export function withProposalExamples(
   items.push({
     id: "mock-question-1",
     kind: "question",
+    status: "unconfirmed",
     title: questionFields.title,
     value: questionFields.content,
     fields: questionFields,
@@ -129,7 +134,7 @@ export function withProposalExamples(
   };
   return {
     ...seed,
-    items,
+    items: [...items, ...getMockCareItems(space.members)],
     proposals: [...proposals, ...additions, link],
     requests: seed.requests.map((request) => ({
       ...request,
