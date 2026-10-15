@@ -345,6 +345,22 @@ const proposalRoutes: RouteObject[] = [
 // 가족 관리: 역할 확인은 각 화면과 Mock 액션에서 재검사
 const familyRoutes: RouteObject[] = [
   {
+    path: "family/transfer",
+    lazy: async () => ({
+      Component: (await import("@/pages/family/FamilyTransferPage"))
+        .FamilyTransferPage,
+    }),
+    handle: { title: "소유권 이전" },
+  },
+  {
+    path: "family/transfer/:memberId",
+    lazy: async () => ({
+      Component: (await import("@/pages/family/FamilyTransferConfirmPage"))
+        .FamilyTransferConfirmPage,
+    }),
+    handle: { title: "소유권 이전 확인" },
+  },
+  {
     path: "family/members",
     lazy: async () => ({
       Component: (await import("@/pages/family/FamilyMembersPage"))

@@ -26,6 +26,39 @@ export function currentFamilySpace(spaceId: string) {
 
 // API 없이 메모리만 갱신한다. 지연 처리 종료 시 현재 참여·역할·대상을 재조회한다.
 export const mockFamilyActions = {
+  transfer(spaceId: string, memberId: string): FamilyActionResult {
+    const space = currentFamilySpace(spaceId);
+    if (!space || space.role !== "owner")
+      return {
+        ok: false,
+        reason: "permission",
+        message: "현재 소유자만 소유권을 이전할 수 있어요.",
+      };
+    const member = space.members.find((entry) => entry.id === memberId);
+    if (!member)
+      return {
+        ok: false,
+        reason: "missing",
+        message: "선택한 가족의 참여가 종료됐어요. 다른 가족을 선택해 주세요.",
+      };
+    if (member.self || member.role !== "member")
+      return {
+        ok: false,
+        reason: "owner",
+        message: "현재 함께하는 다른 구성원 한 명을 선택해 주세요.",
+      };
+    // 소유자에 따라 합성 데이터가 다시 생성되지 않도록 현재 데이터를 먼저 확보한다.
+    mockRecords.retain(space);
+    mockProposals.getForSpace(space);
+    mockCareSpaces.updateMembers(
+      space.id,
+      space.members.map((entry) => ({
+        ...entry,
+        role: entry.id === memberId ? "owner" : "member",
+      })),
+    );
+    return { ok: true, name: member.name, released: 0 };
+  },
   removeMember(spaceId: string, memberId: string): FamilyActionResult {
     const space = currentFamilySpace(spaceId);
     if (!space || space.role !== "owner")

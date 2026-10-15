@@ -1,6 +1,6 @@
 import { useNavigate, useOutletContext } from "react-router";
 import { ErrorState } from "@/components/feedback";
-import { Button } from "@/components/ui";
+import { Button, MenuRow } from "@/components/ui";
 import {
   careSpaceName,
   type CareSpaceView,
@@ -12,7 +12,11 @@ import {
 } from "@/features/carespace/model/familySelectors";
 import { useMockProposals } from "@/features/proposal/model/useMockProposals";
 import { FamilyPageLayout } from "@/routes/layouts/FamilyPageLayout";
-import { familyRemovePath, spacePath } from "@/routes/paths";
+import {
+  familyRemovePath,
+  familyTransferPath,
+  spacePath,
+} from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 
 export function FamilyMembersPage() {
@@ -74,6 +78,12 @@ export function FamilyMembersPage() {
               )}
             </section>
           ))}
+          <MenuRow
+            icon="person"
+            title="소유권 이전"
+            description="다른 가족에게 소유자 역할을 넘겨요"
+            onClick={() => void navigate(familyTransferPath(space.id))}
+          />
         </>
       )}
     </FamilyPageLayout>

@@ -14,7 +14,12 @@ import {
 } from "@/features/carespace/model/familySelectors";
 import { familyListStates } from "@/features/carespace/model/familyScreenStates";
 import { useMockProposals } from "@/features/proposal/model/useMockProposals";
-import { familyMembersPath, paths, spaceInvitePath } from "@/routes/paths";
+import {
+  familyMembersPath,
+  familyTransferPath,
+  paths,
+  spaceInvitePath,
+} from "@/routes/paths";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 
 export function FamilyPage() {
@@ -101,6 +106,12 @@ export function FamilyPage() {
                 title="구성원 관리"
                 description="가족의 참여 권한을 관리해요"
                 onClick={() => void navigate(familyMembersPath(space.id))}
+              />
+              <MenuRow
+                icon="person"
+                title="소유권 이전"
+                description="다른 가족에게 소유자 역할을 넘겨요"
+                onClick={() => void navigate(familyTransferPath(space.id))}
               />
             </>
           )}
