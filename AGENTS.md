@@ -20,6 +20,16 @@
 - 훅과 유틸 파일은 camelCase, 폴더와 정적 에셋은 kebab-case를 사용한다.
 - main.tsx, index.ts 등 기존 진입점과 도구 지정 파일명은 유지한다.
 
+### 페이지 폴더 규칙
+
+- pages의 최상위 폴더는 care, news, proposal, space, family처럼 화면 영역별로 묶는다. landing, login처럼 독립적인 진입 화면은 별도 폴더를 유지한다.
+- 같은 영역의 여러 페이지는 하나의 폴더 안에 각각의 `*Page.tsx` 파일로 둔다. 페이지마다 최상위 폴더를 새로 만들지 않는다.
+- 하위 폴더는 care/change, care/share처럼 구분되는 흐름이 있을 때 추가한다. 파일 수나 URL 깊이만을 기준으로 폴더를 나누지 않는다.
+- 페이지 파일은 화면 조합과 해당 화면의 상태·이동을 담당한다. 여러 화면에서 사용하는 도메인 UI·상태는 features, 범용 UI는 components에 둔다.
+- features와 components에서 pages를 import하지 않는다. 공유할 UI가 페이지에 있으면 적절한 도메인 또는 공통 컴포넌트로 추출한다.
+- 폴더는 소문자 kebab-case, 페이지 파일은 PascalCase와 Page 접미사를 사용한다. UI·훅·상태 파일이 필요해지는 시점에 해당 폴더를 만들고 빈 폴더를 미리 늘리지 않는다.
+- 폴더 경로와 URL은 별개다. URL은 routes에서 명시적으로 등록하며 폴더 이동만으로 기존 URL이나 화면 동작을 바꾸지 않는다.
+
 ## UI와 제품 기준
 
 - 최신 Figma 상세 UI를 기준으로 구현한다.
