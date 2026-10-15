@@ -4,18 +4,30 @@ import {
   emptyCareFields,
 } from "@/features/careitem/model/careItemFields";
 import type { CareItemView } from "@/features/careitem/model/careItemViewTypes";
-import type { ProposalActor, ProposalView } from "./proposalViewTypes";
+import { initialCareStatus } from "@/features/careitem/model/careItemSelectors";
+import type {
+  ProposalActor,
+  ProposalFailure,
+  ProposalView,
+} from "./proposalViewTypes";
+import { isConfirmedQuestionChange } from "./proposalDrafts";
 
 export function applyMockProposals(
   items: readonly CareItemView[],
   proposals: readonly ProposalView[],
   actor: ProposalActor,
   createdAt: number,
-): CareItemView[] {
+): { ok: true; items: CareItemView[] } | ProposalFailure {
   const next = [...items];
   for (const proposal of proposals) {
     const index = next.findIndex((item) => item.id === proposal.targetId);
     const previous = next[index];
+    if (isConfirmedQuestionChange(proposal, previous))
+      return {
+        ok: false,
+        reason: "confirmed-question",
+        proposalIds: [proposal.id],
+      };
     const fields =
       proposal.operation === "link" && previous
         ? previous.fields
@@ -27,9 +39,12 @@ export function applyMockProposals(
     const item: CareItemView = {
       id: proposal.targetId,
       kind: proposal.kind,
+      status: previous?.status ?? initialCareStatus(proposal.kind),
+      statusChangedAt: previous?.statusChangedAt,
+      answer: previous?.answer,
       title: fields.title || fields.content,
       value: careValue(proposal.kind, fields),
-      meta: careMeta(proposal.kind, fields),
+      meta: careMeta(proposal.kind, fields, previous?.status),
       fields: { ...fields },
       version: (previous?.version ?? 0) + 1,
       evidence: [
@@ -63,5 +78,5 @@ export function applyMockProposals(
     if (index < 0) next.push(item);
     else next[index] = item;
   }
-  return next;
+  return { ok: true, items: next };
 }

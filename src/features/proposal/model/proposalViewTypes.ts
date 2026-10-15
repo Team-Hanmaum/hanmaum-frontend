@@ -62,7 +62,13 @@ export type ProposalSelection = {
 };
 export type ProposalFailure = {
   ok: false;
-  reason: "permission" | "selection" | "changed" | "source" | "conflict";
+  reason:
+    | "permission"
+    | "selection"
+    | "changed"
+    | "source"
+    | "conflict"
+    | "confirmed-question";
   proposalIds: readonly string[];
 };
 export type ProposalOutcome = { ok: true; id: string } | ProposalFailure;

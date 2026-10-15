@@ -2,6 +2,26 @@ import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewType
 import type { RecordView } from "@/features/record/model/recordViewTypes";
 import type { ProposalSpaceState } from "./proposalViewTypes";
 
+export function getCarePendingProposals(
+  data: ProposalSpaceState,
+  itemId: string,
+  space: CareSpaceView,
+) {
+  const selfId = space.members.find((member) => member.self)?.id;
+  return data.proposals.filter(
+    (proposal) =>
+      proposal.targetId === itemId &&
+      !proposal.sourceDeleted &&
+      (proposal.status === "review" ||
+        (proposal.status === "requested" &&
+          data.requests.some(
+            (request) =>
+              request.id === proposal.requestId &&
+              (space.role === "owner" || request.author.id === selfId),
+          ))),
+  );
+}
+
 export function getPendingProposalCount(
   data: ProposalSpaceState,
   space: CareSpaceView,

@@ -9,6 +9,15 @@ import type {
 } from "@/features/careitem/model/careItemViewTypes";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import type { ProposalView } from "./proposalViewTypes";
+import { isConfirmedQuestion } from "@/features/careitem/model/careItemStatus";
+
+export function isConfirmedQuestionChange(
+  proposal: ProposalView,
+  target: CareItemView | undefined,
+): boolean {
+  // 근거 연결은 기존 질문과 답변을 바꾸지 않는다.
+  return proposal.operation !== "link" && isConfirmedQuestion(target);
+}
 
 export function proposalFields(proposal: ProposalView): CareItemFields {
   return (

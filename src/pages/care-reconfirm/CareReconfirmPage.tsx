@@ -18,6 +18,7 @@ import { TimeSelectionPage } from "@/pages/time-selection/TimeSelectionPage";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import { careItemPath } from "@/routes/paths";
 import { useTimeSelectionScreen } from "@/routes/useTimeSelectionScreen";
+import { isConfirmedQuestion } from "@/features/careitem/model/careItemStatus";
 
 export function CareReconfirmPage() {
   const space = useOutletContext<CareSpaceView>();
@@ -42,7 +43,9 @@ export function CareReconfirmPage() {
   const back = () => void navigate(careItemPath(space.id, itemId));
   const dirty = Boolean(evidence || Object.values(fields).some(Boolean));
   const { blocker, allowNavigation } = useUnsavedChanges(dirty);
-  const allowed = item?.needsReconfirmation && space.role === "owner";
+  const locked = isConfirmedQuestion(item);
+  const allowed =
+    item?.needsReconfirmation && space.role === "owner" && !locked;
   const timeScreen = useTimeSelectionScreen(
     Boolean(allowed && item?.kind === "schedule" && !review),
   );
@@ -131,7 +134,11 @@ export function CareReconfirmPage() {
       {!allowed ? (
         <EmptyState
           title="재확인할 수 없는 상태예요"
-          body="재확인이 필요한 항목만 소유자가 새 내용으로 확인할 수 있어요."
+          body={
+            locked
+              ? "답변 확인이 끝난 질문은 내용을 수정할 수 없어요."
+              : "재확인이 필요한 항목만 소유자가 새 내용으로 확인할 수 있어요."
+          }
           action={{
             label: "현재 상태로 돌아가기",
             onClick: () => allowNavigation(back),

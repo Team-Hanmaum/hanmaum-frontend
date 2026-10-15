@@ -29,14 +29,27 @@ React Router Data 모드 사용. `Router.tsx`에서 URL·페이지·레이아웃
 | `/spaces/:careSpaceId/proposals/:proposalId/evidence`         | 현재 근거·제안 근거 비교           | 뒤로가기 헤더 + 작업 버튼                    |
 | `/spaces/:careSpaceId/news/:recordId/delete`                  | 원본 삭제 영향·오류·결과 조회      | 뒤로가기 헤더 + 작업 버튼                    |
 | `/spaces/:careSpaceId/news/deletions/:deletionId`             | 원본 삭제 결과·영향 항목           | 뒤로가기 헤더 + 작업 버튼                    |
-| `/spaces/:careSpaceId/care/items/:itemId`                     | 연결된 현재 돌봄 상세              | 뒤로가기 헤더 + 작업 버튼                    |
+| `/spaces/:careSpaceId/care`                                   | 유형별 돌봄 목록·상태 필터         | 공간 헤더 + 유형별 액션 + 돌봄 탭            |
+| `/spaces/:careSpaceId/care/items/:itemId`                     | 유형별 현재 돌봄 상세              | 뒤로가기 헤더 + 액션 + 돌봄 탭               |
 | `/spaces/:careSpaceId/care/items/:itemId/sources`             | 유효한 근거                        | 뒤로가기 헤더 + 작업 버튼                    |
 | `/spaces/:careSpaceId/care/items/:itemId/history/:historyId?` | 이력 목록·전후 비교·최소 삭제 기록 | 뒤로가기 헤더 + 작업 버튼                    |
 | `/spaces/:careSpaceId/care/items/:itemId/reconfirm`           | 소유자 새 입력·근거·재확인         | 뒤로가기 헤더 + 작업 버튼                    |
-| `/spaces/:careSpaceId/care`, `family`, `all`                  | 후속 화면용 임시 페이지            | 공간 헤더 + 현재 탭                          |
+| `/spaces/:careSpaceId/family`, `all`                          | 후속 화면용 임시 페이지            | 공간 헤더 + 현재 탭                          |
 | `/_dev/components`                                            | 공통 컴포넌트 갤러리               | 개발 모드 전용                               |
 
 공간 루트(`/spaces/:careSpaceId`)는 홈으로 이동한다. 정적 `new` 경로는 공간/소식 ID로 처리하지 않는다. 경로 생성은 `spacePath`, `spaceInvitePath`, `invitationPath`, `newsCreatePath`, `newsDetailPath`에서 세그먼트를 인코딩한다. 잘못된 경로는 404, 화면 오류는 공통 라우트 오류로 연결한다. 소식 작성·상세 페이지는 진입 시 코드를 로드한다.
+
+## 돌봄 목록
+
+`/spaces/:careSpaceId/care`에서 유형과 상태를 쿼리로 전환한다. `type`은 `schedule / task / question / observation / guidance`, `status`는 일정 `upcoming / past / closed`, 할 일 `remaining / completed`, 질문 `unconfirmed / confirmed`다. 누락되거나 잘못된 값은 해당 유형의 기본 목록으로 표시한다. `careListPath`로 URL을 만들고 기존 항목 상세·근거·이력·재확인 URL은 유지한다.
+
+`CarePage`는 기존 제안 저장소의 확정 항목을 `CareList`에 전달한다. `careItemSelectors`의 같은 기준을 홈에서도 사용하며 완료·취소 일정, 완료한 할 일, 확인된 질문과 재확인 필요 항목은 각 홈 요약에서 제외한다. 날짜가 지난 예정 일정은 자동 완료하지 않는다. 예시의 정렬은 입력 순서이며 실제 정렬·페이지 크기는 API 계약 확정 후 적용한다. 일부 일정 예시 날짜는 목록 확인 시점의 이틀 뒤로 생성한다.
+
+`mockState=empty / no-results / loading / error / more-error`로 상태를 확인한다. 추가 조회 실패 예시는 이미 보이는 항목을 유지하며 재시도하면 나머지가 추가된다. 실제 네트워크 요청이나 페이지네이션 구현이 아니다. 목록에서 상세에 들어간 뒤 헤더 뒤로가기로 복귀하면 기존 쿼리·스크롤 위치를 복원한다. 상세 직접 접속 시에는 항목에 맞는 목록으로 복귀한다.
+
+일정·할 일·질문의 직접 추가, 항목 관리·상태 변경·답변·삭제·공유는 후속 범위로 준비 중 표시한다. 관찰·안내의 소식 남기기, 제안 검토, 근거·이력·재확인은 기존 Mock 흐름에 연결한다. 실제 업무 API·권한 검증은 미연동이다.
+
+Figma 직접 확인: C01~C15 중 유형별 목록·상세 및 빈 목록/실패, L01~L09 상태. 기능 기준: ITEM-01·02·09, DASH-01~05, HIST-01~03 연결.
 
 ## 화면과 상태의 경계
 
@@ -77,6 +90,7 @@ React Router Data 모드 사용. `Router.tsx`에서 URL·페이지·레이아웃
 - 구성원 선택 → 반영 요청 → 요청 상태/내용 조회. 요청만으로 현재 값 변경 없음. 소유자 선택 또는 요청 검토 → 반영 전 확인 → 반영 결과/미적용 목록. 선택하지 않은 제안은 검토 대기 유지. 목록의 `status`는 review/requested/applied/rejected, 요청의 `view=content`는 제출 내용 조회. UI용 값이며 BE enum이 아님.
 - 검토의 요청 실패 예시는 선택 유지 후 재요청 가능. 반영 전 확인의 현재 정보 변경 예시는 선택 전체 미반영과 재선택 흐름 표시. 이 예시는 실제 대상 값을 변경하지 않으며 저장소의 실제 버전 검증과 별도. 선택 정보는 history state로 전달하며 `mockState` 변경에도 유지. 선택 없는 직접 진입은 재선택 안내.
 - 제안 수정 → 날짜·시간·담당자 선택 → 수정 내용 확인 → 요청/최종 반영. 근거 원문은 편집하지 않음. 저장 실패 시 입력 유지, 미저장 이탈 확인, 반영 시 역할·제안 수정 버전·대상 버전 재검증. `selected` 쿼리는 근거를 읽고 돌아왔을 때의 선택 표시만 유지하며 권한 정보가 아님.
+- 질문은 소유자가 답과 근거를 확인해 `confirmed`가 되면 종료된 항목으로 취급. 답변 제출만으로 자동 확인되지 않음. 확인된 질문의 내용 수정·변경 요청·최종 반영·새 내용 재확인은 차단하며, 미확인으로 자동 전환하지 않음. 기존 질문·답변을 유지하는 근거 연결과 변경 제안 미적용 처리는 가능. 원본 삭제의 내용 제거는 기존 정책 유지. 2026-10-15 사용자 합의 기준이며 BE에서도 같은 검증 필요.
 - 연결 대상 선택 → 비교 → 검토 계속. 후보 없음은 보류, 유효하지 않은 대상은 다시 선택. 비교 대상은 `target`·`view=compare` 쿼리에 보존. 대상 변경은 제안이 변경하는 필드만 옮기고 새 대상의 나머지 현재 값은 유지. 근거 연결은 기존 값을 유지하고 근거만 추가.
 - 결과 → 현재 돌봄 상세/근거/변경 이력. 여러 항목 결과는 선택 시트에서 항목 선택. 미적용 결과는 처리 내용 조회. 돌봄 탭 전체 등록·수정·삭제·일반 변경 요청은 이번 범위 밖.
 - 원본 삭제 → 영향 확인 → 삭제 결과 → 독립 근거가 남은 항목 또는 재확인 필요 상세. 현재 참여한 작성자는 본인 소식, 소유자는 모든 소식 삭제 가능. 실패는 재시도, 결과 미확인은 삭제를 반복하지 않고 기존 결과 조회. 원문·제안·요청·결과·이력의 파생 사본 제거, 유효 근거가 없는 항목은 홈에서 제외. 소유자의 재확인은 빈 폼에 새 내용과 근거를 입력하며 삭제 내용 복원 없음.

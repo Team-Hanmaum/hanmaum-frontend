@@ -8,6 +8,7 @@ import type {
 } from "../model/proposalViewTypes";
 import { Proposal } from "./Proposal";
 import { ProposalSources } from "./ProposalSources";
+import { isConfirmedQuestionChange } from "../model/proposalDrafts";
 
 export function ProposalReview({
   subjectLabel,
@@ -60,12 +61,17 @@ export function ProposalReview({
       </div>
       {proposals.map((proposal) => {
         const item = data.items.find((entry) => entry.id === proposal.targetId);
+        const locked = isConfirmedQuestionChange(proposal, item);
         return (
           <Proposal
             key={proposal.id}
             title={proposal.title}
             badgeLabel={proposal.typeLabel}
-            context={proposal.context}
+            context={
+              locked
+                ? `${proposal.context}\n이미 확인된 질문은 내용을 수정할 수 없어요.`
+                : proposal.context
+            }
             comparison={{
               beforeLabel: proposal.beforeLabel,
               beforeValue: item?.value ?? proposal.beforeValue,
@@ -84,7 +90,7 @@ export function ProposalReview({
                 : undefined
             }
             onEdit={
-              onEdit && proposal.operation !== "link"
+              onEdit && proposal.operation !== "link" && !locked
                 ? () => onEdit(proposal.id)
                 : undefined
             }

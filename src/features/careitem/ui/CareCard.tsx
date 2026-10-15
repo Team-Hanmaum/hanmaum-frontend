@@ -1,5 +1,6 @@
 import { Badge, Button, type BadgeProps } from "@/components/ui";
 import { Notice } from "@/components/feedback";
+import type { ReactNode } from "react";
 export type CareCardProps = {
   title: string;
   meta: string;
@@ -10,6 +11,7 @@ export type CareCardProps = {
   state?: "default" | "needs-check" | "locked";
   action?: { label: string; onClick: () => void; disabled?: boolean };
   className?: string;
+  notice?: ReactNode;
 };
 export function CareCard({
   title,
@@ -21,6 +23,7 @@ export function CareCard({
   state = "default",
   action,
   className = "",
+  notice,
 }: CareCardProps) {
   return (
     <article
@@ -39,7 +42,8 @@ export function CareCard({
           {body}
         </p>
       )}
-      {state !== "default" && (
+      {notice}
+      {!notice && state !== "default" && (
         <Notice
           title={
             state === "locked"

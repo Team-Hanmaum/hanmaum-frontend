@@ -20,11 +20,13 @@ export function ProposalFailureView({
   const changed = failure.reason === "changed";
   const message = changed
     ? "검토 중 현재 정보가 변경됐어요."
-    : failure.reason === "source"
-      ? "유효한 원본 근거를 확인할 수 없어요."
-      : failure.reason === "permission"
-        ? "현재 역할과 공간 참여 상태를 다시 확인해 주세요."
-        : "이미 처리됐거나 함께 반영할 수 없는 선택이에요.";
+    : failure.reason === "confirmed-question"
+      ? "이미 확인된 질문은 내용을 수정하거나 변경을 요청할 수 없어요."
+      : failure.reason === "source"
+        ? "유효한 원본 근거를 확인할 수 없어요."
+        : failure.reason === "permission"
+          ? "현재 역할과 공간 참여 상태를 다시 확인해 주세요."
+          : "이미 처리됐거나 함께 반영할 수 없는 선택이에요.";
   return (
     <>
       <Badge
