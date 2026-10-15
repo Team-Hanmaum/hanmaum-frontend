@@ -37,6 +37,14 @@ const failure = (
   proposalIds: readonly string[] = [],
 ): ProposalFailure => ({ ok: false, reason, proposalIds });
 
+// 직접 변경과 제안 반영이 같은 현재 항목을 갱신하도록 하나의 Mock 저장소 사용.
+export function publishMockCareState(
+  spaceId: string,
+  state: ProposalSpaceState,
+) {
+  if (isMockPreviewEnabled) publish(spaceId, state);
+}
+
 // 메모리 기반 화면 검증 전용. 권한·버전·원본·멱등성의 최종 보장은 BE에서 처리한다.
 export const mockProposals = {
   getSnapshot: () => snapshot,

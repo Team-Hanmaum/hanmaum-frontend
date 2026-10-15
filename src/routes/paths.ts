@@ -87,6 +87,21 @@ export function careSourcesPath(careSpaceId: string, itemId: string) {
 export function careReconfirmPath(careSpaceId: string, itemId: string) {
   return `${careItemPath(careSpaceId, itemId)}/reconfirm`;
 }
+export function careCreatePath(spaceId: string, kind: string) {
+  return `${spacePath(spaceId, "care")}/new/${encodeURIComponent(kind)}`;
+}
+export function careManagePath(spaceId: string, itemId: string) {
+  return `${careItemPath(spaceId, itemId)}/manage`;
+}
+export function careRequestsPath(spaceId: string) {
+  return `${spacePath(spaceId, "care")}/requests`;
+}
+export function careChangePath(spaceId: string, changeId: string) {
+  return `${careRequestsPath(spaceId)}/${encodeURIComponent(changeId)}`;
+}
+export function careSharePath(spaceId: string, itemId: string) {
+  return `${careItemPath(spaceId, itemId)}/share`;
+}
 export function careHistoryPath(
   careSpaceId: string,
   itemId: string,

@@ -13,6 +13,7 @@ export const emptyCareFields: CareItemFields = {
   location: "",
   assigneeId: "",
   dueDate: "",
+  note: "",
 };
 export function formatCareDate(value: string) {
   if (!value) return "정하지 않음";
@@ -79,6 +80,7 @@ export function describeCareFields(
     kind === "task" &&
       `담당자: ${members.find((member) => member.id === fields.assigneeId)?.name ?? "미지정"}`,
     fields.dueDate && `기한: ${formatCareDate(fields.dueDate)}`,
+    fields.note,
   ]
     .filter(Boolean)
     .join("\n");

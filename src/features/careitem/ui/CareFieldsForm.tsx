@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import { BottomSheet, Notice } from "@/components/feedback";
 import {
   Button,
@@ -28,6 +28,7 @@ export function CareFieldsForm({
   errors = {},
   disabled = false,
   original,
+  direct = false,
 }: {
   kind: CareItemKind;
   fields: CareItemFields;
@@ -37,6 +38,7 @@ export function CareFieldsForm({
   errors?: Partial<Record<keyof CareItemFields, string>>;
   disabled?: boolean;
   original?: string;
+  direct?: boolean;
 }) {
   const [picker, setPicker] = useState<Picker | null>(null);
   const [selection, setSelection] = useState("");
@@ -60,14 +62,16 @@ export function CareFieldsForm({
         />
       ) : (
         <Field
-          label={contentLabels[kind]}
-          multiline={true}
+          label={direct && kind === "question" ? "질문" : contentLabels[kind]}
+          multiline={!(direct && kind === "task")}
           rows={kind === "task" ? 2 : 5}
           value={fields.content}
           helper={original ? `AI 제안 · ${original}` : undefined}
           error={errors.content}
           disabled={disabled}
-          onChange={(event) => {
+          onChange={(
+            event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+          ) => {
             const content = event.target.value;
             onChange({ ...fields, content, title: content });
           }}
@@ -106,8 +110,12 @@ export function CareFieldsForm({
                 ? (members.find((member) => member.id === fields.assigneeId)
                     ?.name ?? "미지정")
                 : key === "time"
-                  ? formatCareTime(fields.time)
-                  : formatCareDate(fields[key])
+                  ? fields.time
+                    ? formatCareTime(fields.time)
+                    : "시간 선택"
+                  : fields[key]
+                    ? formatCareDate(fields[key])
+                    : "날짜 선택"
             }
             className="border border-hm-border-default"
             disabled={disabled}
@@ -128,11 +136,21 @@ export function CareFieldsForm({
           label="장소 (선택)"
           value={fields.location}
           onChange={(event) => update("location", event.target.value)}
-          helper="소식에 없는 장소는 미리 채우지 않아요."
+          helper={direct ? undefined : "소식에 없는 장소는 미리 채우지 않아요."}
           disabled={disabled}
         />
       )}
-      {kind !== "schedule" && (
+      {direct && (kind === "task" || kind === "question") && (
+        <Field
+          label={kind === "task" ? "메모 (선택)" : "추가 설명 (선택)"}
+          multiline
+          rows={5}
+          value={fields.note}
+          onChange={(event) => update("note", event.target.value)}
+          disabled={disabled}
+        />
+      )}
+      {!direct && kind !== "schedule" && (
         <Notice
           title={
             kind === "task"

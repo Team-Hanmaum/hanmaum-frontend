@@ -18,6 +18,7 @@ import {
   careReconfirmPath,
   newsCreatePath,
   careListPath,
+  careManagePath,
 } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useCareProposalNavigation } from "@/routes/useCareProposalNavigation";
@@ -62,10 +63,14 @@ export function CareItemPage() {
         ) : undefined
       }
     >
-      {!item ? (
+      {!item || item.deletedAt ? (
         <EmptyState
-          title="돌봄 항목을 확인할 수 없어요"
-          body="아직 반영되지 않았거나 현재 공간에 없는 항목이에요."
+          title={
+            item?.deletedAt
+              ? "삭제된 항목이에요"
+              : "돌봄 항목을 확인할 수 없어요"
+          }
+          body="현재 목록에서 제외된 항목이에요. 일반 삭제의 변경 이력은 유지돼요."
           action={{
             label: "돌봄 목록 보기",
             onClick: () => void navigate(careListPath(space.id)),
@@ -99,9 +104,9 @@ export function CareItemPage() {
             {!item.needsReconfirmation && (
               <MenuRow
                 icon="edit"
-                title={`${label} 관리 · 준비 중`}
+                title={`${label} 관리`}
                 description={locked ? "공유 · 삭제" : "내용 변경 · 공유 · 삭제"}
-                disabled
+                onClick={() => void navigate(careManagePath(space.id, item.id))}
               />
             )}
           </div>

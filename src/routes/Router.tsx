@@ -56,6 +56,12 @@ async function loadNewsDetailPage() {
   const { NewsDetailPage } = await import("@/pages/news-detail/NewsDetailPage");
   return { Component: NewsDetailPage };
 }
+async function loadCareChangePage() {
+  return {
+    Component: (await import("@/pages/care-change/CareChangePage"))
+      .CareChangePage,
+  };
+}
 
 function RouteLoadingFallback() {
   return (
@@ -168,6 +174,52 @@ const recordDeletionRoutes: RouteObject[] = [
 
 // 홈·돌봄·소식에서 연결되는 현재 돌봄 조회·근거·이력·재확인
 const careItemRoutes: RouteObject[] = [
+  {
+    path: "care/new/:kind",
+    lazy: loadCareChangePage,
+    handle: { title: "돌봄 추가", operation: "create" },
+  },
+  {
+    path: "care/items/:itemId/edit",
+    lazy: loadCareChangePage,
+    handle: { title: "내용 수정", operation: "edit" },
+  },
+  {
+    path: "care/items/:itemId/assignee",
+    lazy: loadCareChangePage,
+    handle: { title: "담당자 변경", operation: "assignee" },
+  },
+  {
+    path: "care/items/:itemId/status",
+    lazy: loadCareChangePage,
+    handle: { title: "상태 변경", operation: "status" },
+  },
+  {
+    path: "care/items/:itemId/answer",
+    lazy: loadCareChangePage,
+    handle: { title: "답변 남기기", operation: "answer" },
+  },
+  {
+    path: "care/items/:itemId/delete",
+    lazy: loadCareChangePage,
+    handle: { title: "항목 삭제", operation: "delete" },
+  },
+  {
+    path: "care/requests/:changeId",
+    lazy: async () => ({
+      Component: (await import("@/pages/care-change/CareChangeDetailPage"))
+        .CareChangeDetailPage,
+    }),
+    handle: { title: "돌봄 요청·결과" },
+  },
+  {
+    path: "care/items/:itemId/manage",
+    lazy: async () => ({
+      Component: (await import("@/pages/care-manage/CareManagePage"))
+        .CareManagePage,
+    }),
+    handle: { title: "항목 관리" },
+  },
   {
     path: "care/items/:itemId",
     lazy: async () => ({
