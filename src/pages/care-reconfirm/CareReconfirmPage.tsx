@@ -32,7 +32,11 @@ export function CareReconfirmPage() {
   );
   const [evidenceError, setEvidenceError] = useState("");
   const [error, setError] = useState("");
-  const [version] = useState(item?.version);
+  const [version, setVersion] = useState(item?.version);
+  // 늦게 조회된 최초 버전만 확보하고, 편집 중 변경된 버전은 덮어쓰지 않는다.
+  if (version === undefined && item?.version !== undefined) {
+    setVersion(item.version);
+  }
   const { pending, run } = useMockAction();
   const navigate = useNavigate();
   const back = () => void navigate(careItemPath(space.id, itemId));
@@ -55,7 +59,14 @@ export function CareReconfirmPage() {
     }
   }
   function submit() {
-    if (!allowed || version === undefined) return;
+    if (!allowed) return;
+    if (version === undefined) {
+      setError(
+        "현재 항목 정보를 확인하지 못했어요. 항목으로 돌아가 최신 정보를 다시 확인해 주세요.",
+      );
+      return;
+    }
+    setError("");
     run(() => {
       const result = mockProposals.reconfirm(
         space,
