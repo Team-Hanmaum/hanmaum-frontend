@@ -23,6 +23,11 @@ export const mockRecords = {
     if (!isMockPreviewEnabled) return [];
     return snapshot[space.id] ?? getMockRecordData(space);
   },
+  retain(space: CareSpaceView) {
+    // 참여자 변경으로 합성 원본의 작성자·내용이 다시 생성되지 않게 보존한다.
+    if (isMockPreviewEnabled && !snapshot[space.id])
+      publish(space.id, mockRecords.getForSpace(space));
+  },
   create(space: CareSpaceView, body: string) {
     const self = space.members.find((member) => member.self);
     if (!isMockPreviewEnabled || !self || !body.trim()) return null;

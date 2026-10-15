@@ -30,6 +30,7 @@ import { useMockScreenState } from "../useMockScreenState";
 import { SpaceBottomNavigation } from "./SpaceBottomNavigation";
 import { careListStates } from "@/features/careitem/model/careScreenStates";
 import { CareListAction } from "./CareListAction";
+import { familyListStates } from "@/features/carespace/model/familyScreenStates";
 
 function SpaceHeader({
   space,
@@ -105,6 +106,10 @@ export function TabLayout() {
     careListStates,
     "default",
   );
+  const [familyState, setFamilyState] = useMockScreenState(
+    familyListStates,
+    "default",
+  );
   if (!careSpaceId || !active || !spaceTabs.includes(active))
     return <NotFoundPage />;
   if (!space || !isMockPreviewEnabled)
@@ -147,6 +152,13 @@ export function TabLayout() {
             value={careState}
             options={careListStates}
             onChange={setCareState}
+          />
+        ) : active === "family" ? (
+          <MockStateSelect
+            message="가족 관리 Mock · 실제 변경 없음 · 새로고침 시 초기화"
+            value={familyState}
+            options={familyListStates}
+            onChange={setFamilyState}
           />
         ) : (
           <MockNotice message="화면 이동 확인용 · 실제 업무 기능 연결 전" />

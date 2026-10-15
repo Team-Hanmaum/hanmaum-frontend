@@ -28,6 +28,13 @@ export function newsCreatePath(careSpaceId: string) {
   return `${spacePath(careSpaceId, "news")}/new`;
 }
 
+export function familyMembersPath(spaceId: string) {
+  return `${spacePath(spaceId, "family")}/members`;
+}
+export function familyRemovePath(spaceId: string, memberId: string) {
+  return `${familyMembersPath(spaceId)}/${encodeURIComponent(memberId)}/remove`;
+}
+
 export function newsDetailPath(careSpaceId: string, recordId: string) {
   return `${spacePath(careSpaceId, "news")}/${encodeURIComponent(recordId)}`;
 }

@@ -29,6 +29,7 @@ import { RouteErrorPage } from "@/pages/error/RouteErrorPage";
 import { TabLayout } from "./layouts/TabLayout";
 import { RecordRouteLayout } from "./layouts/RecordRouteLayout";
 import { ProposalRouteLayout } from "./layouts/ProposalRouteLayout";
+import { FamilyRouteLayout } from "./layouts/FamilyRouteLayout";
 import { recordNavigation } from "./navigationHistory";
 import { paths, spacePath } from "./paths";
 
@@ -341,6 +342,26 @@ const proposalRoutes: RouteObject[] = [
   },
 ];
 
+// 가족 관리: 역할 확인은 각 화면과 Mock 액션에서 재검사
+const familyRoutes: RouteObject[] = [
+  {
+    path: "family/members",
+    lazy: async () => ({
+      Component: (await import("@/pages/family/FamilyMembersPage"))
+        .FamilyMembersPage,
+    }),
+    handle: { title: "구성원 관리" },
+  },
+  {
+    path: "family/members/:memberId/remove",
+    lazy: async () => ({
+      Component: (await import("@/pages/family/FamilyRemovePage"))
+        .FamilyRemovePage,
+    }),
+    handle: { title: "참여 관리" },
+  },
+];
+
 // 개발 전용 화면: 프로덕션에서는 경로와 페이지 코드 제외
 const developmentRoutes: RouteObject[] = import.meta.env.DEV
   ? [
@@ -385,6 +406,7 @@ const spaceRoutes: RouteObject[] = [
     Component: ProposalRouteLayout,
     children: [...recordDeletionRoutes, ...careItemRoutes, ...proposalRoutes],
   },
+  { Component: FamilyRouteLayout, children: familyRoutes },
   notFoundRoute,
 ];
 
