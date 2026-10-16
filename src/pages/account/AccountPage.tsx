@@ -72,12 +72,14 @@ export function AccountPage() {
           <h2 className="text-hm-heading-section">계정 관리</h2>
           <MenuRow
             tone="danger"
+            icon="chevron-right-error"
             title="로그아웃"
             description="계정과 돌봄 기록은 유지돼요"
             onClick={() => void navigate(paths.logout)}
           />
           <MenuRow
             tone="danger"
+            icon="chevron-right-error"
             title="회원 탈퇴"
             description="계정 정보와 참여 권한 삭제"
             onClick={() => void navigate(paths.withdrawal)}

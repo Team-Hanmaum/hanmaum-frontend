@@ -55,7 +55,7 @@ export function NewsDetail({
   record: RecordView;
   status: NewsStatus;
   owner: boolean;
-  onDelete: () => void;
+  onDelete?: () => void;
 }) {
   const presentation = presentations[status];
   const proposal = status === "review" ? record.proposal : undefined;
@@ -130,7 +130,7 @@ export function NewsDetail({
           }
         />
       )}
-      {(owner || record.author.self) && (
+      {onDelete && (owner || record.author.self) && (
         <TextAction
           tone="danger"
           onClick={onDelete}

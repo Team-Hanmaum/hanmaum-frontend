@@ -94,6 +94,7 @@ export function AllPage() {
       )}
       <MenuRow
         tone="danger"
+        icon="chevron-right-error"
         title="공간 나가기"
         description={
           space.role === "owner"
@@ -105,6 +106,7 @@ export function AllPage() {
       {space.role === "owner" && (
         <MenuRow
           tone="danger"
+          icon="chevron-right-error"
           title="공간 삭제"
           description="소유자만 가능 · 삭제 후 복구 불가"
           onClick={go(familyDeletePath(space.id))}
@@ -119,12 +121,14 @@ export function AllPage() {
       />
       <MenuRow
         tone="danger"
+        icon="chevron-right-error"
         title="회원 탈퇴"
         description="모든 참여 공간의 접근 종료"
         onClick={go(paths.withdrawal)}
       />
       <MenuRow
         tone="danger"
+        icon="chevron-right-error"
         title="로그아웃"
         onClick={go(paths.logout)}
       />

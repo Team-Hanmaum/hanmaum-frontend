@@ -29,6 +29,7 @@ export function SpaceInfoRequestPage() {
   const [version, setVersion] = useState(space.infoVersion ?? 0);
   const [error, setError] = useState("");
   const [unknown, setUnknown] = useState(false);
+  const [ownerPreview, setOwnerPreview] = useState(false);
   const [state, setState] = useMockScreenState(states, "default");
   const { pending, run } = useMockAction();
   const self = space.members.find((member) => member.self);
@@ -36,7 +37,8 @@ export function SpaceInfoRequestPage() {
     change && (space.role === "owner" || change.authorId === self?.id);
   const toList = () => void navigate(spaceInfoRequestsPath(space.id));
   const toInfo = () => void navigate(spaceInfoPath(space.id));
-  const owner = space.role === "owner" && state !== "forbidden";
+  const owner =
+    (space.role === "owner" || ownerPreview) && state !== "forbidden";
   const stale = version !== (space.infoVersion ?? 0) || state === "stale";
   function submit() {
     if (!change || !decision) return;
@@ -48,7 +50,12 @@ export function SpaceInfoRequestPage() {
         return;
       }
       try {
-        mockSpaceInfoChanges.decide(change.id, decision === "apply", version);
+        mockSpaceInfoChanges.decide(
+          change.id,
+          decision === "apply",
+          version,
+          ownerPreview,
+        );
         setDecision(null);
         if (state === "unknown") setUnknown(true);
       } catch (cause) {
@@ -162,6 +169,19 @@ export function SpaceInfoRequestPage() {
         </>
       ) : (
         <>
+          {ownerPreview && (
+            <Notice
+              title="Mock · 소유자 검토 예시"
+              body="실제 내 역할은 바뀌지 않아요. 같은 Mock 요청을 소유자가 처리하는 화면을 확인해요."
+            />
+          )}
+          {change.status === "requested" &&
+            space.role === "member" &&
+            !ownerPreview && (
+              <TextAction onClick={() => setOwnerPreview(true)}>
+                Mock · 소유자로 검토해 보기
+              </TextAction>
+            )}
           <Badge
             className="self-start"
             tone="brand"

@@ -163,7 +163,7 @@ export function TabLayout() {
             onChange={setFamilyState}
           />
         ) : (
-          <MockNotice message="화면 이동 확인용 · 실제 업무 기능 연결 전" />
+          <MockNotice message="전체 메뉴 Mock · 실제 계정·공간 변경 없음 · 새로고침 시 초기화" />
         )
       }
       header={

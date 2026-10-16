@@ -54,11 +54,16 @@ export function validateSubjectLabel(value: string) {
     ? "이름 또는 호칭을 줄바꿈 없이 1~30자로 입력해 주세요."
     : "";
 }
-function applyLabel(space: CareSpaceView, label: string, version: number) {
+function applyLabel(
+  space: CareSpaceView,
+  label: string,
+  version: number,
+  mockOwnerId?: string,
+) {
   // 공간 이름을 바꿔도 기존 Mock 소식·돌봄 예시를 재생성하지 않는다.
   mockRecords.retain(space);
   mockProposals.getForSpace(space);
-  mockCareSpaces.updateSubjectLabel(space.id, label, version);
+  mockCareSpaces.updateSubjectLabel(space.id, label, version, mockOwnerId);
 }
 export const mockSpaceInfoChanges = {
   getSnapshot: () => snapshot,
@@ -100,11 +105,15 @@ export const mockSpaceInfoChanges = {
     publish([change, ...snapshot]);
     return change;
   },
-  decide(id: string, apply: boolean, version: number) {
+  decide(id: string, apply: boolean, version: number, reviewAsOwner = false) {
     const change = snapshot.find((entry) => entry.id === id);
     if (!change) throw new Error("요청을 찾을 수 없어요.");
     const space = currentSpace(change.spaceId);
-    if (space.role !== "owner")
+    // 같은 요청의 승인 결과를 확인하는 명시적인 Mock 소유자 미리보기.
+    const mockOwnerId = reviewAsOwner
+      ? space.members.find((member) => member.role === "owner")?.id
+      : undefined;
+    if (space.role !== "owner" && !mockOwnerId)
       throw new Error("현재 소유자만 최종 처리할 수 있어요.");
     if (change.status !== "requested")
       throw new Error("이미 처리된 요청이에요. 결과를 다시 확인해 주세요.");
@@ -112,7 +121,7 @@ export const mockSpaceInfoChanges = {
       throw new Error(
         "공간 정보가 바뀌었어요. 현재 이름과 다시 비교해 주세요.",
       );
-    if (apply) applyLabel(space, change.after, version);
+    if (apply) applyLabel(space, change.after, version, mockOwnerId);
     const result: SpaceInfoChange = {
       ...change,
       status: apply ? "applied" : "rejected",
@@ -128,4 +137,15 @@ export function useMockSpaceInfoChanges(spaceId: string) {
     mockSpaceInfoChanges.getSnapshot,
     mockSpaceInfoChanges.getSnapshot,
   ).filter((change) => change.spaceId === spaceId);
+}
+export function pendingSpaceInfoCount(
+  changes: readonly SpaceInfoChange[],
+  space: CareSpaceView,
+) {
+  const selfId = space.members.find((member) => member.self)?.id;
+  return changes.filter(
+    (change) =>
+      change.status === "requested" &&
+      (space.role === "owner" || change.authorId === selfId),
+  ).length;
 }

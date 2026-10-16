@@ -18,7 +18,10 @@ import { useMockScreenState } from "@/routes/useMockScreenState";
 import { MenuRow } from "@/components/ui";
 import { careRequestsPath } from "@/routes/paths";
 import { spaceInfoRequestsPath } from "@/routes/paths";
-import { useMockSpaceInfoChanges } from "@/features/carespace/model/mockSpaceInfoChanges";
+import {
+  pendingSpaceInfoCount,
+  useMockSpaceInfoChanges,
+} from "@/features/carespace/model/mockSpaceInfoChanges";
 
 export function ProposalListPage() {
   const space = useOutletContext<CareSpaceView>();
@@ -56,7 +59,7 @@ export function ProposalListPage() {
       <MenuRow
         icon="edit"
         title="공간 정보 수정 요청"
-        description={`승인 대기 ${spaceChanges.filter((change) => change.status === "requested").length}건`}
+        description={`승인 대기 ${pendingSpaceInfoCount(spaceChanges, space)}건`}
         onClick={() =>
           void navigate(
             `${spaceInfoRequestsPath(space.id)}?status=${status === "applied" ? "applied" : status === "rejected" ? "rejected" : "requested"}`,

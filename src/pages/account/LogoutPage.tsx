@@ -80,7 +80,7 @@ export function LogoutPage() {
         </>
       }
     >
-      <h1 className="text-hm-title-page">
+      <h1 className="text-hm-title-page whitespace-pre-line">
         {unknown
           ? "로그아웃 상태를\n확인하지 못했어요"
           : state === "expired"

@@ -22,8 +22,10 @@ import {
 } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 export function NewsDetailPage() {
+  const { withdrawing, withReturn, returnToWithdrawal } = useWithdrawalReturn();
   const space = useOutletContext<CareSpaceView>();
   const { recordId = "" } = useParams();
   const records = useMockRecords(space);
@@ -35,7 +37,7 @@ export function NewsDetailPage() {
     (item) => item.id === recordId,
   );
   const navigate = useNavigate();
-  const listPath = spacePath(space.id, "news");
+  const listPath = withReturn(spacePath(space.id, "news"));
   const onBack = useBackNavigation(listPath);
   const options = record?.proposal
     ? newsDetailStates
@@ -45,7 +47,7 @@ export function NewsDetailPage() {
     setState("default"),
   );
   const status =
-    state === "default"
+    state === "default" || state === "withdrawn-author"
       ? (record?.proposalSummary?.status ?? record?.analysisStatus)
       : state;
   const hasProposal = Boolean(record?.proposalSummary);
@@ -116,6 +118,14 @@ export function NewsDetailPage() {
                 )}
               </div>
             )}
+            {withdrawing && (
+              <TextAction
+                className="w-full bg-hm-bg-surface pb-hm-20"
+                onClick={returnToWithdrawal}
+              >
+                탈퇴 절차로 돌아가기
+              </TextAction>
+            )}
             <SpaceBottomNavigation
               spaceId={space.id}
               active="news"
@@ -125,10 +135,28 @@ export function NewsDetailPage() {
       >
         {record && status ? (
           <NewsDetail
-            record={record}
+            record={
+              state === "withdrawn-author"
+                ? {
+                    ...record,
+                    author: {
+                      id: "mock-withdrawn-author",
+                      name: "탈퇴한 사용자",
+                      self: false,
+                    },
+                  }
+                : record
+            }
             status={status}
             owner={space.role === "owner"}
-            onDelete={() => void navigate(newsDeletePath(space.id, recordId))}
+            onDelete={
+              state === "withdrawn-author"
+                ? undefined
+                : () =>
+                    void navigate(
+                      withReturn(newsDeletePath(space.id, recordId)),
+                    )
+            }
           />
         ) : (
           <>

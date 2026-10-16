@@ -15,10 +15,12 @@ import {
   spacePath,
 } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 export function FamilyTransferPage() {
   const space = useOutletContext<CareSpaceView>();
   const navigate = useNavigate();
+  const { withReturn, withdrawing, returnToWithdrawal } = useWithdrawalReturn();
   const onBack = useBackNavigation(spacePath(space.id, "family"));
   const [selectedId, setSelectedId] = useState("");
   const owner = space.members.find((member) => member.role === "owner");
@@ -31,7 +33,7 @@ export function FamilyTransferPage() {
       title="소유권 이전"
       spaceId={space.id}
       tabs={space.role === "owner" && !candidates.length}
-      onBack={onBack}
+      onBack={withdrawing ? returnToWithdrawal : onBack}
       actions={
         space.role === "owner" &&
         (candidates.length ? (
@@ -39,21 +41,31 @@ export function FamilyTransferPage() {
             <Button
               disabled={!selected}
               onClick={() =>
-                void navigate(familyTransferPath(space.id, selectedId))
+                void navigate(
+                  withReturn(familyTransferPath(space.id, selectedId)),
+                )
               }
             >
               이전 내용 확인
             </Button>
-            <TextAction onClick={onBack}>취소</TextAction>
+            <TextAction onClick={withdrawing ? returnToWithdrawal : onBack}>
+              취소
+            </TextAction>
           </>
         ) : (
           <>
-            <Button onClick={() => void navigate(spaceInvitePath(space.id))}>
+            <Button
+              onClick={() =>
+                void navigate(withReturn(spaceInvitePath(space.id)))
+              }
+            >
               가족 초대하기
             </Button>
             <TextAction
               tone="danger"
-              onClick={() => void navigate(familyDeletePath(space.id))}
+              onClick={() =>
+                void navigate(withReturn(familyDeletePath(space.id)))
+              }
             >
               공간 삭제 확인
             </TextAction>

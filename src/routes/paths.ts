@@ -9,6 +9,7 @@ export const paths = {
   account: "/account",
   logout: "/account/logout",
   withdrawal: "/account/withdraw",
+  withdrawalNews: "/account/withdraw/news",
   withdrawalComplete: "/account/withdraw/complete",
   onboardingGuide: "/onboarding/guide",
   spaces: "/spaces",

@@ -113,6 +113,30 @@ const entryRoutes: RouteObject[] = [
 // 계정 화면은 선택한 공간이 없어도 접근한다.
 const accountRoutes: RouteObject[] = [
   {
+    path: paths.withdrawal,
+    lazy: async () => ({
+      Component: (await import("@/pages/account/WithdrawalPage"))
+        .WithdrawalPage,
+    }),
+    handle: { title: "회원 탈퇴" },
+  },
+  {
+    path: paths.withdrawalNews,
+    lazy: async () => ({
+      Component: (await import("@/pages/account/WithdrawalNewsPage"))
+        .WithdrawalNewsPage,
+    }),
+    handle: { title: "탈퇴 전 소식 확인" },
+  },
+  {
+    path: paths.withdrawalComplete,
+    lazy: async () => ({
+      Component: (await import("@/pages/account/WithdrawalCompletePage"))
+        .WithdrawalCompletePage,
+    }),
+    handle: { title: "회원 탈퇴 완료" },
+  },
+  {
     path: paths.account,
     lazy: async () => ({
       Component: (await import("@/pages/account/AccountPage")).AccountPage,

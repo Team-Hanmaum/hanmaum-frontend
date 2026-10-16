@@ -21,6 +21,7 @@ import {
   spacePath,
 } from "@/routes/paths";
 import { useMockScreenState } from "@/routes/useMockScreenState";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 const states = [
   { value: "default", label: "기본" },
@@ -30,6 +31,7 @@ const states = [
   { value: "deleted", label: "이미 삭제됨" },
 ] as const;
 export function NewsDeletePage() {
+  const { withReturn } = useWithdrawalReturn();
   const space = useOutletContext<CareSpaceView>();
   const { recordId = "" } = useParams();
   const records = useMockRecords(space);
@@ -47,10 +49,14 @@ export function NewsDeletePage() {
     state !== "permission" &&
     (space.role === "owner" || record?.author.id === self?.id);
   const impacted = recordImpact(data, recordId);
-  const onList = () => void navigate(spacePath(space.id, "news"));
+  const onList = () => void navigate(withReturn(spacePath(space.id, "news")));
   const back = () =>
     void navigate(
-      record ? newsDetailPath(space.id, recordId) : spacePath(space.id, "news"),
+      withReturn(
+        record
+          ? newsDetailPath(space.id, recordId)
+          : spacePath(space.id, "news"),
+      ),
     );
   const deleted = state === "deleted" || (!record && Boolean(previous));
   function remove() {
@@ -69,13 +75,15 @@ export function NewsDeletePage() {
         setPhase("unknown");
         return;
       }
-      void navigate(newsDeletionPath(space.id, result.id), { replace: true });
+      void navigate(withReturn(newsDeletionPath(space.id, result.id)), {
+        replace: true,
+      });
     });
   }
   function checkResult() {
     run(() => {
       if (previous)
-        void navigate(newsDeletionPath(space.id, previous.id), {
+        void navigate(withReturn(newsDeletionPath(space.id, previous.id)), {
           replace: true,
         });
       else {
@@ -112,7 +120,10 @@ export function NewsDeletePage() {
           <Button
             onClick={
               previous
-                ? () => void navigate(newsDeletionPath(space.id, previous.id))
+                ? () =>
+                    void navigate(
+                      withReturn(newsDeletionPath(space.id, previous.id)),
+                    )
                 : onList
             }
           >
@@ -227,12 +238,13 @@ export function NewsDeletePage() {
 }
 
 export function NewsDeletionResultPage() {
+  const { withReturn, withdrawing, returnToWithdrawal } = useWithdrawalReturn();
   const space = useOutletContext<CareSpaceView>();
   const { deletionId } = useParams();
   const data = useMockProposals(space);
   const deletion = data.deletions?.find((entry) => entry.id === deletionId);
   const navigate = useNavigate();
-  const onList = () => void navigate(spacePath(space.id, "news"));
+  const onList = () => void navigate(withReturn(spacePath(space.id, "news")));
   const items = data.items.filter((item) =>
     deletion?.itemIds.includes(item.id),
   );
@@ -243,7 +255,16 @@ export function NewsDeletionResultPage() {
       spaceId={space.id}
       onBack={onList}
       tabs
-      actions={<Button onClick={onList}>소식 목록으로</Button>}
+      actions={
+        <>
+          <Button onClick={onList}>소식 목록으로</Button>
+          {withdrawing && (
+            <TextAction onClick={returnToWithdrawal}>
+              탈퇴 절차로 돌아가기
+            </TextAction>
+          )}
+        </>
+      }
     >
       {!deletion ? (
         <EmptyState

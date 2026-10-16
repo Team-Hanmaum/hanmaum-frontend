@@ -14,6 +14,7 @@ export const newsCreateStates = [
 
 export const newsDetailStates = [
   { value: "default", label: "소식에 저장된 상태" },
+  { value: "withdrawn-author", label: "탈퇴한 작성자 표시 예시" },
   { value: "analyzing", label: "분석 중" },
   { value: "review", label: "제안 있음 (예시 소식)" },
   { value: "no-change", label: "새 제안 없음" },

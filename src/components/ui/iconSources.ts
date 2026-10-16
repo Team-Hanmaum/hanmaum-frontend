@@ -4,6 +4,7 @@ import news from "@/assets/icons/news.svg";
 import family from "@/assets/icons/family.svg";
 import grid from "@/assets/icons/grid.svg";
 import chevronRight from "@/assets/icons/chevron-right.svg";
+import chevronRightError from "@/assets/icons/chevron-right-error.svg";
 import chevronLeft from "@/assets/icons/chevron-left.svg";
 import chevronDown from "@/assets/icons/chevron-down.svg";
 import plus from "@/assets/icons/plus.svg";
@@ -60,6 +61,7 @@ export const iconSources = {
   family: family,
   grid: grid,
   "chevron-right": chevronRight,
+  "chevron-right-error": chevronRightError,
   "chevron-left": chevronLeft,
   "chevron-down": chevronDown,
   plus: plus,

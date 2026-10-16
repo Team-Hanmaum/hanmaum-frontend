@@ -9,7 +9,7 @@ type AccountStatus =
   | "withdrawal-unknown";
 type MockAccount = {
   name: string;
-  provider: "google" | "kakao";
+  provider: "google" | "kakao" | null;
   status: AccountStatus;
 };
 let snapshot: MockAccount = {
@@ -33,10 +33,19 @@ export const mockAccount = {
     };
   },
   login(provider: MockAccount["provider"]) {
-    publish({ ...snapshot, provider, status: "active" });
+    publish({
+      ...snapshot,
+      name: snapshot.name || "새 사용자",
+      provider,
+      status: "active",
+    });
   },
   setStatus(status: AccountStatus) {
-    publish({ ...snapshot, status });
+    publish(
+      status === "withdrawn"
+        ? { name: "", provider: null, status }
+        : { ...snapshot, status },
+    );
   },
 };
 export function useMockAccount() {

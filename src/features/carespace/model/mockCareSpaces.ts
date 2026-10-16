@@ -46,6 +46,22 @@ function publish(next: typeof snapshot) {
 }
 export const mockCareSpaces = {
   getSnapshot: () => snapshot,
+  endAccountParticipation() {
+    if (!isMockPreviewEnabled) return;
+    if (snapshot.spaces.some((space) => space.role === "owner"))
+      throw new Error("소유 중인 공간을 먼저 정리해 주세요.");
+    departedSpaces.clear();
+    publish({
+      spaces: [],
+      currentId: "",
+      ended: {
+        ...snapshot.ended,
+        ...Object.fromEntries(
+          snapshot.spaces.map((space) => [space.id, "left" as const]),
+        ),
+      },
+    });
+  },
   subscribe(listener: () => void) {
     listeners.add(listener);
     return () => {
@@ -60,12 +76,21 @@ export const mockCareSpaces = {
       return;
     publish({ ...snapshot, currentId: id });
   },
-  updateSubjectLabel(id: string, subjectLabel: string, version: number) {
+  updateSubjectLabel(
+    id: string,
+    subjectLabel: string,
+    version: number,
+    mockOwnerId?: string,
+  ) {
     const space = snapshot.spaces.find((entry) => entry.id === id);
     if (
       !isMockPreviewEnabled ||
       !space ||
-      space.role !== "owner" ||
+      !(mockOwnerId
+        ? space.members.some(
+            (member) => member.id === mockOwnerId && member.role === "owner",
+          )
+        : space.role === "owner") ||
       (space.infoVersion ?? 0) !== version
     )
       throw new Error(
