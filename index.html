@@ -2,6 +2,10 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
+    <!-- CSS 청크 로드 순서와 관계없이 Tailwind 레이어 우선순위 유지 -->
+    <style>
+      @layer properties, theme, base, components, utilities;
+    </style>
     <link
       rel="icon"
       type="image/svg+xml"
