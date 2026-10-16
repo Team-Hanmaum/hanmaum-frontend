@@ -17,11 +17,14 @@ import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 import { MenuRow } from "@/components/ui";
 import { careRequestsPath } from "@/routes/paths";
+import { spaceInfoRequestsPath } from "@/routes/paths";
+import { useMockSpaceInfoChanges } from "@/features/carespace/model/mockSpaceInfoChanges";
 
 export function ProposalListPage() {
   const space = useOutletContext<CareSpaceView>();
   const data = useMockProposals(space);
   const records = useMockRecords(space);
+  const spaceChanges = useMockSpaceInfoChanges(space.id);
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const status =
@@ -47,6 +50,16 @@ export function ProposalListPage() {
         onClick={() =>
           void navigate(
             `${careRequestsPath(space.id)}?status=${status === "applied" ? "applied" : status === "rejected" ? "rejected" : "requested"}`,
+          )
+        }
+      />
+      <MenuRow
+        icon="edit"
+        title="공간 정보 수정 요청"
+        description={`승인 대기 ${spaceChanges.filter((change) => change.status === "requested").length}건`}
+        onClick={() =>
+          void navigate(
+            `${spaceInfoRequestsPath(space.id)}?status=${status === "applied" ? "applied" : status === "rejected" ? "rejected" : "requested"}`,
           )
         }
       />

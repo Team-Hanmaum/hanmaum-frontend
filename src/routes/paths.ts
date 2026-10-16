@@ -23,6 +23,12 @@ export function accountPath(spaceId?: string) {
 export function spaceInfoPath(spaceId: string) {
   return `${paths.spaces}/${encodeURIComponent(spaceId)}/info`;
 }
+export function spaceInfoRequestsPath(spaceId: string) {
+  return `${spaceInfoPath(spaceId)}/requests`;
+}
+export function spaceInfoRequestPath(spaceId: string, requestId: string) {
+  return `${spaceInfoRequestsPath(spaceId)}/${encodeURIComponent(requestId)}`;
+}
 
 export const spaceTabs = ["home", "care", "news", "family", "all"] as const;
 export type SpaceTab = (typeof spaceTabs)[number];

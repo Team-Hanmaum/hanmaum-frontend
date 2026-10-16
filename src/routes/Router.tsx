@@ -360,6 +360,41 @@ const proposalRoutes: RouteObject[] = [
   },
 ];
 
+// 공간 정보와 이름 변경 요청
+const spaceInfoRoutes: RouteObject[] = [
+  {
+    path: "info",
+    lazy: async () => ({
+      Component: (await import("@/pages/space/SpaceInfoPage")).SpaceInfoPage,
+    }),
+    handle: { title: "공간 정보" },
+  },
+  {
+    path: "info/edit",
+    lazy: async () => ({
+      Component: (await import("@/pages/space/SpaceInfoEditPage"))
+        .SpaceInfoEditPage,
+    }),
+    handle: { title: "공간 정보 수정" },
+  },
+  {
+    path: "info/requests",
+    lazy: async () => ({
+      Component: (await import("@/pages/space/SpaceInfoRequestsPage"))
+        .SpaceInfoRequestsPage,
+    }),
+    handle: { title: "공간 정보 요청·변경" },
+  },
+  {
+    path: "info/requests/:requestId",
+    lazy: async () => ({
+      Component: (await import("@/pages/space/SpaceInfoRequestPage"))
+        .SpaceInfoRequestPage,
+    }),
+    handle: { title: "공간 정보 요청" },
+  },
+];
+
 // 가족 관리: 역할 확인은 각 화면과 Mock 액션에서 재검사
 const familyRoutes: RouteObject[] = [
   {
@@ -456,7 +491,10 @@ const spaceRoutes: RouteObject[] = [
     Component: ProposalRouteLayout,
     children: [...recordDeletionRoutes, ...careItemRoutes, ...proposalRoutes],
   },
-  { Component: FamilyRouteLayout, children: familyRoutes },
+  {
+    Component: FamilyRouteLayout,
+    children: [...familyRoutes, ...spaceInfoRoutes],
+  },
   notFoundRoute,
 ];
 

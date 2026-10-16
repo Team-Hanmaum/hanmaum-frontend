@@ -60,6 +60,26 @@ export const mockCareSpaces = {
       return;
     publish({ ...snapshot, currentId: id });
   },
+  updateSubjectLabel(id: string, subjectLabel: string, version: number) {
+    const space = snapshot.spaces.find((entry) => entry.id === id);
+    if (
+      !isMockPreviewEnabled ||
+      !space ||
+      space.role !== "owner" ||
+      (space.infoVersion ?? 0) !== version
+    )
+      throw new Error(
+        "공간 정보나 권한이 바뀌었어요. 현재 내용을 다시 확인해 주세요.",
+      );
+    publish({
+      ...snapshot,
+      spaces: snapshot.spaces.map((entry) =>
+        entry.id === id
+          ? { ...entry, subjectLabel, infoVersion: version + 1 }
+          : entry,
+      ),
+    });
+  },
   // 가족 관리 액션의 현재 권한 검증과 연관 데이터 처리 후 호출한다.
   updateMembers(id: string, members: CareSpaceView["members"]) {
     const self = members.find((member) => member.self);
