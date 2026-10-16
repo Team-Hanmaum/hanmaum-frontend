@@ -17,6 +17,9 @@ export function getMockCareItems(
 ): CareItemView[] {
   const owner = members.find((member) => member.role === "owner")!;
   const self = members.find((member) => member.self)!;
+  const otherMember = members.find(
+    (member) => member.role === "member" && !member.self,
+  );
   const make = (
     id: string,
     kind: CareItemKind,
@@ -75,6 +78,15 @@ export function getMockCareItems(
       title: "재진 동행",
       content: "함께 갈 가족을 정해 주세요.",
     }),
+    ...(otherMember
+      ? [
+          make("mock-task-member", "task", {
+            title: "방문 일정 공유",
+            content: "다음 방문 일정을 가족에게 알려 주세요.",
+            assigneeId: otherMember.id,
+          }),
+        ]
+      : []),
     make(
       "mock-task-progress",
       "task",

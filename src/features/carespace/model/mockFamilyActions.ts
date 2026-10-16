@@ -7,6 +7,7 @@ import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { mockCareSpaces } from "./mockCareSpaces";
 import { unfinishedMemberTasks } from "./familySelectors";
 import type { CareSpaceView } from "./careSpaceViewTypes";
+import { reviseProposal } from "@/features/proposal/model/proposalDrafts";
 
 function releaseAssignments(space: CareSpaceView, memberId: string) {
   const state = mockProposals.getForSpace(space);
@@ -24,6 +25,22 @@ function releaseAssignments(space: CareSpaceView, memberId: string) {
             fields: { ...item.fields, assigneeId: "" },
           }
         : item,
+    ),
+    // 제출 시점의 요청·결과 이력은 유지하고 현재 대기 제안만 갱신한다.
+    proposals: state.proposals.map((proposal) =>
+      proposal.kind === "task" &&
+      proposal.operation !== "link" &&
+      (proposal.status === "review" || proposal.status === "requested") &&
+      proposal.afterFields?.assigneeId === memberId
+        ? {
+            ...reviseProposal(
+              proposal,
+              { ...proposal.afterFields, assigneeId: "" },
+              space,
+            ),
+            edited: proposal.edited,
+          }
+        : proposal,
     ),
   });
   return ids.size;
@@ -62,9 +79,13 @@ export const mockFamilyActions = {
         reason: "owner",
         message: "소유권을 이전하거나 공간 삭제를 먼저 진행해 주세요.",
       };
+    const endParticipation = mockCareSpaces.prepareEndParticipation(
+      space.id,
+      "left",
+    )!;
     const self = space.members.find((member) => member.self)!;
     const released = releaseAssignments(space, self.id);
-    mockCareSpaces.endParticipation(space.id, "left");
+    endParticipation();
     return { ok: true, name: space.subjectLabel, released };
   },
   deleteSpace(spaceId: string): FamilyActionResult {
@@ -75,9 +96,13 @@ export const mockFamilyActions = {
         reason: "permission",
         message: "현재 소유자만 공간을 삭제할 수 있어요.",
       };
+    const endParticipation = mockCareSpaces.prepareEndParticipation(
+      space.id,
+      "deleted",
+    )!;
     mockRecords.discardSpace(space.id);
     mockProposals.discardSpace(space.id);
-    mockCareSpaces.endParticipation(space.id, "deleted");
+    endParticipation();
     return { ok: true, name: space.subjectLabel, released: 0 };
   },
   transfer(spaceId: string, memberId: string): FamilyActionResult {

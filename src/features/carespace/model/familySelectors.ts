@@ -9,6 +9,7 @@ export function unfinishedMemberTasks(
       item.kind === "task" &&
       !item.deletedAt &&
       item.status !== "completed" &&
+      item.status !== "cancelled" &&
       item.fields.assigneeId === memberId,
   );
 }

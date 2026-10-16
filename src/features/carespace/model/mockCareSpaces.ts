@@ -76,25 +76,29 @@ export const mockCareSpaces = {
       ),
     });
   },
-  endParticipation(id: string, reason: "left" | "deleted") {
+  // 알림 생성 등 실패할 수 있는 준비를 연관 데이터 변경 전에 끝낸다.
+  prepareEndParticipation(id: string, reason: "left" | "deleted") {
     const space = snapshot.spaces.find((entry) => entry.id === id);
     if (!isMockPreviewEnabled || !space) return undefined;
-    if (reason === "left") departedSpaces.set(id, space);
-    else departedSpaces.delete(id);
     const notice: ExitNotice = {
       id: crypto.randomUUID(),
       spaceId: id,
       name: `${space.subjectLabel}의 돌봄`,
       reason,
     };
-    publish({
-      ...snapshot,
-      spaces: snapshot.spaces.filter((entry) => entry.id !== id),
-      currentId: snapshot.currentId === id ? "" : snapshot.currentId,
-      ended: { ...snapshot.ended, [id]: reason },
-      lastExit: notice,
-    });
-    return notice;
+    // 가족 액션의 동기 처리 안에서 준비 직후 실행한다.
+    return () => {
+      if (reason === "left") departedSpaces.set(id, space);
+      else departedSpaces.delete(id);
+      publish({
+        ...snapshot,
+        spaces: snapshot.spaces.filter((entry) => entry.id !== id),
+        currentId: snapshot.currentId === id ? "" : snapshot.currentId,
+        ended: { ...snapshot.ended, [id]: reason },
+        lastExit: notice,
+      });
+      return notice;
+    };
   },
   create(subjectLabel: string) {
     if (!isMockPreviewEnabled) return null;

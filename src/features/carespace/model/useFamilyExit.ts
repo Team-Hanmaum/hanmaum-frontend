@@ -27,13 +27,17 @@ export function useFamilyExit(
         onFailureShown();
         return;
       }
-      const result = mockFamilyActions[operation](spaceId);
-      if (!result.ok) {
-        setError(result.message);
-        return;
+      try {
+        const result = mockFamilyActions[operation](spaceId);
+        if (!result.ok) {
+          setError(result.message);
+          return;
+        }
+        const notice = mockCareSpaces.getSnapshot().lastExit;
+        if (notice?.spaceId === spaceId) onComplete(notice.id);
+      } catch {
+        setError("처리 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
       }
-      const notice = mockCareSpaces.getSnapshot().lastExit;
-      if (notice?.spaceId === spaceId) onComplete(notice.id);
     });
   }
   return { pending, error, submit, clearError: () => setError("") };
