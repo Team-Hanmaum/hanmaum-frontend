@@ -6,6 +6,7 @@ import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewType
 import {
   mockSpaceInfoChanges,
   useMockSpaceInfoChanges,
+  type SpaceInfoChangeFailure,
 } from "@/features/carespace/model/mockSpaceInfoChanges";
 import { SpaceInfoComparison } from "@/features/carespace/ui/SpaceInfoComparison";
 import { useMockAction } from "@/lib/useMockAction";
@@ -26,8 +27,8 @@ export function SpaceInfoRequestPage() {
   const change = changes.find((entry) => entry.id === requestId);
   const navigate = useNavigate();
   const [decision, setDecision] = useState<"apply" | "reject" | null>(null);
-  const [version, setVersion] = useState(space.infoVersion ?? 0);
   const [error, setError] = useState("");
+  const [failure, setFailure] = useState<SpaceInfoChangeFailure | null>(null);
   const [unknown, setUnknown] = useState(false);
   const [ownerPreview, setOwnerPreview] = useState(false);
   const [state, setState] = useMockScreenState(states, "default");
@@ -38,11 +39,17 @@ export function SpaceInfoRequestPage() {
   const toList = () => void navigate(spaceInfoRequestsPath(space.id));
   const toInfo = () => void navigate(spaceInfoPath(space.id));
   const owner =
-    (space.role === "owner" || ownerPreview) && state !== "forbidden";
-  const stale = version !== (space.infoVersion ?? 0) || state === "stale";
+    (space.role === "owner" || ownerPreview) &&
+    state !== "forbidden" &&
+    failure?.reason !== "permission";
+  const stale =
+    change?.version !== (space.infoVersion ?? 0) ||
+    state === "stale" ||
+    failure?.reason === "stale";
   function submit() {
     if (!change || !decision) return;
     setError("");
+    setFailure(null);
     run(() => {
       if (state === "error") {
         setError("처리하지 못했어요. 다시 확인한 뒤 시도해 주세요.");
@@ -50,13 +57,18 @@ export function SpaceInfoRequestPage() {
         return;
       }
       try {
-        mockSpaceInfoChanges.decide(
+        const result = mockSpaceInfoChanges.decide(
           change.id,
           decision === "apply",
-          version,
+          change.version,
           ownerPreview,
         );
         setDecision(null);
+        if (!result.ok) {
+          setFailure(result);
+          if (result.reason === "processed") setUnknown(true);
+          return;
+        }
         if (state === "unknown") setUnknown(true);
       } catch (cause) {
         setError(cause instanceof Error ? cause.message : "처리하지 못했어요.");
@@ -81,38 +93,31 @@ export function SpaceInfoRequestPage() {
             setState(value);
             setDecision(null);
             setError("");
+            setFailure(null);
           }
         },
       }}
       actions={
         visible &&
+        failure?.reason !== "missing" &&
         (unknown ? (
           <Button
             onClick={() => {
               setUnknown(false);
               setState("default");
+              setFailure(null);
             }}
           >
             처리 상태 확인
           </Button>
-        ) : change.status !== "requested" ? (
+        ) : change.status !== "requested" || stale ? (
           <>
             <Button onClick={toInfo}>현재 공간 정보 보기</Button>
             <TextAction onClick={toList}>요청 목록으로</TextAction>
           </>
         ) : owner ? (
           <>
-            {stale ? (
-              <Button
-                onClick={() => {
-                  setVersion(space.infoVersion ?? 0);
-                  setState("default");
-                  setDecision(null);
-                }}
-              >
-                현재 정보와 다시 비교
-              </Button>
-            ) : decision ? (
+            {decision ? (
               <Button
                 loading={pending}
                 variant={decision === "reject" ? "destructive" : "primary"}
@@ -123,7 +128,6 @@ export function SpaceInfoRequestPage() {
             ) : (
               <Button
                 onClick={() => {
-                  setVersion(space.infoVersion ?? 0);
                   setDecision("apply");
                 }}
               >
@@ -140,6 +144,11 @@ export function SpaceInfoRequestPage() {
               {decision ? "요청 내용으로" : "미적용으로 처리"}
             </TextAction>
           </>
+        ) : failure?.reason === "permission" ? (
+          <>
+            <Button onClick={toInfo}>현재 공간·역할 확인</Button>
+            <TextAction onClick={toList}>요청 목록으로</TextAction>
+          </>
         ) : (
           <>
             <Button onClick={toList}>내 요청 목록으로</Button>
@@ -148,7 +157,7 @@ export function SpaceInfoRequestPage() {
         ))
       }
     >
-      {!visible ? (
+      {!visible || failure?.reason === "missing" ? (
         <ErrorState
           reason="no-permission"
           title="요청을 확인할 수 없어요"
@@ -158,9 +167,9 @@ export function SpaceInfoRequestPage() {
       ) : unknown ? (
         <>
           <h1 className="text-hm-title-page">
-            처리 결과를
-            <br />
-            확인하지 못했어요
+            {failure?.reason === "processed"
+              ? "이미 처리된 요청이에요"
+              : "처리 결과를 확인하지 못했어요"}
           </h1>
           <Notice
             title="중복으로 처리하지 않아요"
@@ -211,10 +220,9 @@ export function SpaceInfoRequestPage() {
             {new Date(change.createdAt).toLocaleString("ko-KR")}
           </p>
           <SpaceInfoComparison
-            before={
-              change.status === "requested" ? space.subjectLabel : change.before
-            }
+            before={change.before}
             after={change.after}
+            beforeLabel="변경 요청 당시"
           />
           <MenuRow
             icon="care-brand"
@@ -230,14 +238,16 @@ export function SpaceInfoRequestPage() {
             }
             body={
               change.status === "requested"
-                ? `${space.members.find((member) => member.role === "owner")?.name ?? "소유자"}님이 최종 반영하기 전에는 바뀌지 않아요.`
+                ? stale
+                  ? "이 요청으로 현재 정보를 변경하지 않아요."
+                  : `${space.members.find((member) => member.role === "owner")?.name ?? "소유자"}님이 최종 반영하기 전에는 바뀌지 않아요.`
                 : "소식과 돌봄 기록은 그대로 유지돼요."
             }
           />
           {stale && change.status === "requested" && (
             <Notice
               title="공간 정보가 바뀌었어요"
-              body="최신 정보와 요청 내용을 다시 비교한 뒤 진행해 주세요."
+              body="요청 이후 정보가 바뀌어 이 요청은 처리할 수 없어요. 현재 공간 정보를 확인해 주세요."
             />
           )}
           {state === "forbidden" && (
@@ -246,12 +256,12 @@ export function SpaceInfoRequestPage() {
               body="내 역할을 다시 확인해 주세요."
             />
           )}
-          {error && (
+          {(error || failure) && (
             <Notice
               tone="error"
               role="alert"
               title="처리하지 못했어요"
-              body={error}
+              body={failure?.message ?? error}
             />
           )}
         </>

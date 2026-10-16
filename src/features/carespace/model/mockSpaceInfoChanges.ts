@@ -17,6 +17,26 @@ export type SpaceInfoChange = {
   status: "requested" | "applied" | "rejected";
   decidedAt?: number;
 };
+export type SpaceInfoChangeFailure = {
+  ok: false;
+  reason:
+    | "permission"
+    | "missing"
+    | "stale"
+    | "validation"
+    | "unchanged"
+    | "processed";
+  message: string;
+};
+export type SpaceInfoChangeResult =
+  { ok: true; change: SpaceInfoChange } | SpaceInfoChangeFailure;
+
+function failure(
+  reason: SpaceInfoChangeFailure["reason"],
+  message: string,
+): SpaceInfoChangeFailure {
+  return { ok: false, reason, message };
+}
 // 소유자가 다른 가족의 요청을 검토할 수 있는 UI 예시.
 let snapshot: SpaceInfoChange[] = isMockPreviewEnabled
   ? [
@@ -38,13 +58,20 @@ function publish(next: SpaceInfoChange[]) {
   snapshot = next;
   listeners.forEach((listener) => listener());
 }
-function currentSpace(id: string) {
+function currentSpace(
+  id: string,
+): { ok: true; space: CareSpaceView } | SpaceInfoChangeFailure {
   const space = mockCareSpaces
     .getSnapshot()
     .spaces.find((entry) => entry.id === id);
-  if (!isMockPreviewEnabled || !space?.members.some((member) => member.self))
-    throw new Error("지금은 이 공간에 접근할 수 없어요.");
-  return space;
+  if (!isMockPreviewEnabled)
+    return failure("permission", "Mock 화면에서만 변경할 수 있어요.");
+  if (!space) return failure("missing", "공간을 찾을 수 없어요.");
+  if (
+    !space.members.some((member) => member.self && member.role === space.role)
+  )
+    return failure("permission", "지금은 이 공간에 접근할 수 없어요.");
+  return { ok: true, space };
 }
 export function validateSubjectLabel(value: string) {
   const label = value.trim();
@@ -73,21 +100,34 @@ export const mockSpaceInfoChanges = {
       listeners.delete(listener);
     };
   },
+  discardSpace(spaceId: string) {
+    if (!isMockPreviewEnabled) return;
+    publish(snapshot.filter((change) => change.spaceId !== spaceId));
+  },
   submit(
     id: string,
     value: string,
     version: number,
     role: CareSpaceView["role"],
-  ) {
-    const space = currentSpace(id);
+  ): SpaceInfoChangeResult {
+    const current = currentSpace(id);
+    if (!current.ok) return current;
+    const { space } = current;
     const error = validateSubjectLabel(value);
-    if (error) throw new Error(error);
-    if (space.role !== role || (space.infoVersion ?? 0) !== version)
-      throw new Error(
-        "공간 정보나 내 역할이 바뀌었어요. 변경 내용을 다시 확인해 주세요.",
+    if (error) return failure("validation", error);
+    if (space.role !== role)
+      return failure(
+        "permission",
+        "내 역할이 바뀌었어요. 현재 역할을 다시 확인해 주세요.",
+      );
+    if ((space.infoVersion ?? 0) !== version)
+      return failure(
+        "stale",
+        "공간 정보가 바뀌었어요. 변경 내용을 다시 확인해 주세요.",
       );
     const label = value.trim();
-    if (label === space.subjectLabel) throw new Error("변경한 내용이 없어요.");
+    if (label === space.subjectLabel)
+      return failure("unchanged", "변경한 내용이 없어요.");
     const actor = space.members.find((member) => member.self)!;
     const change: SpaceInfoChange = {
       id: crypto.randomUUID(),
@@ -103,23 +143,38 @@ export const mockSpaceInfoChanges = {
     };
     if (role === "owner") applyLabel(space, label, version);
     publish([change, ...snapshot]);
-    return change;
+    return { ok: true, change };
   },
-  decide(id: string, apply: boolean, version: number, reviewAsOwner = false) {
+  decide(
+    id: string,
+    apply: boolean,
+    version: number,
+    reviewAsOwner = false,
+  ): SpaceInfoChangeResult {
     const change = snapshot.find((entry) => entry.id === id);
-    if (!change) throw new Error("요청을 찾을 수 없어요.");
-    const space = currentSpace(change.spaceId);
+    if (!change) return failure("missing", "요청을 찾을 수 없어요.");
+    const current = currentSpace(change.spaceId);
+    if (!current.ok) return current;
+    const { space } = current;
     // 같은 요청의 승인 결과를 확인하는 명시적인 Mock 소유자 미리보기.
     const mockOwnerId = reviewAsOwner
       ? space.members.find((member) => member.role === "owner")?.id
       : undefined;
     if (space.role !== "owner" && !mockOwnerId)
-      throw new Error("현재 소유자만 최종 처리할 수 있어요.");
+      return failure("permission", "현재 소유자만 최종 처리할 수 있어요.");
     if (change.status !== "requested")
-      throw new Error("이미 처리된 요청이에요. 결과를 다시 확인해 주세요.");
-    if ((space.infoVersion ?? 0) !== version)
-      throw new Error(
-        "공간 정보가 바뀌었어요. 현재 이름과 다시 비교해 주세요.",
+      return failure(
+        "processed",
+        "이미 처리된 요청이에요. 결과를 다시 확인해 주세요.",
+      );
+    // 화면을 나중에 열어도 요청 당시 버전을 최신 버전으로 대체할 수 없다.
+    if (
+      (space.infoVersion ?? 0) !== change.version ||
+      (space.infoVersion ?? 0) !== version
+    )
+      return failure(
+        "stale",
+        "요청 이후 공간 정보가 바뀌었어요. 이 요청은 처리할 수 없어요. 현재 정보를 확인해 주세요.",
       );
     if (apply) applyLabel(space, change.after, version, mockOwnerId);
     const result: SpaceInfoChange = {
@@ -128,7 +183,7 @@ export const mockSpaceInfoChanges = {
       decidedAt: Date.now(),
     };
     publish(snapshot.map((entry) => (entry.id === id ? result : entry)));
-    return result;
+    return { ok: true, change: result };
   },
 };
 export function useMockSpaceInfoChanges(spaceId: string) {

@@ -5,6 +5,7 @@ import {
 import { mockRecords } from "@/features/record/model/mockRecords";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { mockCareSpaces } from "./mockCareSpaces";
+import { mockSpaceInfoChanges } from "./mockSpaceInfoChanges";
 import { unfinishedMemberTasks } from "./familySelectors";
 import type { CareSpaceView } from "./careSpaceViewTypes";
 import { reviseProposal } from "@/features/proposal/model/proposalDrafts";
@@ -102,6 +103,7 @@ export const mockFamilyActions = {
     )!;
     mockRecords.discardSpace(space.id);
     mockProposals.discardSpace(space.id);
+    mockSpaceInfoChanges.discardSpace(space.id);
     endParticipation();
     return { ok: true, name: space.subjectLabel, released: 0 };
   },

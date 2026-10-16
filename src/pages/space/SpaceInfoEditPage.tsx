@@ -6,12 +6,13 @@ import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewType
 import {
   mockSpaceInfoChanges,
   validateSubjectLabel,
+  type SpaceInfoChangeFailure,
 } from "@/features/carespace/model/mockSpaceInfoChanges";
 import { FamilyInfoCard } from "@/features/carespace/ui/FamilyInfoCard";
 import { SpaceInfoComparison } from "@/features/carespace/ui/SpaceInfoComparison";
 import { useMockAction } from "@/lib/useMockAction";
 import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
-import { spaceInfoPath, spaceInfoRequestPath } from "@/routes/paths";
+import { paths, spaceInfoPath, spaceInfoRequestPath } from "@/routes/paths";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 const states = [
   { value: "default", label: "기본" },
@@ -31,6 +32,7 @@ export function SpaceInfoEditPage() {
   });
   const [confirm, setConfirm] = useState(false);
   const [error, setError] = useState("");
+  const [failure, setFailure] = useState<SpaceInfoChangeFailure | null>(null);
   const [resultId, setResultId] = useState("");
   const committed = useRef(false);
   const { pending, run } = useMockAction();
@@ -45,6 +47,8 @@ export function SpaceInfoEditPage() {
   const changed =
     baseline.version !== (space.infoVersion ?? 0) ||
     baseline.role !== space.role ||
+    failure?.reason === "stale" ||
+    failure?.reason === "permission" ||
     state === "stale" ||
     state === "role";
   const owner = baseline.role === "owner";
@@ -55,6 +59,7 @@ export function SpaceInfoEditPage() {
   };
   function submit() {
     setError("");
+    setFailure(null);
     const invalid = validateSubjectLabel(value);
     if (invalid) {
       setError(invalid);
@@ -84,10 +89,16 @@ export function SpaceInfoEditPage() {
           baseline.version,
           baseline.role,
         );
+        if (!result.ok) {
+          setFailure(result);
+          if (result.reason === "validation" || result.reason === "unchanged")
+            setConfirm(false);
+          return;
+        }
         committed.current = true;
-        if (state === "unknown") setResultId(result.id);
+        if (state === "unknown") setResultId(result.change.id);
         else
-          void navigate(spaceInfoRequestPath(space.id, result.id), {
+          void navigate(spaceInfoRequestPath(space.id, result.change.id), {
             replace: true,
           });
       } catch (cause) {
@@ -118,6 +129,7 @@ export function SpaceInfoEditPage() {
           if (!pending && !resultId) {
             setState(next);
             setError("");
+            setFailure(null);
           }
         },
       }}
@@ -132,6 +144,10 @@ export function SpaceInfoEditPage() {
           >
             처리 상태 확인
           </Button>
+        ) : failure?.reason === "missing" ? (
+          <Button onClick={() => void navigate(paths.spaces)}>
+            내 공간 목록으로
+          </Button>
         ) : (
           <>
             <Button
@@ -139,13 +155,15 @@ export function SpaceInfoEditPage() {
               disabled={!dirty || state === "locked"}
               onClick={submit}
             >
-              {changed
-                ? "변경 내용 다시 확인"
-                : !confirm
-                  ? "변경 내용 확인"
-                  : owner
-                    ? "변경 내용 반영"
-                    : "수정 요청 보내기"}
+              {failure?.reason === "permission"
+                ? "현재 역할 다시 확인"
+                : changed
+                  ? "변경 내용 다시 확인"
+                  : !confirm
+                    ? "변경 내용 확인"
+                    : owner
+                      ? "변경 내용 반영"
+                      : "수정 요청 보내기"}
             </Button>
             <TextAction
               disabled={pending}
@@ -202,9 +220,20 @@ export function SpaceInfoEditPage() {
                 onChange={(event) => {
                   setValue(event.target.value);
                   setError("");
+                  if (
+                    failure?.reason === "validation" ||
+                    failure?.reason === "unchanged"
+                  )
+                    setFailure(null);
                 }}
                 helper={`현재: ${space.subjectLabel}`}
-                error={error || undefined}
+                error={
+                  error ||
+                  (failure?.reason === "validation" ||
+                  failure?.reason === "unchanged"
+                    ? failure.message
+                    : undefined)
+                }
                 disabled={pending}
               />
               <FamilyInfoCard title="이렇게 표시돼요">
@@ -244,6 +273,16 @@ export function SpaceInfoEditPage() {
               body={error}
             />
           )}
+          {failure &&
+            failure.reason !== "validation" &&
+            failure.reason !== "unchanged" && (
+              <Notice
+                tone="error"
+                role="alert"
+                title="처리하지 못했어요"
+                body={failure.message}
+              />
+            )}
         </>
       )}
       <ConfirmDialog
