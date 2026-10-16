@@ -1,8 +1,6 @@
-import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { Header, PageLayout } from "@/components/layout";
 import {
-  BottomSheet,
   EmptyState,
   ErrorState,
   LoadingState,
@@ -33,7 +31,6 @@ export function SpaceSelectionPage() {
       ? lastExit
       : undefined;
   const [state, setState] = useMockScreenState(states, "default");
-  const [accountOpen, setAccountOpen] = useState(false);
   return (
     <>
       <PageLayout
@@ -99,7 +96,7 @@ export function SpaceSelectionPage() {
         <MenuRow
           icon="person"
           title="내 계정"
-          onClick={() => setAccountOpen(true)}
+          onClick={() => void navigate(paths.account)}
         />
         {isMockPreviewEnabled && (
           <Link
@@ -110,15 +107,6 @@ export function SpaceSelectionPage() {
           </Link>
         )}
       </PageLayout>
-      <BottomSheet
-        open={accountOpen}
-        onOpenChange={setAccountOpen}
-        title="내 계정 화면 준비 중"
-      >
-        <p className="text-hm-body-default text-hm-text-secondary">
-          현재는 Mock 화면이에요. 계정 조회·변경 기능은 이후에 연결해요.
-        </p>
-      </BottomSheet>
     </>
   );
 }

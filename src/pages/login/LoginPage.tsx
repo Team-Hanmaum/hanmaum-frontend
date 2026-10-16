@@ -1,8 +1,9 @@
 import { DetailLayout } from "@/components/layout";
 import { MockNotice } from "@/components/feedback/MockNotice";
+import { Notice } from "@/components/feedback";
 import { BrandSymbol } from "@/components/ui";
 import { SocialLoginOptions } from "@/features/auth/ui/SocialLoginOptions";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { paths } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useLoginPreview } from "./useLoginPreview";
@@ -10,6 +11,8 @@ import { useLoginPreview } from "./useLoginPreview";
 export function LoginPage() {
   const onBack = useBackNavigation(paths.landing);
   const { enabled, provider, message, previewLogin } = useLoginPreview();
+  const [params] = useSearchParams();
+  const reason = params.get("reason");
   return (
     <DetailLayout
       title="로그인"
@@ -29,6 +32,15 @@ export function LoginPage() {
         </MockNotice>
       }
     >
+      {(reason === "signed-out" || reason === "expired") && (
+        <Notice
+          role="status"
+          title={
+            reason === "expired" ? "다시 로그인해 주세요" : "로그아웃했어요"
+          }
+          body="화면 확인용 Mock 결과예요. 실제 로그인 상태는 변경하지 않았어요."
+        />
+      )}
       <div className="flex w-full flex-col items-center gap-hm-16 text-center">
         <BrandSymbol
           size="login"

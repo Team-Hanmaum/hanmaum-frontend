@@ -110,6 +110,24 @@ const entryRoutes: RouteObject[] = [
   },
 ];
 
+// 계정 화면은 선택한 공간이 없어도 접근한다.
+const accountRoutes: RouteObject[] = [
+  {
+    path: paths.account,
+    lazy: async () => ({
+      Component: (await import("@/pages/account/AccountPage")).AccountPage,
+    }),
+    handle: { title: "내 계정" },
+  },
+  {
+    path: paths.logout,
+    lazy: async () => ({
+      Component: (await import("@/pages/account/LogoutPage")).LogoutPage,
+    }),
+    handle: { title: "로그아웃" },
+  },
+];
+
 // 공간 헤더와 공통 하단 탭을 사용하는 화면
 const tabRoutes: RouteObject[] = [
   {
@@ -451,6 +469,7 @@ const router = createBrowserRouter([
     HydrateFallback: RouteLoadingFallback,
     children: [
       ...entryRoutes,
+      ...accountRoutes,
       {
         path: `${paths.spaces}/:careSpaceId`,
         children: spaceRoutes,
