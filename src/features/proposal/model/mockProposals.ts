@@ -48,6 +48,20 @@ export function publishMockCareState(
 // 메모리 기반 화면 검증 전용. 권한·버전·원본·멱등성의 최종 보장은 BE에서 처리한다.
 export const mockProposals = {
   getSnapshot: () => snapshot,
+  discardSpace(spaceId: string) {
+    if (!isMockPreviewEnabled) return;
+    seeds.delete(spaceId);
+    // 빈 스냅샷을 남겨 이전 공간 객체로 합성 데이터가 다시 생성되지 않게 한다.
+    publish(spaceId, {
+      items: [],
+      proposals: [],
+      requests: [],
+      results: [],
+      careChanges: [],
+      deletions: [],
+      reconfirmations: [],
+    });
+  },
   subscribe(listener: () => void) {
     listeners.add(listener);
     return () => {
@@ -55,8 +69,9 @@ export const mockProposals = {
     };
   },
   getForSpace(space: CareSpaceView): ProposalSpaceState {
+    if (snapshot[space.id]) return snapshot[space.id];
     if (!seeds.has(space.id)) seeds.set(space.id, getMockProposalData(space));
-    return snapshot[space.id] ?? seeds.get(space.id)!;
+    return seeds.get(space.id)!;
   },
   removeSource(space: CareSpaceView, recordId: string): RecordDeletion | null {
     if (!isMockPreviewEnabled) return null;

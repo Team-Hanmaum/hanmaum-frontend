@@ -23,16 +23,18 @@ import { invitationPath, paths, spacePath } from "@/routes/paths";
 import { SpaceBottomNavigation } from "@/routes/layouts/SpaceBottomNavigation";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
+import { SpaceAccessState } from "@/routes/layouts/SpaceAccessState";
 
 function invitationUrl(token: string) {
   return new URL(invitationPath(token), window.location.origin).href;
 }
 export function SpaceInvitePage() {
   const { careSpaceId } = useParams();
-  const { spaces } = useMockCareSpaces();
+  const { spaces, ended } = useMockCareSpaces();
   const navigate = useNavigate();
   const onBack = useBackNavigation(paths.spaces);
   const space = spaces.find((item) => item.id === careSpaceId);
+  if (careSpaceId && ended[careSpaceId]) return <SpaceAccessState />;
   if (!space)
     return (
       <DetailLayout

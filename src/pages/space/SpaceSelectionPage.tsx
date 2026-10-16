@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { Header, PageLayout } from "@/components/layout";
 import {
   BottomSheet,
   EmptyState,
   ErrorState,
   LoadingState,
+  Notice,
 } from "@/components/feedback";
 import { MockStateSelect } from "@/components/feedback/MockStateSelect";
 import { MenuRow } from "@/components/ui";
@@ -24,7 +25,13 @@ const states = [
 ] as const;
 export function SpaceSelectionPage() {
   const navigate = useNavigate();
-  const { spaces, currentId } = useMockCareSpaces();
+  const { spaces, currentId, lastExit } = useMockCareSpaces();
+  const location = useLocation();
+  const exit =
+    lastExit?.id ===
+    (location.state as { familyExit?: string } | null)?.familyExit
+      ? lastExit
+      : undefined;
   const [state, setState] = useMockScreenState(states, "default");
   const [accountOpen, setAccountOpen] = useState(false);
   return (
@@ -40,6 +47,17 @@ export function SpaceSelectionPage() {
           />
         }
       >
+        {exit && (
+          <Notice
+            role="status"
+            title={
+              exit.reason === "left"
+                ? `${exit.name}에서 나왔어요`
+                : `${exit.name}을 삭제했어요`
+            }
+            body="이제 다른 참여 공간을 선택할 수 있어요."
+          />
+        )}
         <h1 className="text-hm-title-page">
           어느 공간으로
           <br />

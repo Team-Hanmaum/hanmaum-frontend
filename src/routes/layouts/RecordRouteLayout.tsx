@@ -5,13 +5,15 @@ import { MockNotice } from "@/components/feedback/MockNotice";
 import { useMockCareSpaces } from "@/features/carespace/model/useMockCareSpaces";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { paths } from "../paths";
+import { SpaceAccessState } from "./SpaceAccessState";
 
 // 작성·상세에서 공간을 검증하고, 공간/소식 전환 시 진행 중인 Mock 동작을 해제한다.
 export function RecordRouteLayout() {
   const { careSpaceId, recordId } = useParams();
-  const { spaces } = useMockCareSpaces();
+  const { spaces, ended } = useMockCareSpaces();
   const navigate = useNavigate();
   const space = spaces.find((item) => item.id === careSpaceId);
+  if (careSpaceId && ended[careSpaceId]) return <SpaceAccessState />;
   if (!isMockPreviewEnabled || !space)
     return (
       <DetailLayout

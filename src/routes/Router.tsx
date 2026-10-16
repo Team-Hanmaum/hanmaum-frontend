@@ -29,6 +29,7 @@ import { RouteErrorPage } from "@/pages/error/RouteErrorPage";
 import { TabLayout } from "./layouts/TabLayout";
 import { RecordRouteLayout } from "./layouts/RecordRouteLayout";
 import { ProposalRouteLayout } from "./layouts/ProposalRouteLayout";
+import { FamilyRouteLayout } from "./layouts/FamilyRouteLayout";
 import { recordNavigation } from "./navigationHistory";
 import { paths, spacePath } from "./paths";
 
@@ -341,6 +342,58 @@ const proposalRoutes: RouteObject[] = [
   },
 ];
 
+// 가족 관리: 역할 확인은 각 화면과 Mock 액션에서 재검사
+const familyRoutes: RouteObject[] = [
+  {
+    path: "family/leave",
+    lazy: async () => ({
+      Component: (await import("@/pages/family/FamilyLeavePage"))
+        .FamilyLeavePage,
+    }),
+    handle: { title: "공간 나가기" },
+  },
+  {
+    path: "family/delete",
+    lazy: async () => ({
+      Component: (await import("@/pages/family/FamilyDeletePage"))
+        .FamilyDeletePage,
+    }),
+    handle: { title: "공간 삭제" },
+  },
+  {
+    path: "family/transfer",
+    lazy: async () => ({
+      Component: (await import("@/pages/family/FamilyTransferPage"))
+        .FamilyTransferPage,
+    }),
+    handle: { title: "소유권 이전" },
+  },
+  {
+    path: "family/transfer/:memberId",
+    lazy: async () => ({
+      Component: (await import("@/pages/family/FamilyTransferConfirmPage"))
+        .FamilyTransferConfirmPage,
+    }),
+    handle: { title: "소유권 이전 확인" },
+  },
+  {
+    path: "family/members",
+    lazy: async () => ({
+      Component: (await import("@/pages/family/FamilyMembersPage"))
+        .FamilyMembersPage,
+    }),
+    handle: { title: "구성원 관리" },
+  },
+  {
+    path: "family/members/:memberId/remove",
+    lazy: async () => ({
+      Component: (await import("@/pages/family/FamilyRemovePage"))
+        .FamilyRemovePage,
+    }),
+    handle: { title: "참여 관리" },
+  },
+];
+
 // 개발 전용 화면: 프로덕션에서는 경로와 페이지 코드 제외
 const developmentRoutes: RouteObject[] = import.meta.env.DEV
   ? [
@@ -385,6 +438,7 @@ const spaceRoutes: RouteObject[] = [
     Component: ProposalRouteLayout,
     children: [...recordDeletionRoutes, ...careItemRoutes, ...proposalRoutes],
   },
+  { Component: FamilyRouteLayout, children: familyRoutes },
   notFoundRoute,
 ];
 
