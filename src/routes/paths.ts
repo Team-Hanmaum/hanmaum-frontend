@@ -6,12 +6,30 @@ import {
 export const paths = {
   landing: "/",
   login: "/login",
+  account: "/account",
+  logout: "/account/logout",
+  withdrawal: "/account/withdraw",
+  withdrawalNews: "/account/withdraw/news",
+  withdrawalComplete: "/account/withdraw/complete",
   onboardingGuide: "/onboarding/guide",
   spaces: "/spaces",
   spaceCreate: "/spaces/new",
   invitationExample: "/invitations/mock-family",
   components: "/_dev/components",
 } as const;
+
+export function accountPath(spaceId?: string) {
+  return `${paths.account}${spaceId ? `?space=${encodeURIComponent(spaceId)}` : ""}`;
+}
+export function spaceInfoPath(spaceId: string) {
+  return `${paths.spaces}/${encodeURIComponent(spaceId)}/info`;
+}
+export function spaceInfoRequestsPath(spaceId: string) {
+  return `${spaceInfoPath(spaceId)}/requests`;
+}
+export function spaceInfoRequestPath(spaceId: string, requestId: string) {
+  return `${spaceInfoRequestsPath(spaceId)}/${encodeURIComponent(requestId)}`;
+}
 
 export const spaceTabs = ["home", "care", "news", "family", "all"] as const;
 export type SpaceTab = (typeof spaceTabs)[number];

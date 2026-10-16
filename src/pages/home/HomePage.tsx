@@ -17,6 +17,10 @@ import {
 import { useMockScreenState } from "@/routes/useMockScreenState";
 import { careItemPath, careListPath } from "@/routes/paths";
 import { useCareNow } from "@/features/careitem/model/useCareNow";
+import {
+  pendingSpaceInfoCount,
+  useMockSpaceInfoChanges,
+} from "@/features/carespace/model/mockSpaceInfoChanges";
 
 export function HomePage() {
   const space = useOutletContext<CareSpaceView>();
@@ -24,12 +28,14 @@ export function HomePage() {
   const proposals = useMockProposals(space);
   const navigate = useNavigate();
   const now = useCareNow();
+  const spaceChanges = useMockSpaceInfoChanges(space.id);
   const data = getMockHomeData(
     getRecordsWithProposals(records, proposals),
     proposals,
     space,
     now,
   );
+  data.pendingCount += pendingSpaceInfoCount(spaceChanges, space);
   const defaultState =
     space.empty &&
     !records.length &&

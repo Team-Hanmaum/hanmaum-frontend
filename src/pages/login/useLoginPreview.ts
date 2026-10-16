@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import type { SocialProvider } from "@/components/ui";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { paths } from "@/routes/paths";
+import { mockAccount } from "@/features/user/model/mockAccount";
 
 export function useLoginPreview() {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ export function useLoginPreview() {
     pending.current = setTimeout(() => {
       pending.current = null;
       setProvider(null);
+      mockAccount.login(nextProvider);
       void navigate(paths.onboardingGuide);
     }, 1000);
   }

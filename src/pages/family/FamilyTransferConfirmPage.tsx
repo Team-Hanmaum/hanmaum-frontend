@@ -12,15 +12,22 @@ import { FamilyInfoCard } from "@/features/carespace/ui/FamilyInfoCard";
 import { FamilyMember } from "@/features/carespace/ui/FamilyMember";
 import { useMockAction } from "@/lib/useMockAction";
 import { FamilyPageLayout } from "@/routes/layouts/FamilyPageLayout";
-import { familyLeavePath, familyTransferPath, spacePath } from "@/routes/paths";
+import {
+  familyLeavePath,
+  familyTransferPath,
+  spacePath,
+  paths,
+} from "@/routes/paths";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 import { useBackNavigation } from "@/routes/useBackNavigation";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 export function FamilyTransferConfirmPage() {
   const space = useOutletContext<CareSpaceView>();
   const { memberId = "" } = useParams();
   const navigate = useNavigate();
-  const onBack = useBackNavigation(familyTransferPath(space.id));
+  const { withReturn, withdrawing, returnToWithdrawal } = useWithdrawalReturn();
+  const onBack = useBackNavigation(withReturn(familyTransferPath(space.id)));
   const [state, setState] = useMockScreenState(familyActionStates, "default");
   const { pending, run } = useMockAction();
   const [error, setError] = useState("");
@@ -32,6 +39,8 @@ export function FamilyTransferConfirmPage() {
     space.role !== "owner" || state === "forbidden" || member?.self;
   const toFamily = () =>
     void navigate(spacePath(space.id, "family"), { replace: true });
+  const recover = withdrawing ? returnToWithdrawal : toFamily;
+  const recoveryLabel = withdrawing ? "탈퇴 절차로 돌아가기" : "가족 화면으로";
   const comparison = (
     <Comparison
       beforeLabel="현재"
@@ -60,8 +69,10 @@ export function FamilyTransferConfirmPage() {
     <FamilyPageLayout
       title={completed ? "소유권 이전 완료" : "소유권 이전 확인"}
       spaceId={space.id}
-      onBack={completed ? toFamily : onBack}
-      tabs={completed}
+      onBack={
+        completed ? (withdrawing ? returnToWithdrawal : toFamily) : onBack
+      }
+      tabs={completed && !withdrawing}
       preview={
         completed
           ? undefined
@@ -79,13 +90,17 @@ export function FamilyTransferConfirmPage() {
       actions={
         completed ? (
           <>
-            <Button onClick={toFamily}>가족 화면으로</Button>
+            <Button onClick={withdrawing ? returnToWithdrawal : toFamily}>
+              {withdrawing ? "남은 소유 공간 확인" : "가족 화면으로"}
+            </Button>
             <TextAction
               onClick={() =>
-                void navigate(familyLeavePath(space.id), { replace: true })
+                withdrawing
+                  ? void navigate(paths.account, { replace: true })
+                  : void navigate(familyLeavePath(space.id), { replace: true })
               }
             >
-              이어서 공간 나가기
+              {withdrawing ? "탈퇴 취소" : "이어서 공간 나가기"}
             </TextAction>
           </>
         ) : (
@@ -94,12 +109,14 @@ export function FamilyTransferConfirmPage() {
             <>
               <Button
                 onClick={() =>
-                  void navigate(familyTransferPath(space.id), { replace: true })
+                  void navigate(withReturn(familyTransferPath(space.id)), {
+                    replace: true,
+                  })
                 }
               >
                 가족 다시 선택
               </Button>
-              <TextAction onClick={toFamily}>가족 화면으로</TextAction>
+              <TextAction onClick={recover}>{recoveryLabel}</TextAction>
             </>
           ) : (
             <>
@@ -111,9 +128,9 @@ export function FamilyTransferConfirmPage() {
               </Button>
               <TextAction
                 disabled={pending}
-                onClick={error ? toFamily : onBack}
+                onClick={error ? recover : onBack}
               >
-                {error ? "가족 화면으로" : "취소"}
+                {error ? recoveryLabel : "취소"}
               </TextAction>
             </>
           ))
@@ -148,16 +165,24 @@ export function FamilyTransferConfirmPage() {
             detail="나 · 현재 공간에 참여 중"
           />
           <Notice
-            title="지금도 함께하는 가족이에요"
-            body="나가려면 참여 종료 내용을 한 번 더 확인해 주세요."
+            title={
+              withdrawing
+                ? "회원 탈퇴는 아직 하지 않았어요"
+                : "지금도 함께하는 가족이에요"
+            }
+            body={
+              withdrawing
+                ? "남은 소유 공간을 확인한 뒤 탈퇴 절차를 이어가 주세요."
+                : "나가려면 참여 종료 내용을 한 번 더 확인해 주세요."
+            }
           />
         </>
       ) : forbidden ? (
         <ErrorState
           reason="no-permission"
           title="현재 소유자만 역할을 이전할 수 있어요"
-          actionLabel="가족 화면으로"
-          onAction={toFamily}
+          actionLabel={recoveryLabel}
+          onAction={recover}
         />
       ) : missing ? (
         <>

@@ -2,6 +2,7 @@
 export type CareSpaceView = {
   id: string;
   subjectLabel: string;
+  infoVersion?: number;
   role: "owner" | "member";
   members: {
     id: string;

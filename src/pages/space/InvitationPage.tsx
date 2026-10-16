@@ -10,6 +10,7 @@ import { mockCareSpaces } from "@/features/carespace/model/mockCareSpaces";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { useMockAction } from "@/lib/useMockAction";
 import { paths, spacePath } from "@/routes/paths";
+import { mockAccount } from "@/features/user/model/mockAccount";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 
 const states = [
@@ -48,6 +49,7 @@ function InvitationPreview({ token }: { token: string }) {
         setState("unavailable");
         return;
       }
+      mockAccount.login(nextProvider);
       void navigate(
         `${spacePath(result.space.id)}${result.alreadyMember ? "" : "?mockState=joined"}`,
         { replace: true },

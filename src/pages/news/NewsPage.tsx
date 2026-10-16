@@ -14,22 +14,40 @@ import {
   newsDetailPath,
   proposalListPath,
 } from "@/routes/paths";
+import { TextAction } from "@/components/ui";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
+import {
+  pendingSpaceInfoCount,
+  useMockSpaceInfoChanges,
+} from "@/features/carespace/model/mockSpaceInfoChanges";
 
 export function NewsPage() {
+  const { withdrawing, withReturn, returnToWithdrawal } = useWithdrawalReturn();
   const space = useOutletContext<CareSpaceView>();
   const navigate = useNavigate();
   const records = useMockRecords(space);
   const proposals = useMockProposals(space);
+  const spaceChanges = useMockSpaceInfoChanges(space.id);
   const [state, setState] = useMockScreenState(newsListStates, "default");
   return (
-    <NewsList
-      records={getRecordsWithProposals(records, proposals)}
-      pendingCount={getPendingProposalCount(proposals, space)}
-      state={state}
-      onCreate={() => void navigate(newsCreatePath(space.id))}
-      onOpen={(id) => void navigate(newsDetailPath(space.id, id))}
-      onReview={() => void navigate(proposalListPath(space.id))}
-      onRetry={() => setState("default")}
-    />
+    <>
+      {withdrawing && (
+        <TextAction onClick={returnToWithdrawal}>
+          탈퇴 절차로 돌아가기
+        </TextAction>
+      )}
+      <NewsList
+        records={getRecordsWithProposals(records, proposals)}
+        pendingCount={
+          getPendingProposalCount(proposals, space) +
+          pendingSpaceInfoCount(spaceChanges, space)
+        }
+        state={state}
+        onCreate={() => void navigate(newsCreatePath(space.id))}
+        onOpen={(id) => void navigate(withReturn(newsDetailPath(space.id, id)))}
+        onReview={() => void navigate(withReturn(proposalListPath(space.id)))}
+        onRetry={() => setState("default")}
+      />
+    </>
   );
 }

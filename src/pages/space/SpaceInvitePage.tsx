@@ -24,6 +24,7 @@ import { SpaceBottomNavigation } from "@/routes/layouts/SpaceBottomNavigation";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 import { SpaceAccessState } from "@/routes/layouts/SpaceAccessState";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 function invitationUrl(token: string) {
   return new URL(invitationPath(token), window.location.origin).href;
@@ -59,6 +60,7 @@ export function SpaceInvitePage() {
   );
 }
 function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
+  const { withdrawing, returnToWithdrawal } = useWithdrawalReturn();
   const navigate = useNavigate();
   const onBack = useBackNavigation(spacePath(space.id));
   const [state, setState] = useMockScreenState(
@@ -91,7 +93,7 @@ function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
     <>
       <DetailLayout
         title="가족 초대"
-        onBack={onBack}
+        onBack={withdrawing ? returnToWithdrawal : onBack}
         notice={
           <MockStateSelect
             message="화면 확인용 링크 · 실제 발급·참여 없음 · 새로고침 시 초기화"
@@ -131,6 +133,14 @@ function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
                 </TextAction>
               )}
             </div>
+            {withdrawing && (
+              <TextAction
+                className="w-full bg-hm-bg-surface pb-hm-20"
+                onClick={returnToWithdrawal}
+              >
+                탈퇴 절차로 돌아가기
+              </TextAction>
+            )}
             <SpaceBottomNavigation
               spaceId={space.id}
               active="family"

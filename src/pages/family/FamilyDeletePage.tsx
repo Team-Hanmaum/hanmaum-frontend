@@ -19,27 +19,32 @@ import {
 } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 export function FamilyDeletePage() {
   const space = useOutletContext<CareSpaceView>();
   const navigate = useNavigate();
+  const { withdrawing, withReturn, returnToWithdrawal } = useWithdrawalReturn();
   const onBack = useBackNavigation(familyLeavePath(space.id));
   const [state, setState] = useMockScreenState(familyExitStates, "default");
   const { pending, error, submit, clearError } = useFamilyExit(
     space.id,
     "deleteSpace",
     (noticeId) =>
-      void navigate(paths.spaces, {
-        replace: true,
-        state: { familyExit: noticeId },
-      }),
+      void navigate(
+        withdrawing ? `${paths.withdrawal}?cleanup=deleted` : paths.spaces,
+        {
+          replace: true,
+          state: { familyExit: noticeId },
+        },
+      ),
   );
   const allowed = space.role === "owner" && state !== "forbidden";
   return (
     <FamilyPageLayout
       title="공간 삭제"
       spaceId={space.id}
-      onBack={onBack}
+      onBack={withdrawing ? returnToWithdrawal : onBack}
       preview={{
         value: state,
         options: familyExitStates,
@@ -64,7 +69,7 @@ export function FamilyDeletePage() {
             </Button>
             <TextAction
               disabled={pending}
-              onClick={onBack}
+              onClick={withdrawing ? returnToWithdrawal : onBack}
             >
               취소
             </TextAction>
@@ -76,8 +81,12 @@ export function FamilyDeletePage() {
         <ErrorState
           reason="no-permission"
           title="소유자만 공간을 삭제할 수 있어요"
-          actionLabel="가족 화면으로"
-          onAction={() => void navigate(spacePath(space.id, "family"))}
+          actionLabel={withdrawing ? "탈퇴 절차로 돌아가기" : "가족 화면으로"}
+          onAction={
+            withdrawing
+              ? returnToWithdrawal
+              : () => void navigate(spacePath(space.id, "family"))
+          }
         />
       ) : (
         <>
@@ -107,7 +116,9 @@ export function FamilyDeletePage() {
           <Button
             variant="outline"
             disabled={pending}
-            onClick={() => void navigate(familyTransferPath(space.id))}
+            onClick={() =>
+              void navigate(withReturn(familyTransferPath(space.id)))
+            }
           >
             기록을 남기고 소유권 이전하기
           </Button>

@@ -110,6 +110,48 @@ const entryRoutes: RouteObject[] = [
   },
 ];
 
+// 계정 화면은 선택한 공간이 없어도 접근한다.
+const accountRoutes: RouteObject[] = [
+  {
+    path: paths.withdrawal,
+    lazy: async () => ({
+      Component: (await import("@/pages/account/WithdrawalPage"))
+        .WithdrawalPage,
+    }),
+    handle: { title: "회원 탈퇴" },
+  },
+  {
+    path: paths.withdrawalNews,
+    lazy: async () => ({
+      Component: (await import("@/pages/account/WithdrawalNewsPage"))
+        .WithdrawalNewsPage,
+    }),
+    handle: { title: "탈퇴 전 소식 확인" },
+  },
+  {
+    path: paths.withdrawalComplete,
+    lazy: async () => ({
+      Component: (await import("@/pages/account/WithdrawalCompletePage"))
+        .WithdrawalCompletePage,
+    }),
+    handle: { title: "회원 탈퇴 완료" },
+  },
+  {
+    path: paths.account,
+    lazy: async () => ({
+      Component: (await import("@/pages/account/AccountPage")).AccountPage,
+    }),
+    handle: { title: "내 계정" },
+  },
+  {
+    path: paths.logout,
+    lazy: async () => ({
+      Component: (await import("@/pages/account/LogoutPage")).LogoutPage,
+    }),
+    handle: { title: "로그아웃" },
+  },
+];
+
 // 공간 헤더와 공통 하단 탭을 사용하는 화면
 const tabRoutes: RouteObject[] = [
   {
@@ -342,6 +384,41 @@ const proposalRoutes: RouteObject[] = [
   },
 ];
 
+// 공간 정보와 이름 변경 요청
+const spaceInfoRoutes: RouteObject[] = [
+  {
+    path: "info",
+    lazy: async () => ({
+      Component: (await import("@/pages/space/SpaceInfoPage")).SpaceInfoPage,
+    }),
+    handle: { title: "공간 정보" },
+  },
+  {
+    path: "info/edit",
+    lazy: async () => ({
+      Component: (await import("@/pages/space/SpaceInfoEditPage"))
+        .SpaceInfoEditPage,
+    }),
+    handle: { title: "공간 정보 수정" },
+  },
+  {
+    path: "info/requests",
+    lazy: async () => ({
+      Component: (await import("@/pages/space/SpaceInfoRequestsPage"))
+        .SpaceInfoRequestsPage,
+    }),
+    handle: { title: "공간 정보 요청·변경" },
+  },
+  {
+    path: "info/requests/:requestId",
+    lazy: async () => ({
+      Component: (await import("@/pages/space/SpaceInfoRequestPage"))
+        .SpaceInfoRequestPage,
+    }),
+    handle: { title: "공간 정보 요청" },
+  },
+];
+
 // 가족 관리: 역할 확인은 각 화면과 Mock 액션에서 재검사
 const familyRoutes: RouteObject[] = [
   {
@@ -438,7 +515,10 @@ const spaceRoutes: RouteObject[] = [
     Component: ProposalRouteLayout,
     children: [...recordDeletionRoutes, ...careItemRoutes, ...proposalRoutes],
   },
-  { Component: FamilyRouteLayout, children: familyRoutes },
+  {
+    Component: FamilyRouteLayout,
+    children: [...familyRoutes, ...spaceInfoRoutes],
+  },
   notFoundRoute,
 ];
 
@@ -451,6 +531,7 @@ const router = createBrowserRouter([
     HydrateFallback: RouteLoadingFallback,
     children: [
       ...entryRoutes,
+      ...accountRoutes,
       {
         path: `${paths.spaces}/:careSpaceId`,
         children: spaceRoutes,

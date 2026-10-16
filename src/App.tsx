@@ -5,6 +5,7 @@ import {
   useLocation,
   useMatches,
 } from "react-router";
+import { MockAccountBoundary } from "@/routes/layouts/MockAccountBoundary";
 
 function App() {
   const { pathname } = useLocation();
@@ -19,7 +20,9 @@ function App() {
 
   return (
     <>
-      <Outlet />
+      <MockAccountBoundary>
+        <Outlet />
+      </MockAccountBoundary>
       <ScrollRestoration />
     </>
   );
