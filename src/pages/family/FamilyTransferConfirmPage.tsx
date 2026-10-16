@@ -39,6 +39,8 @@ export function FamilyTransferConfirmPage() {
     space.role !== "owner" || state === "forbidden" || member?.self;
   const toFamily = () =>
     void navigate(spacePath(space.id, "family"), { replace: true });
+  const recover = withdrawing ? returnToWithdrawal : toFamily;
+  const recoveryLabel = withdrawing ? "탈퇴 절차로 돌아가기" : "가족 화면으로";
   const comparison = (
     <Comparison
       beforeLabel="현재"
@@ -114,7 +116,7 @@ export function FamilyTransferConfirmPage() {
               >
                 가족 다시 선택
               </Button>
-              <TextAction onClick={toFamily}>가족 화면으로</TextAction>
+              <TextAction onClick={recover}>{recoveryLabel}</TextAction>
             </>
           ) : (
             <>
@@ -126,9 +128,9 @@ export function FamilyTransferConfirmPage() {
               </Button>
               <TextAction
                 disabled={pending}
-                onClick={error ? toFamily : onBack}
+                onClick={error ? recover : onBack}
               >
-                {error ? "가족 화면으로" : "취소"}
+                {error ? recoveryLabel : "취소"}
               </TextAction>
             </>
           ))
@@ -179,8 +181,8 @@ export function FamilyTransferConfirmPage() {
         <ErrorState
           reason="no-permission"
           title="현재 소유자만 역할을 이전할 수 있어요"
-          actionLabel="가족 화면으로"
-          onAction={toFamily}
+          actionLabel={recoveryLabel}
+          onAction={recover}
         />
       ) : missing ? (
         <>

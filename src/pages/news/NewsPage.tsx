@@ -45,7 +45,7 @@ export function NewsPage() {
         state={state}
         onCreate={() => void navigate(newsCreatePath(space.id))}
         onOpen={(id) => void navigate(withReturn(newsDetailPath(space.id, id)))}
-        onReview={() => void navigate(proposalListPath(space.id))}
+        onReview={() => void navigate(withReturn(proposalListPath(space.id)))}
         onRetry={() => setState("default")}
       />
     </>

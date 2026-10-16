@@ -81,8 +81,12 @@ export function FamilyDeletePage() {
         <ErrorState
           reason="no-permission"
           title="소유자만 공간을 삭제할 수 있어요"
-          actionLabel="가족 화면으로"
-          onAction={() => void navigate(spacePath(space.id, "family"))}
+          actionLabel={withdrawing ? "탈퇴 절차로 돌아가기" : "가족 화면으로"}
+          onAction={
+            withdrawing
+              ? returnToWithdrawal
+              : () => void navigate(spacePath(space.id, "family"))
+          }
         />
       ) : (
         <>
