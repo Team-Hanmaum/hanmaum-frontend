@@ -164,8 +164,8 @@ export function CareChangeDetailPage() {
             {waiting
               ? " 요청"
               : change.status === "applied"
-                ? "을 반영했어요"
-                : "은 반영하지 않았어요"}
+                ? " 처리를 완료했어요"
+                : " 요청을 반영하지 않았어요"}
           </h1>
           <p className="text-hm-body-small text-hm-text-secondary">
             {change.author.name} · {formatRecordDate(change.createdAt)}
