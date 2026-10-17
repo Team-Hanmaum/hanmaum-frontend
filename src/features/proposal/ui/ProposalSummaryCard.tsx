@@ -42,23 +42,28 @@ export function ProposalSummaryCard({
         )}
       </article>
     );
+  const comparison = (
+    <Comparison
+      beforeLabel={beforeLabel ?? proposal.beforeLabel}
+      beforeValue={proposal.beforeValue}
+      afterLabel={afterLabel ?? proposal.afterLabel}
+      afterValue={proposal.afterValue}
+    />
+  );
   return (
     <article className="flex min-w-0 flex-col items-start gap-hm-16 rounded-hm-16 bg-hm-bg-surface p-hm-20 wrap-anywhere">
       <Badge label={label} />
       <h2 className="text-hm-heading-section">{proposal.title}</h2>
-      <Comparison
-        beforeLabel={beforeLabel ?? proposal.beforeLabel}
-        beforeValue={proposal.beforeValue}
-        afterLabel={afterLabel ?? proposal.afterLabel}
-        afterValue={proposal.afterValue}
-      />
-      {proposal.edited && (
+      {proposal.edited ? (
         <ProposalFieldChanges
           proposal={proposal}
           members={members}
-          beforeLabel={beforeLabel ?? proposal.beforeLabel}
-          afterLabel={afterLabel ?? proposal.afterLabel}
+          beforeLabel={beforeLabel}
+          afterLabel={afterLabel}
+          fallback={comparison}
         />
+      ) : (
+        comparison
       )}
       {meta && (
         <p className="text-hm-body-small whitespace-pre-wrap text-hm-text-secondary">

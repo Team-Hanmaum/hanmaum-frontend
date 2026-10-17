@@ -167,7 +167,8 @@ export function ProposalRequestPage() {
               <ProposalSummaryCard
                 members={space.members}
                 key={proposal.id}
-                proposal={{ ...proposal, beforeLabel: "요청 당시 정보" }}
+                proposal={proposal}
+                beforeLabel="요청 당시 정보"
                 label={
                   current?.sourceDeleted
                     ? "원본 삭제"
