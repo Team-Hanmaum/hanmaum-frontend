@@ -5,6 +5,8 @@ import { MockStateSelect } from "@/components/feedback/MockStateSelect";
 import { MockNotice } from "@/components/feedback/MockNotice";
 import { SpaceBottomNavigation } from "./SpaceBottomNavigation";
 import type { SpaceTab } from "../paths";
+import { TextAction } from "@/components/ui";
+import { useWithdrawalReturn } from "../useWithdrawalReturn";
 
 export function ProposalPageLayout({
   title,
@@ -29,6 +31,7 @@ export function ProposalPageLayout({
     onChange: (value: string) => void;
   };
 }) {
+  const { withdrawing, returnToWithdrawal } = useWithdrawalReturn();
   const message = "소식·돌봄 UI 예시 · 실제 요청·돌봄 정보 변경 없음";
   return (
     <DetailLayout
@@ -64,6 +67,11 @@ export function ProposalPageLayout({
         )
       }
     >
+      {withdrawing && (
+        <TextAction onClick={returnToWithdrawal}>
+          탈퇴 절차로 돌아가기
+        </TextAction>
+      )}
       {children}
     </DetailLayout>
   );

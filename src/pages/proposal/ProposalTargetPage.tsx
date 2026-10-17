@@ -1,3 +1,4 @@
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { useState } from "react";
 import {
   useNavigate,
@@ -95,11 +96,12 @@ export function ProposalTargetPage() {
     );
   }
   const navigate = useNavigate();
+  const { withReturn } = useWithdrawalReturn();
   const back = () =>
     void navigate(
       proposal
-        ? proposalReviewPath(space.id, proposal.recordId)
-        : proposalListPath(space.id),
+        ? withReturn(proposalReviewPath(space.id, proposal.recordId))
+        : withReturn(proposalListPath(space.id)),
     );
   const candidates = data.items.filter(
     (item) =>
@@ -193,7 +195,9 @@ export function ProposalTargetPage() {
           <MenuRow
             icon="link-brand"
             title="현재 항목의 근거·이력"
-            onClick={() => void navigate(careItemPath(space.id, target.id))}
+            onClick={() =>
+              void navigate(withReturn(careItemPath(space.id, target.id)))
+            }
           />
           <Comparison
             beforeLabel="현재 내용"
@@ -211,7 +215,9 @@ export function ProposalTargetPage() {
           <ProposalSources
             proposals={[proposal]}
             records={records}
-            onSource={(id) => void navigate(newsDetailPath(space.id, id))}
+            onSource={(id) =>
+              void navigate(withReturn(newsDetailPath(space.id, id)))
+            }
           />
         </>
       ) : (
@@ -223,7 +229,9 @@ export function ProposalTargetPage() {
           <ProposalSources
             proposals={[proposal]}
             records={records}
-            onSource={(id) => void navigate(newsDetailPath(space.id, id))}
+            onSource={(id) =>
+              void navigate(withReturn(newsDetailPath(space.id, id)))
+            }
           />
           {candidates.map((item) => (
             <SelectionRow

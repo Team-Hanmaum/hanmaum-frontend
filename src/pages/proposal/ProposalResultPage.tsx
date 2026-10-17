@@ -1,3 +1,4 @@
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router";
 import { BottomSheet, EmptyState } from "@/components/feedback";
@@ -24,6 +25,7 @@ export function ProposalResultPage() {
   const records = useMockRecords(space);
   const result = data.results.find((item) => item.id === resultId);
   const navigate = useNavigate();
+  const { withReturn } = useWithdrawalReturn();
   const [sheet, setSheet] = useState<"items" | "history" | "decision" | null>(
     null,
   );
@@ -32,14 +34,14 @@ export function ProposalResultPage() {
     result?.proposals.some((proposal) => proposal.targetId === item.id),
   );
   const onBack = useBackNavigation(
-    proposalListPath(space.id, applied ? "applied" : "rejected"),
+    withReturn(proposalListPath(space.id, applied ? "applied" : "rejected")),
   );
   function open(kind: "items" | "history") {
     if (items.length === 1)
       void navigate(
         kind === "items"
-          ? careItemPath(space.id, items[0].id)
-          : careHistoryPath(space.id, items[0].id, result?.id),
+          ? withReturn(careItemPath(space.id, items[0].id))
+          : withReturn(careHistoryPath(space.id, items[0].id, result?.id)),
       );
     else setSheet(kind);
   }
@@ -57,7 +59,9 @@ export function ProposalResultPage() {
             )}
             <TextAction
               onClick={() =>
-                void navigate(proposalListPath(space.id, result.decision))
+                void navigate(
+                  withReturn(proposalListPath(space.id, result.decision)),
+                )
               }
             >
               확인할 내용 목록으로
@@ -72,7 +76,8 @@ export function ProposalResultPage() {
           body="새로고침하면 Mock 처리 결과는 초기화돼요. 목록에서 다시 확인해 주세요."
           action={{
             label: "확인할 내용 목록으로",
-            onClick: () => void navigate(proposalListPath(space.id)),
+            onClick: () =>
+              void navigate(withReturn(proposalListPath(space.id))),
           }}
         />
       ) : (
@@ -129,7 +134,9 @@ export function ProposalResultPage() {
           <ProposalSources
             proposals={result.proposals}
             records={records}
-            onSource={(id) => void navigate(newsDetailPath(space.id, id))}
+            onSource={(id) =>
+              void navigate(withReturn(newsDetailPath(space.id, id)))
+            }
           />
           <BottomSheet
             open={sheet !== null}
@@ -170,8 +177,10 @@ export function ProposalResultPage() {
                     setSheet(null);
                     void navigate(
                       sheet === "history"
-                        ? careHistoryPath(space.id, item.id, result.id)
-                        : careItemPath(space.id, item.id),
+                        ? withReturn(
+                            careHistoryPath(space.id, item.id, result.id),
+                          )
+                        : withReturn(careItemPath(space.id, item.id)),
                     );
                   }}
                 />

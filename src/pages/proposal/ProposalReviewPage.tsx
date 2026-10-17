@@ -1,3 +1,4 @@
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { useNavigate, useOutletContext, useParams } from "react-router";
 import { Button, TextAction } from "@/components/ui";
 import { EmptyState, Notice } from "@/components/feedback";
@@ -36,7 +37,8 @@ export function ProposalReviewPage() {
   const { pending, failure, submit } = useProposalAction(space);
   const [state, setState] = useMockScreenState(proposalReviewStates, "default");
   const navigate = useNavigate();
-  const onBack = useBackNavigation(proposalListPath(space.id));
+  const { withReturn } = useWithdrawalReturn();
+  const onBack = useBackNavigation(withReturn(proposalListPath(space.id)));
   const owner = space.role === "owner";
   const missing = !records.some((item) => item.id === recordId);
   const empty = !proposals.length || missing;
@@ -44,7 +46,7 @@ export function ProposalReviewPage() {
   function proceed() {
     if (!selected.length) return;
     if (owner)
-      void navigate(proposalConfirmPath(space.id), {
+      void navigate(withReturn(proposalConfirmPath(space.id)), {
         state: { selection: selected, recordId },
       });
     else {
@@ -52,7 +54,7 @@ export function ProposalReviewPage() {
       submit(
         selected,
         "request",
-        (id) => void navigate(proposalRequestPath(space.id, id)),
+        (id) => void navigate(withReturn(proposalRequestPath(space.id, id))),
         !requestError && state === "request-error"
           ? "request-error"
           : undefined,
@@ -88,7 +90,9 @@ export function ProposalReviewPage() {
             </Button>
             <TextAction
               className="w-full"
-              onClick={() => void navigate(proposalListPath(space.id))}
+              onClick={() =>
+                void navigate(withReturn(proposalListPath(space.id)))
+              }
               disabled={pending}
             >
               나중에 확인하기
@@ -104,7 +108,9 @@ export function ProposalReviewPage() {
           action={{
             label: "확인할 내용 목록으로",
             onClick: () =>
-              void navigate(proposalListPath(space.id, "requested")),
+              void navigate(
+                withReturn(proposalListPath(space.id, "requested")),
+              ),
           }}
         />
       ) : (
@@ -125,13 +131,19 @@ export function ProposalReviewPage() {
             records={records}
             selected={selected}
             onSelect={toggle}
-            onSource={(id) => void navigate(newsDetailPath(space.id, id))}
+            onSource={(id) =>
+              void navigate(withReturn(newsDetailPath(space.id, id)))
+            }
             busy={pending}
             requestError={requestError}
-            onEdit={(id) => void navigate(proposalEditPath(space.id, id))}
-            onTarget={(id) => void navigate(proposalTargetPath(space.id, id))}
+            onEdit={(id) =>
+              void navigate(withReturn(proposalEditPath(space.id, id)))
+            }
+            onTarget={(id) =>
+              void navigate(withReturn(proposalTargetPath(space.id, id)))
+            }
             onCompare={(id) =>
-              void navigate(proposalEvidencePath(space.id, id))
+              void navigate(withReturn(proposalEvidencePath(space.id, id)))
             }
           />
         </>
