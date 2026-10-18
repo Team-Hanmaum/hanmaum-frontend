@@ -16,6 +16,7 @@ import {
   newsDetailPath,
 } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { CareChangeSummary } from "@/features/careitem/ui/CareChangeSummary";
 import { careChangeTitle } from "@/features/careitem/model/careChangeRules";
 
@@ -85,10 +86,13 @@ export function CareHistoryPage() {
     (entry) => entry.id === historyId,
   );
   const navigate = useNavigate();
+  const { withReturn } = useWithdrawalReturn();
   const onBack = useBackNavigation(
-    historyId
-      ? careHistoryPath(space.id, itemId)
-      : careItemPath(space.id, itemId),
+    withReturn(
+      historyId
+        ? careHistoryPath(space.id, itemId)
+        : careItemPath(space.id, itemId),
+    ),
   );
   const redactionNotice = (
     <Notice
@@ -102,7 +106,11 @@ export function CareHistoryPage() {
       spaceId={space.id}
       onBack={onBack}
       actions={
-        <Button onClick={() => void navigate(careItemPath(space.id, itemId))}>
+        <Button
+          onClick={() =>
+            void navigate(withReturn(careItemPath(space.id, itemId)))
+          }
+        >
           항목으로 돌아가기
         </Button>
       }
@@ -162,7 +170,9 @@ export function CareHistoryPage() {
                   proposal.targetId === itemId && !proposal.sourceDeleted,
               )}
               records={records}
-              onSource={(id) => void navigate(newsDetailPath(space.id, id))}
+              onSource={(id) =>
+                void navigate(withReturn(newsDetailPath(space.id, id)))
+              }
             />
           </>
         ) : deletion ? (
@@ -227,7 +237,9 @@ export function CareHistoryPage() {
                 entry.actor + " · " + formatRecordDate(entry.createdAt)
               }
               onClick={() =>
-                void navigate(careHistoryPath(space.id, itemId, entry.id))
+                void navigate(
+                  withReturn(careHistoryPath(space.id, itemId, entry.id)),
+                )
               }
             />
           ))}
@@ -242,7 +254,9 @@ export function CareHistoryPage() {
             <MenuRow
               icon="link-brand"
               title="항목의 근거 보기"
-              onClick={() => void navigate(careSourcesPath(space.id, item.id))}
+              onClick={() =>
+                void navigate(withReturn(careSourcesPath(space.id, item.id)))
+              }
             />
           )}
         </>

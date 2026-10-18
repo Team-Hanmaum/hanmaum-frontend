@@ -15,7 +15,7 @@ import {
 } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
-import { MenuRow, TextAction } from "@/components/ui";
+import { MenuRow } from "@/components/ui";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { careRequestsPath } from "@/routes/paths";
 import { spaceInfoRequestsPath } from "@/routes/paths";
@@ -30,7 +30,7 @@ export function ProposalListPage() {
   const records = useMockRecords(space);
   const spaceChanges = useMockSpaceInfoChanges(space.id);
   const navigate = useNavigate();
-  const { withdrawing, withReturn, returnToWithdrawal } = useWithdrawalReturn();
+  const { withReturn } = useWithdrawalReturn();
   const [params, setParams] = useSearchParams();
   const status =
     proposalTabs.find((tab) => tab.value === params.get("status"))?.value ??
@@ -49,17 +49,14 @@ export function ProposalListPage() {
         onChange: setState,
       }}
     >
-      {withdrawing && (
-        <TextAction onClick={returnToWithdrawal}>
-          탈퇴 절차로 돌아가기
-        </TextAction>
-      )}
       <MenuRow
         icon="care-brand"
         title="돌봄에서 직접 남긴 요청·변경"
         onClick={() =>
           void navigate(
-            `${careRequestsPath(space.id)}?status=${status === "applied" ? "applied" : status === "rejected" ? "rejected" : "requested"}`,
+            withReturn(
+              `${careRequestsPath(space.id)}?status=${status === "applied" ? "applied" : status === "rejected" ? "rejected" : "requested"}`,
+            ),
           )
         }
       />
@@ -69,7 +66,9 @@ export function ProposalListPage() {
         description={`승인 대기 ${pendingSpaceInfoCount(spaceChanges, space)}건`}
         onClick={() =>
           void navigate(
-            `${spaceInfoRequestsPath(space.id)}?status=${status === "applied" ? "applied" : status === "rejected" ? "rejected" : "requested"}`,
+            withReturn(
+              `${spaceInfoRequestsPath(space.id)}?status=${status === "applied" ? "applied" : status === "rejected" ? "rejected" : "requested"}`,
+            ),
           )
         }
       />
@@ -89,9 +88,15 @@ export function ProposalListPage() {
             { preventScrollReset: true },
           );
         }}
-        onReview={(id) => void navigate(proposalReviewPath(space.id, id))}
-        onRequest={(id) => void navigate(proposalRequestPath(space.id, id))}
-        onResult={(id) => void navigate(proposalResultPath(space.id, id))}
+        onReview={(id) =>
+          void navigate(withReturn(proposalReviewPath(space.id, id)))
+        }
+        onRequest={(id) =>
+          void navigate(withReturn(proposalRequestPath(space.id, id)))
+        }
+        onResult={(id) =>
+          void navigate(withReturn(proposalResultPath(space.id, id)))
+        }
         onSource={(id) =>
           void navigate(withReturn(newsDetailPath(space.id, id)))
         }

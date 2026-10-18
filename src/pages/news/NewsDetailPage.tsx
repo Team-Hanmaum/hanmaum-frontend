@@ -67,7 +67,7 @@ export function NewsDetailPage() {
         : result?.resultId
           ? proposalResultPath(space.id, result.resultId)
           : proposalListPath(space.id);
-    void navigate(destination);
+    void navigate(withReturn(destination));
   }
   return (
     <>

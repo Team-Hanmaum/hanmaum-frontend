@@ -1,3 +1,4 @@
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import {
   useNavigate,
   useOutletContext,
@@ -31,6 +32,7 @@ export function ProposalRequestPage() {
   const data = useMockProposals(space);
   const records = useMockRecords(space);
   const navigate = useNavigate();
+  const { withReturn } = useWithdrawalReturn();
   const [params, setParams] = useSearchParams();
   const content = params.get("view") === "content";
   const request = data.requests.find(
@@ -47,8 +49,11 @@ export function ProposalRequestPage() {
   );
   const { selected, toggle } = useProposalRouteSelection(remaining, data);
   const owner = space.role === "owner";
-  const onBack = useBackNavigation(proposalListPath(space.id, "requested"));
-  const onSource = (id: string) => void navigate(newsDetailPath(space.id, id));
+  const onBack = useBackNavigation(
+    withReturn(proposalListPath(space.id, "requested")),
+  );
+  const onSource = (id: string) =>
+    void navigate(withReturn(newsDetailPath(space.id, id)));
   const awaiting = remaining.length > 0;
   const removed = request?.proposals.every(
     (proposal) => proposal.sourceDeleted,
@@ -56,9 +61,15 @@ export function ProposalRequestPage() {
   const ownerName =
     space.members.find((member) => member.role === "owner")?.name ?? "소유자";
   const onView = () =>
-    void setParams(content ? {} : { view: "content" }, {
-      preventScrollReset: false,
-    });
+    void setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        if (content) next.delete("view");
+        else next.set("view", "content");
+        return next;
+      },
+      { preventScrollReset: false },
+    );
   const review = owner && awaiting;
   return (
     <ProposalPageLayout
@@ -73,7 +84,7 @@ export function ProposalRequestPage() {
               <Button
                 disabled={!selected.length}
                 onClick={() =>
-                  void navigate(proposalConfirmPath(space.id), {
+                  void navigate(withReturn(proposalConfirmPath(space.id)), {
                     state: { requestId, selection: selected },
                   })
                 }
@@ -87,7 +98,9 @@ export function ProposalRequestPage() {
             )}
             <TextAction
               onClick={() =>
-                void navigate(proposalListPath(space.id, "requested"))
+                void navigate(
+                  withReturn(proposalListPath(space.id, "requested")),
+                )
               }
             >
               요청 목록으로
@@ -103,7 +116,9 @@ export function ProposalRequestPage() {
           action={{
             label: "요청 목록으로",
             onClick: () =>
-              void navigate(proposalListPath(space.id, "requested")),
+              void navigate(
+                withReturn(proposalListPath(space.id, "requested")),
+              ),
           }}
         />
       ) : review ? (
@@ -118,7 +133,9 @@ export function ProposalRequestPage() {
           onSource={onSource}
           busy={false}
           requestError={false}
-          onCompare={(id) => void navigate(proposalEvidencePath(space.id, id))}
+          onCompare={(id) =>
+            void navigate(withReturn(proposalEvidencePath(space.id, id)))
+          }
         />
       ) : (
         <>
@@ -150,7 +167,8 @@ export function ProposalRequestPage() {
               <ProposalSummaryCard
                 members={space.members}
                 key={proposal.id}
-                proposal={{ ...proposal, beforeLabel: "요청 당시 정보" }}
+                proposal={proposal}
+                beforeLabel="요청 당시 정보"
                 label={
                   current?.sourceDeleted
                     ? "원본 삭제"
@@ -166,7 +184,9 @@ export function ProposalRequestPage() {
                         label: "처리 결과 보기",
                         onClick: () =>
                           void navigate(
-                            proposalResultPath(space.id, current.resultId!),
+                            withReturn(
+                              proposalResultPath(space.id, current.resultId!),
+                            ),
                           ),
                       }
                     : undefined

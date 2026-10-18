@@ -17,6 +17,7 @@ import {
 } from "@/features/careitem/model/careChangeRules";
 import { formatRecordDate } from "@/features/record/model/recordDates";
 import { useMockAction } from "@/lib/useMockAction";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import {
   careItemPath,
@@ -35,6 +36,7 @@ export function CareChangeDetailPage() {
   const [error, setError] = useState("");
   const { pending, run } = useMockAction();
   const navigate = useNavigate();
+  const { withReturn } = useWithdrawalReturn();
   const actorSpace: CareSpaceView = ownerPreview
     ? {
         ...space,
@@ -73,7 +75,7 @@ export function CareChangeDetailPage() {
       <ProposalPageLayout
         title="처리 결과 확인"
         spaceId={space.id}
-        onBack={() => void navigate(careRequestsPath(space.id))}
+        onBack={() => void navigate(withReturn(careRequestsPath(space.id)))}
         actions={
           <Button
             onClick={() =>
@@ -101,7 +103,7 @@ export function CareChangeDetailPage() {
     <ProposalPageLayout
       title={canDecide ? "요청 검토" : waiting ? "요청 상태" : "처리 결과"}
       spaceId={space.id}
-      onBack={() => void navigate(careRequestsPath(space.id))}
+      onBack={() => void navigate(withReturn(careRequestsPath(space.id)))}
       tabs
       activeTab="care"
       actions={
@@ -126,9 +128,11 @@ export function CareChangeDetailPage() {
           <Button
             onClick={() =>
               void navigate(
-                item && !item.deletedAt
-                  ? careItemPath(space.id, item.id)
-                  : careListPath(space.id, { type: change.draft.kind }),
+                withReturn(
+                  item && !item.deletedAt
+                    ? careItemPath(space.id, item.id)
+                    : careListPath(space.id, { type: change.draft.kind }),
+                ),
               )
             }
           >
@@ -143,7 +147,8 @@ export function CareChangeDetailPage() {
           body="현재 공간의 요청을 다시 선택해 주세요. 새로고침하면 Mock에서 작성한 요청은 초기화돼요."
           action={{
             label: "요청 목록으로",
-            onClick: () => void navigate(careRequestsPath(space.id)),
+            onClick: () =>
+              void navigate(withReturn(careRequestsPath(space.id))),
           }}
         />
       ) : (
@@ -164,8 +169,8 @@ export function CareChangeDetailPage() {
             {waiting
               ? " 요청"
               : change.status === "applied"
-                ? "을 반영했어요"
-                : "은 반영하지 않았어요"}
+                ? " 처리를 완료했어요"
+                : " 요청을 반영하지 않았어요"}
           </h1>
           <p className="text-hm-body-small text-hm-text-secondary">
             {change.author.name} · {formatRecordDate(change.createdAt)}
@@ -217,13 +222,17 @@ export function CareChangeDetailPage() {
             <MenuRow
               icon="clock-brand"
               title="변경 이력 보기"
-              onClick={() => void navigate(careHistoryPath(space.id, item.id))}
+              onClick={() =>
+                void navigate(withReturn(careHistoryPath(space.id, item.id)))
+              }
             />
           )}
           <MenuRow
             icon="news-brand"
             title={space.role === "owner" ? "확인할 요청" : "내 요청 상태"}
-            onClick={() => void navigate(careRequestsPath(space.id))}
+            onClick={() =>
+              void navigate(withReturn(careRequestsPath(space.id)))
+            }
           />
         </>
       )}

@@ -1,3 +1,4 @@
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { useLocation, useNavigate, useOutletContext } from "react-router";
 import { EmptyState, Notice } from "@/components/feedback";
 import { Badge, Button, TextAction } from "@/components/ui";
@@ -27,6 +28,7 @@ export function ProposalConfirmPage() {
   const data = useMockProposals(space);
   const records = useMockRecords(space);
   const navigate = useNavigate();
+  const { withReturn } = useWithdrawalReturn();
   const [state, setState] = useMockScreenState(
     proposalConfirmStates,
     "default",
@@ -46,10 +48,10 @@ export function ProposalConfirmPage() {
     draft &&
     proposals.length === draft.selection.length;
   const reviewPath = draft?.recordId
-    ? proposalReviewPath(space.id, draft.recordId)
+    ? withReturn(proposalReviewPath(space.id, draft.recordId))
     : draft?.requestId
-      ? proposalRequestPath(space.id, draft.requestId)
-      : proposalListPath(space.id);
+      ? withReturn(proposalRequestPath(space.id, draft.requestId))
+      : withReturn(proposalListPath(space.id));
   const onReview = () => void navigate(reviewPath, { replace: true });
   function decide(decision: "applied" | "rejected") {
     if (!valid) return;
@@ -59,8 +61,8 @@ export function ProposalConfirmPage() {
       (id) =>
         void navigate(
           decision === "applied"
-            ? proposalResultPath(space.id, id)
-            : proposalListPath(space.id, "rejected"),
+            ? withReturn(proposalResultPath(space.id, id))
+            : withReturn(proposalListPath(space.id, "rejected")),
           { replace: true },
         ),
       state === "changed" ? "changed" : undefined,
@@ -107,7 +109,8 @@ export function ProposalConfirmPage() {
           body="선택 정보가 없거나 이미 처리됐어요. 소유자만 최종 반영할 수 있어요."
           action={{
             label: "확인할 내용 목록으로",
-            onClick: () => void navigate(proposalListPath(space.id)),
+            onClick: () =>
+              void navigate(withReturn(proposalListPath(space.id))),
           }}
         />
       ) : blocked ? (
@@ -148,7 +151,9 @@ export function ProposalConfirmPage() {
           <ProposalSources
             proposals={proposals}
             records={records}
-            onSource={(id) => void navigate(newsDetailPath(space.id, id))}
+            onSource={(id) =>
+              void navigate(withReturn(newsDetailPath(space.id, id)))
+            }
           />
           <Notice
             title="반영하면 가족에게도 보여요"

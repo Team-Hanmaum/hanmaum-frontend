@@ -16,6 +16,7 @@ export function useCareListFilter() {
         next.set("type", value);
         next.delete("status");
         if (next.get("mockState") === "no-results") next.delete("mockState");
+        if (next.get("qaState") === "no-results") next.delete("qaState");
         return next;
       },
       { preventScrollReset: true },
@@ -28,6 +29,7 @@ export function useCareListFilter() {
         const next = new URLSearchParams(previous);
         next.set("status", value);
         if (next.get("mockState") === "no-results") next.delete("mockState");
+        if (next.get("qaState") === "no-results") next.delete("qaState");
         return next;
       },
       { preventScrollReset: true },

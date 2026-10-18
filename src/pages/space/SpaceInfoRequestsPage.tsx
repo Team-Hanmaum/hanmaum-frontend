@@ -6,6 +6,7 @@ import { useMockSpaceInfoChanges } from "@/features/carespace/model/mockSpaceInf
 import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
 import { spaceInfoPath, spaceInfoRequestPath } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 const tabs = [
   { value: "requested", label: "승인 대기" },
   { value: "applied", label: "반영" },
@@ -15,11 +16,12 @@ export function SpaceInfoRequestsPage() {
   const space = useOutletContext<CareSpaceView>();
   const changes = useMockSpaceInfoChanges(space.id);
   const navigate = useNavigate();
+  const { withReturn } = useWithdrawalReturn();
   const [params, setParams] = useSearchParams();
   const status =
     tabs.find((tab) => tab.value === params.get("status"))?.value ??
     "requested";
-  const onBack = useBackNavigation(spaceInfoPath(space.id));
+  const onBack = useBackNavigation(withReturn(spaceInfoPath(space.id)));
   const selfId = space.members.find((member) => member.self)?.id;
   return (
     <AccountPageLayout
@@ -33,7 +35,13 @@ export function SpaceInfoRequestsPage() {
       <Tabs
         label="처리 상태"
         value={status}
-        onValueChange={(value) => void setParams({ status: value })}
+        onValueChange={(value) =>
+          void setParams((previous) => {
+            const next = new URLSearchParams(previous);
+            next.set("status", value);
+            return next;
+          })
+        }
         items={tabs.map((tab) => {
           const visible = changes.filter(
             (change) =>
@@ -52,7 +60,9 @@ export function SpaceInfoRequestsPage() {
                       title={`${change.before} → ${change.after}`}
                       description={`${change.author} · ${new Date(change.createdAt).toLocaleDateString("ko-KR")}`}
                       onClick={() =>
-                        void navigate(spaceInfoRequestPath(space.id, change.id))
+                        void navigate(
+                          withReturn(spaceInfoRequestPath(space.id, change.id)),
+                        )
                       }
                     />
                   ))

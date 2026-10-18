@@ -163,7 +163,8 @@ FamilyAvatar 단독 노드는 `196:500`, NavItem은 `180:168`, BottomNav는 `180
 
 ## 공간·홈 화면 조합 확장
 
-- `MockStateSelect`: Mock 안내 안에 접힌 상태 선택 UI 제공. 값·선택지·변경 콜백은 호출부 전달.
+- `MockStateSelect`: QA 모드에서 Mock 안내 안에 접힌 상태 선택 UI 제공. 값·선택지·변경 콜백은 호출부 전달. 기본 화면에서는 Mock 안내와 상태 선택 모두 숨김.
+- `QaToolbar`: QA 모드일 때 공통 페이지 상단에 종료 버튼 표시. 모드·종료 동작은 공통 QA context를 사용하며 컴포넌트에서 라우팅을 직접 처리하지 않음.
 - `MenuRow`의 `tone=brand`: 홈 확인할 내용 카드의 강조 배경·제목·화살표 적용.
 - `CareCard`의 `bodyTone=hint`: 홈 일정 카드의 작은 청록 안내 문구 적용.
 - `SocialLoginOptions`: 로그인·초대 진입 화면 모두 기본 카카오 → Google 순서 사용. `helper`, `helperAlign`으로 화면별 안내 문구와 정렬 지원.

@@ -6,6 +6,7 @@ import {
 } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import App from "@/App";
+import { qaMode } from "@/lib/qaMode";
 
 // 공간 진입 전 화면
 import { LandingPage } from "@/pages/landing/LandingPage";
@@ -523,6 +524,8 @@ const spaceRoutes: RouteObject[] = [
 ];
 
 // 최종 라우터
+// 최초 loader 리다이렉트보다 먼저 QA 진입을 기록한다.
+qaMode.readSearch(window.location.search);
 const router = createBrowserRouter([
   {
     path: paths.landing,
@@ -544,9 +547,15 @@ const router = createBrowserRouter([
 
 // 앱 내부 뒤로가기 판단을 위한 방문 이력 연결
 recordNavigation(router.state.location.key, "POP");
-router.subscribe(({ location, historyAction }) =>
-  recordNavigation(location.key, historyAction),
-);
+let qaLocationKey = router.state.location.key;
+router.subscribe(({ location, historyAction }) => {
+  // 로딩 중 이전 URL이 재통지되어도 종료한 QA를 다시 켜지 않는다.
+  if (qaLocationKey !== location.key) {
+    qaLocationKey = location.key;
+    qaMode.readSearch(location.search);
+  }
+  recordNavigation(location.key, historyAction);
+});
 
 export function Router() {
   return <RouterProvider router={router} />;

@@ -12,7 +12,7 @@ pnpm dev
 ```
 
 - `/`: 최신 Figma `HM-ON-A01` 랜딩 화면. 시작하기·이미 계정이 있어요 → `/login`.
-- `/login`: 최신 Figma `HM-ON-A02` 로그인 대표 화면. 상단의 Mock 안내는 확인용 UI이며 실제 인증·계정 생성은 발생하지 않는다.
+- `/login`: 최신 Figma `HM-ON-A02` 로그인 대표 화면. QA 모드의 상단 Mock 안내는 확인용 UI이며 실제 인증·계정 생성은 발생하지 않는다.
 - `/_dev/components`: 개발 모드 전용 공통 컴포넌트 확인 화면. 기존 `/?preview=components` 주소도 이 화면으로 이동한다.
 - `/spaces`: 참여 공간 선택 화면. 예시 공간과 현재 실행 중 만든 Mock 공간의 목록·역할·인원 표시.
 - `/spaces/:careSpaceId/home`: 일반·빈 홈, 생성·참여 직후, 로딩·오류와 공간 전환 UI. 최근 소식은 소식 목록과 같은 Mock 저장소 사용.
@@ -36,6 +36,18 @@ React Router의 Data 모드를 사용하며 `src/routes/Router.tsx`에서 URL을
 현재 `.env.production`의 `VITE_ENABLE_MOCK_PREVIEW=true`로 Vercel Preview·Production에서도 로그인 → 시작 전 안내 → 공간 생성·선택 → 홈·초대 흐름을 확인할 수 있다. 로컬 개발 모드는 별도 설정이 없으면 Mock 미리보기가 켜진다. `src/lib/mockPreview.ts`에서 공통 판별하며, 실제 인증 상태·쿠키·토큰을 만들거나 계정·공간·동의 기록을 저장하지 않는다.
 
 실제 인증·업무 데이터 연결 전에는 `VITE_ENABLE_MOCK_PREVIEW=false`로 변경하고 다시 빌드한다. 이 설정은 Mock 로그인 이동·공간 데이터·생성·참여·소식 조회/작성/재시도를 제어하며 실제 인증·접근 권한 검증을 대신하지 않는다. 개발용 컴포넌트 확인 화면의 코드와 경로는 계속 프로덕션 빌드에서 제외한다. [설정 우선순위와 검증 절차](docs/deployment.md) 참조.
+
+### QA 도구 표시
+
+로컬과 배포 환경 모두 상단 Mock 안내와 확인 도구는 기본으로 숨긴다. QA 모드에서만 표시하며, 기존 Mock 데이터와 화면 이동은 유지한다.
+
+- `/login?qa=1`처럼 어느 화면에서든 `qa=1`을 붙이면 QA 종료 버튼과 해당 화면의 확인 도구가 표시된다. 기존 쿼리가 있으면 `&qa=1`을 사용한다.
+- QA 모드는 `sessionStorage`로 같은 탭의 화면 이동·새로고침 동안 유지한다. 브라우저가 저장소를 차단하면 새로고침 전까지만 유지한다.
+- **QA 종료**는 현재 화면과 입력·Mock 데이터를 유지하면서 도구와 QA 선택 상태를 해제한다. `?qa=0`으로도 도구를 끌 수 있다.
+- QA에서 고른 상태는 `qaState`로 관리하며 QA가 꺼져 있으면 무시한다. 기존 생성·참여·공유 흐름의 `mockState`와 구분한다.
+- `컴포넌트 보기` 링크는 로컬 QA에서만 표시한다. `/_dev/components` 경로는 계속 로컬 개발 전용이다.
+- `VITE_ENABLE_QA_TOOLS`는 QA 사용 허용 여부이며, `true`여도 자동으로 도구가 표시되지는 않는다. 미설정 시 로컬 개발에서만 허용한다. 현재 배포용 설정은 `true`이다.
+- 실제 운영 시 `VITE_ENABLE_QA_TOOLS=false`로 다시 빌드한다. 저장된 QA 설정과 `qa=1`은 무시하며, 404로 보내지 않고 원래 화면을 표시한다. Mock 동작은 별도 설정인 `VITE_ENABLE_MOCK_PREVIEW`로 제어한다.
 
 ## 공통 API와 서버 상태
 

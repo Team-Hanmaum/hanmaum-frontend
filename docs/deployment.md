@@ -110,12 +110,20 @@ pnpm build
 - `/_dev/components` 접근 시 앱의 404 화면 표시
 - 소셜 로그인 버튼 활성, 두 제공사의 로딩·중복 클릭 차단 및 `/onboarding/guide` 이동
 - 안내 시트의 Mock 공간 둘러보기 → 예시 공간 선택 → 다섯 탭 이동
-- Mock 안내 유지 및 실제 OAuth/API 요청 미발생
+- 일반 접속 시 상단 Mock 안내·확인 도구 숨김, QA 모드에서 표시 및 실제 OAuth/API 요청 미발생
 - `VITE_ENABLE_MOCK_PREVIEW=false` 별도 빌드에서 소셜 버튼·핸들러 이동 차단 및 Mock 공간 링크 제외
 
 SPA rewrite는 브라우저가 직접 요청한 페이지 경로에도 `index.html`을 제공한다. 실제 화면과 알 수 없는 경로의 404 표시는 React Router에서 처리하므로 앱의 404 화면과 HTTP 404 상태 코드는 구분한다.
 
 ## BE 연동 시 확인할 사항
+
+### 운영 환경의 QA 도구
+
+현재 `.env.production`의 `VITE_ENABLE_QA_TOOLS=true`는 `qa=1`을 통한 도구 활성화를 허용한다. 일반 접속에서는 로컬과 동일하게 도구를 숨긴다. 실제 운영에서는 이 값을 `false`로 바꾸거나 Vercel의 대상 환경 변수에 `false`를 지정한 뒤 다시 빌드·배포한다. 이전 빌드의 동작은 환경 변수만 변경해서 바뀌지 않는다.
+
+비활성화된 빌드는 저장된 QA 모드와 `qa=1`을 무시하고 원래 화면을 표시한다. URL 쿼리만으로 404로 이동시키지 않는다. QA 도구와 Mock 동작은 별개이므로 실제 API 전환 시 `VITE_ENABLE_MOCK_PREVIEW=false` 및 실제 세션·권한 연결도 별도로 필요하다.
+
+### API 계약
 
 - 실제 API 주소 및 개발·운영 환경 구분
 - 배포 도메인의 CORS 허용, 세션 쿠키 속성과 CSRF 처리 계약

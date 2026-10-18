@@ -66,7 +66,7 @@ export function FamilyPage() {
       ) : (
         <>
           <p className="text-hm-body-default text-hm-text-secondary">
-            {space.subjectLabel}를 함께 돌보는 {space.members.length}명
+            {space.subjectLabel}의 돌봄 · 함께하는 가족 {space.members.length}명
           </p>
           {[...space.members]
             .sort(

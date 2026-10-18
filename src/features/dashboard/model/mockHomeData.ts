@@ -88,7 +88,7 @@ export function getMockHomeData(
         .reverse()
         .map((result) => ({
           id: result.id,
-          title: `${result.actor.name}님이 ${result.proposals.find((proposal) => !proposal.sourceDeleted)!.title}${result.proposals.filter((proposal) => !proposal.sourceDeleted).length > 1 ? " 외 항목" : ""}을 반영했어요.`,
+          title: `${result.actor.name}님이 ${result.proposals.find((proposal) => !proposal.sourceDeleted)!.title}${result.proposals.filter((proposal) => !proposal.sourceDeleted).length > 1 ? " 외 항목" : ""} 내용을 반영했어요.`,
           description: formatRecordDate(result.createdAt),
           createdAt: result.createdAt,
         })),
@@ -96,7 +96,7 @@ export function getMockHomeData(
         .filter((change) => change.status === "applied" && !change.redacted)
         .map((change) => ({
           id: change.id,
-          title: `${change.decidedBy?.name ?? change.author.name}님이 ${careChangeTitle(change.draft)}을 반영했어요.`,
+          title: `${change.decidedBy?.name ?? change.author.name}님이 ${careChangeTitle(change.draft)} 처리를 완료했어요.`,
           description: formatRecordDate(change.decidedAt ?? change.createdAt),
           createdAt: change.decidedAt ?? change.createdAt,
         })),

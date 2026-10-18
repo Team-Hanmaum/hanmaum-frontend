@@ -8,6 +8,7 @@ import { formatRecordDate } from "@/features/record/model/recordDates";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import { careChangePath, careListPath } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 const filters = [
   { value: "requested", label: "확인 중" },
@@ -19,7 +20,8 @@ export function CareRequestsPage() {
   const data = useMockProposals(space);
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const onBack = useBackNavigation(careListPath(space.id));
+  const { withReturn } = useWithdrawalReturn();
+  const onBack = useBackNavigation(withReturn(careListPath(space.id)));
   const status =
     filters.find((entry) => entry.value === params.get("status"))?.value ??
     "requested";
@@ -49,7 +51,9 @@ export function CareRequestsPage() {
               : careChangeTitle(change.draft)
           }
           description={`${change.author.name} · ${formatRecordDate(change.decidedAt ?? change.createdAt)}`}
-          onClick={() => void navigate(careChangePath(space.id, change.id))}
+          onClick={() =>
+            void navigate(withReturn(careChangePath(space.id, change.id)))
+          }
         />
       ))}
       {!changes.length && (

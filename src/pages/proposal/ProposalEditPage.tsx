@@ -1,3 +1,4 @@
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { useState } from "react";
 import { useNavigate, useOutletContext, useParams } from "react-router";
 import { EmptyState, Notice } from "@/components/feedback";
@@ -49,6 +50,7 @@ export function ProposalEditPage() {
       item.operation !== "link",
   );
   const navigate = useNavigate();
+  const { withReturn } = useWithdrawalReturn();
   const locked =
     proposal &&
     isConfirmedQuestionChange(
@@ -60,7 +62,7 @@ export function ProposalEditPage() {
       <ProposalPageLayout
         title="제안 내용 수정"
         spaceId={space.id}
-        onBack={() => void navigate(proposalListPath(space.id))}
+        onBack={() => void navigate(withReturn(proposalListPath(space.id)))}
       >
         <EmptyState
           title={
@@ -73,7 +75,8 @@ export function ProposalEditPage() {
           }
           action={{
             label: "확인할 내용으로",
-            onClick: () => void navigate(proposalListPath(space.id)),
+            onClick: () =>
+              void navigate(withReturn(proposalListPath(space.id))),
           }}
         />
       </ProposalPageLayout>
@@ -102,6 +105,7 @@ function ProposalEditor({
   const [error, setError] = useState("");
   const records = useMockRecords(space);
   const navigate = useNavigate();
+  const { withReturn } = useWithdrawalReturn();
   const [state, setState] = useMockScreenState(states, "default");
   const { pending, run } = useMockAction();
   const action = useProposalAction(space);
@@ -110,7 +114,7 @@ function ProposalEditor({
     JSON.stringify(fields) !== JSON.stringify(proposalFields(proposal));
   const { blocker, allowNavigation } = useUnsavedChanges(dirty);
   const back = () =>
-    void navigate(proposalReviewPath(space.id, proposal.recordId));
+    void navigate(withReturn(proposalReviewPath(space.id, proposal.recordId)));
   const missing =
     state === "source-deleted" ||
     !records.some((record) => record.id === proposal.recordId);
@@ -158,13 +162,15 @@ function ProposalEditor({
     if (space.role === "owner")
       allowNavigation(
         () =>
-          void navigate(proposalConfirmPath(space.id), {
+          void navigate(withReturn(proposalConfirmPath(space.id)), {
             state: { recordId: proposal.recordId, selection },
           }),
       );
     else
       action.submit(selection, "request", (id) =>
-        allowNavigation(() => void navigate(proposalRequestPath(space.id, id))),
+        allowNavigation(
+          () => void navigate(withReturn(proposalRequestPath(space.id, id))),
+        ),
       );
   }
   const unsavedDialog = (
@@ -234,7 +240,9 @@ function ProposalEditor({
           action={{
             label: "확인할 내용으로",
             onClick: () =>
-              allowNavigation(() => void navigate(proposalListPath(space.id))),
+              allowNavigation(
+                () => void navigate(withReturn(proposalListPath(space.id))),
+              ),
           }}
         />
       ) : (
@@ -305,7 +313,9 @@ function ProposalEditor({
           <ProposalSources
             proposals={[proposal]}
             records={records}
-            onSource={(id) => void navigate(newsDetailPath(space.id, id))}
+            onSource={(id) =>
+              void navigate(withReturn(newsDetailPath(space.id, id)))
+            }
           />
         </>
       )}

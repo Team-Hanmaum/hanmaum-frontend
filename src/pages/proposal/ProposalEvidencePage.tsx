@@ -1,3 +1,4 @@
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { useNavigate, useOutletContext, useParams } from "react-router";
 import { EmptyState, Notice } from "@/components/feedback";
 import { Badge, Button, MenuRow, TextAction } from "@/components/ui";
@@ -28,13 +29,15 @@ export function ProposalEvidencePage() {
     (entry) => entry.id === proposal?.targetId && !entry.needsReconfirmation,
   );
   const navigate = useNavigate();
+  const { withReturn } = useWithdrawalReturn();
   const reviewPath = proposal?.requestId
-    ? proposalRequestPath(space.id, proposal.requestId)
+    ? withReturn(proposalRequestPath(space.id, proposal.requestId))
     : proposal
-      ? proposalReviewPath(space.id, proposal.recordId)
-      : proposalListPath(space.id);
+      ? withReturn(proposalReviewPath(space.id, proposal.recordId))
+      : withReturn(proposalListPath(space.id));
   const onBack = useBackNavigation(reviewPath);
-  const onSource = (id: string) => void navigate(newsDetailPath(space.id, id));
+  const onSource = (id: string) =>
+    void navigate(withReturn(newsDetailPath(space.id, id)));
   const link = proposal?.operation === "link";
   const differentDate =
     proposal?.kind === "schedule" &&
@@ -50,7 +53,9 @@ export function ProposalEvidencePage() {
           <>
             <Button onClick={onBack}>제안 검토로 돌아가기</Button>
             <TextAction
-              onClick={() => void navigate(proposalListPath(space.id))}
+              onClick={() =>
+                void navigate(withReturn(proposalListPath(space.id)))
+              }
             >
               나중에 확인하기
             </TextAction>
@@ -64,7 +69,8 @@ export function ProposalEvidencePage() {
           body="원본이나 연결된 항목이 삭제·변경됐을 수 있어요. 삭제된 내용은 표시하지 않아요."
           action={{
             label: "확인할 내용으로",
-            onClick: () => void navigate(proposalListPath(space.id)),
+            onClick: () =>
+              void navigate(withReturn(proposalListPath(space.id))),
           }}
         />
       ) : (
@@ -104,7 +110,9 @@ export function ProposalEvidencePage() {
           <MenuRow
             icon="link-brand"
             title="현재 항목의 상세·이력"
-            onClick={() => void navigate(careItemPath(space.id, item.id))}
+            onClick={() =>
+              void navigate(withReturn(careItemPath(space.id, item.id)))
+            }
           />
           <Notice
             title="현재 정보는 그대로예요"

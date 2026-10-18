@@ -1,3 +1,4 @@
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { useState } from "react";
 import {
   useNavigate,
@@ -35,6 +36,7 @@ import {
   proposalReviewPath,
 } from "@/routes/paths";
 import { useMockScreenState } from "@/routes/useMockScreenState";
+import { useQaMode } from "@/lib/useQaMode";
 const states = [
   { value: "default", label: "기본" },
   { value: "empty", label: "후보 없음" },
@@ -81,13 +83,14 @@ export function ProposalTargetPage() {
   }
   const [error, setError] = useState(false);
   const [state] = useMockScreenState(states, "default");
+  const { enabled: qaEnabled } = useQaMode();
   function setState(value: string) {
     setError(false);
     // 두 번 탐색하면 이전 쿼리가 비교 화면을 되살리므로 한 번에 초기화한다.
     void setParams(
       (previous) => {
         const next = new URLSearchParams(previous);
-        next.set("mockState", value);
+        next.set(qaEnabled ? "qaState" : "mockState", value);
         next.delete("view");
         return next;
       },
@@ -95,11 +98,12 @@ export function ProposalTargetPage() {
     );
   }
   const navigate = useNavigate();
+  const { withReturn } = useWithdrawalReturn();
   const back = () =>
     void navigate(
       proposal
-        ? proposalReviewPath(space.id, proposal.recordId)
-        : proposalListPath(space.id),
+        ? withReturn(proposalReviewPath(space.id, proposal.recordId))
+        : withReturn(proposalListPath(space.id)),
     );
   const candidates = data.items.filter(
     (item) =>
@@ -193,7 +197,9 @@ export function ProposalTargetPage() {
           <MenuRow
             icon="link-brand"
             title="현재 항목의 근거·이력"
-            onClick={() => void navigate(careItemPath(space.id, target.id))}
+            onClick={() =>
+              void navigate(withReturn(careItemPath(space.id, target.id)))
+            }
           />
           <Comparison
             beforeLabel="현재 내용"
@@ -211,7 +217,9 @@ export function ProposalTargetPage() {
           <ProposalSources
             proposals={[proposal]}
             records={records}
-            onSource={(id) => void navigate(newsDetailPath(space.id, id))}
+            onSource={(id) =>
+              void navigate(withReturn(newsDetailPath(space.id, id)))
+            }
           />
         </>
       ) : (
@@ -223,7 +231,9 @@ export function ProposalTargetPage() {
           <ProposalSources
             proposals={[proposal]}
             records={records}
-            onSource={(id) => void navigate(newsDetailPath(space.id, id))}
+            onSource={(id) =>
+              void navigate(withReturn(newsDetailPath(space.id, id)))
+            }
           />
           {candidates.map((item) => (
             <SelectionRow
