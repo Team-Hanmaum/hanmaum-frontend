@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useQaMode } from "@/lib/useQaMode";
 
 export function MockNotice({
   message,
@@ -7,6 +8,7 @@ export function MockNotice({
   message: string;
   children?: ReactNode;
 }) {
+  const { enabled } = useQaMode();
   return (
     <aside
       aria-label="Mock 안내"
@@ -16,9 +18,9 @@ export function MockNotice({
         role="status"
         aria-atomic="true"
       >
-        Mock · {message}
+        Mock · {enabled ? message : "실제 로그인·저장 없음"}
       </p>
-      {children}
+      {enabled && children}
     </aside>
   );
 }

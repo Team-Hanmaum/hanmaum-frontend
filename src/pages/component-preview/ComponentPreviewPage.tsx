@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Link } from "react-router";
 import { paths } from "@/routes/paths";
 import { Header } from "@/components/layout";
+import { QaToolbar } from "@/components/feedback/QaToolbar";
 import {
   BrandSymbol,
   Button,
@@ -35,6 +36,7 @@ export default function ComponentPreviewPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-hm-20 py-hm-32">
+      <QaToolbar />
       <div className="mb-hm-32 flex flex-col items-start gap-hm-12">
         <p className="text-hm-label-badge text-hm-text-brand">
           Mock · 개발 환경 전용

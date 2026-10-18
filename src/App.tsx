@@ -6,6 +6,7 @@ import {
   useMatches,
 } from "react-router";
 import { MockAccountBoundary } from "@/routes/layouts/MockAccountBoundary";
+import { QaModeProvider } from "@/routes/QaModeProvider";
 
 function App() {
   const { pathname } = useLocation();
@@ -20,9 +21,11 @@ function App() {
 
   return (
     <>
-      <MockAccountBoundary>
-        <Outlet />
-      </MockAccountBoundary>
+      <QaModeProvider>
+        <MockAccountBoundary>
+          <Outlet />
+        </MockAccountBoundary>
+      </QaModeProvider>
       <ScrollRestoration />
     </>
   );

@@ -36,6 +36,7 @@ import {
   proposalReviewPath,
 } from "@/routes/paths";
 import { useMockScreenState } from "@/routes/useMockScreenState";
+import { useQaMode } from "@/lib/useQaMode";
 const states = [
   { value: "default", label: "기본" },
   { value: "empty", label: "후보 없음" },
@@ -82,13 +83,14 @@ export function ProposalTargetPage() {
   }
   const [error, setError] = useState(false);
   const [state] = useMockScreenState(states, "default");
+  const { enabled: qaEnabled } = useQaMode();
   function setState(value: string) {
     setError(false);
     // 두 번 탐색하면 이전 쿼리가 비교 화면을 되살리므로 한 번에 초기화한다.
     void setParams(
       (previous) => {
         const next = new URLSearchParams(previous);
-        next.set("mockState", value);
+        next.set(qaEnabled ? "qaState" : "mockState", value);
         next.delete("view");
         return next;
       },

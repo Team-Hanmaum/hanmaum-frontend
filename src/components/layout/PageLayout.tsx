@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { QaToolbar } from "@/components/feedback/QaToolbar";
 
 export type PageLayoutProps = {
   children: ReactNode;
@@ -45,6 +46,7 @@ export function PageLayout({
         ref={top}
         className="sticky top-0 z-30 shrink-0 bg-hm-bg-surface pt-[env(safe-area-inset-top)]"
       >
+        <QaToolbar />
         {notice}
         {header}
       </div>
