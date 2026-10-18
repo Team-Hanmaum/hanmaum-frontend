@@ -54,7 +54,9 @@ export function ProposalListPage() {
         title="돌봄에서 직접 남긴 요청·변경"
         onClick={() =>
           void navigate(
-            `${careRequestsPath(space.id)}?status=${status === "applied" ? "applied" : status === "rejected" ? "rejected" : "requested"}`,
+            withReturn(
+              `${careRequestsPath(space.id)}?status=${status === "applied" ? "applied" : status === "rejected" ? "rejected" : "requested"}`,
+            ),
           )
         }
       />
@@ -64,7 +66,9 @@ export function ProposalListPage() {
         description={`승인 대기 ${pendingSpaceInfoCount(spaceChanges, space)}건`}
         onClick={() =>
           void navigate(
-            `${spaceInfoRequestsPath(space.id)}?status=${status === "applied" ? "applied" : status === "rejected" ? "rejected" : "requested"}`,
+            withReturn(
+              `${spaceInfoRequestsPath(space.id)}?status=${status === "applied" ? "applied" : status === "rejected" ? "rejected" : "requested"}`,
+            ),
           )
         }
       />

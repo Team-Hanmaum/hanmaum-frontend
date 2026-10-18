@@ -13,6 +13,7 @@ import { useMockAction } from "@/lib/useMockAction";
 import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
 import { spaceInfoPath, spaceInfoRequestsPath } from "@/routes/paths";
 import { useMockScreenState } from "@/routes/useMockScreenState";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 const states = [
   { value: "default", label: "기본" },
   { value: "error", label: "처리 실패" },
@@ -26,6 +27,7 @@ export function SpaceInfoRequestPage() {
   const changes = useMockSpaceInfoChanges(space.id);
   const change = changes.find((entry) => entry.id === requestId);
   const navigate = useNavigate();
+  const { withReturn } = useWithdrawalReturn();
   const [decision, setDecision] = useState<"apply" | "reject" | null>(null);
   const [error, setError] = useState("");
   const [failure, setFailure] = useState<SpaceInfoChangeFailure | null>(null);
@@ -36,8 +38,9 @@ export function SpaceInfoRequestPage() {
   const self = space.members.find((member) => member.self);
   const visible =
     change && (space.role === "owner" || change.authorId === self?.id);
-  const toList = () => void navigate(spaceInfoRequestsPath(space.id));
-  const toInfo = () => void navigate(spaceInfoPath(space.id));
+  const toList = () =>
+    void navigate(withReturn(spaceInfoRequestsPath(space.id)));
+  const toInfo = () => void navigate(withReturn(spaceInfoPath(space.id)));
   const owner =
     (space.role === "owner" || ownerPreview) &&
     state !== "forbidden" &&

@@ -4,6 +4,8 @@ import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
 import { MockStateSelect } from "@/components/feedback/MockStateSelect";
 import { MockNotice } from "@/components/feedback/MockNotice";
 import { SpaceBottomNavigation } from "./SpaceBottomNavigation";
+import { TextAction } from "@/components/ui";
+import { useWithdrawalReturn } from "../useWithdrawalReturn";
 
 export function AccountPageLayout({
   title,
@@ -24,6 +26,7 @@ export function AccountPageLayout({
     onChange: (value: string) => void;
   };
 }) {
+  const { withdrawing, returnToWithdrawal } = useWithdrawalReturn();
   const message =
     "계정·공간 관리 Mock · 실제 API·계정 변경 없음 · 새로고침 시 초기화";
   return (
@@ -60,6 +63,11 @@ export function AccountPageLayout({
         )
       }
     >
+      {withdrawing && (
+        <TextAction onClick={returnToWithdrawal}>
+          탈퇴 절차로 돌아가기
+        </TextAction>
+      )}
       {children}
     </DetailLayout>
   );
