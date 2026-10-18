@@ -9,6 +9,7 @@ export function MockNotice({
   children?: ReactNode;
 }) {
   const { enabled } = useQaMode();
+  if (!enabled) return null;
   return (
     <aside
       aria-label="Mock 안내"
@@ -18,9 +19,9 @@ export function MockNotice({
         role="status"
         aria-atomic="true"
       >
-        Mock · {enabled ? message : "실제 로그인·저장 없음"}
+        Mock · {message}
       </p>
-      {enabled && children}
+      {children}
     </aside>
   );
 }

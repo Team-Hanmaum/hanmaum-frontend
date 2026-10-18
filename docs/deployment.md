@@ -110,7 +110,7 @@ pnpm build
 - `/_dev/components` 접근 시 앱의 404 화면 표시
 - 소셜 로그인 버튼 활성, 두 제공사의 로딩·중복 클릭 차단 및 `/onboarding/guide` 이동
 - 안내 시트의 Mock 공간 둘러보기 → 예시 공간 선택 → 다섯 탭 이동
-- Mock 안내 유지 및 실제 OAuth/API 요청 미발생
+- 일반 접속 시 상단 Mock 안내·확인 도구 숨김, QA 모드에서 표시 및 실제 OAuth/API 요청 미발생
 - `VITE_ENABLE_MOCK_PREVIEW=false` 별도 빌드에서 소셜 버튼·핸들러 이동 차단 및 Mock 공간 링크 제외
 
 SPA rewrite는 브라우저가 직접 요청한 페이지 경로에도 `index.html`을 제공한다. 실제 화면과 알 수 없는 경로의 404 표시는 React Router에서 처리하므로 앱의 404 화면과 HTTP 404 상태 코드는 구분한다.
