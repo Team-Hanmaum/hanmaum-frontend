@@ -14,6 +14,6 @@ export function useWithdrawalReturn() {
         ? `${path}${path.includes("?") ? "&" : "?"}returnTo=withdrawal`
         : path,
     returnToWithdrawal: () =>
-      void navigate(paths.withdrawal, { replace: true }),
+      void navigate(paths.withdrawal, { replace: true, motion: "back" }),
   };
 }

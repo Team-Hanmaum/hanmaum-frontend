@@ -17,7 +17,7 @@ export function MockAccountBoundary({ children }: { children: ReactNode }) {
     return (
       <DetailLayout
         title="내 계정"
-        onBack={() => void navigate(paths.login)}
+        onBack={() => void navigate(paths.login, { motion: "back" })}
       >
         <Notice
           title="계정 기능 연결 전이에요"

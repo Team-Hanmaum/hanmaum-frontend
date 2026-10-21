@@ -81,6 +81,7 @@ export function CareChangeForm({
       item
         ? careItemPath(space.id, item.id)
         : careListPath(space.id, { type: kind }),
+      { motion: "back" },
     );
   const direct = canApplyCareChange(space, draft, item);
   const label = careKindLabels[kind];

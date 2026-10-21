@@ -100,6 +100,7 @@ export function ProposalTargetPage() {
       proposal
         ? withReturn(proposalReviewPath(space.id, proposal.recordId))
         : withReturn(proposalListPath(space.id)),
+      { motion: "back" },
     );
   const candidates = data.items.filter(
     (item) =>

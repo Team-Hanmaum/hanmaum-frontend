@@ -5,7 +5,8 @@ React Router Data 모드 사용. `Router.tsx`에서 URL·페이지·레이아웃
 ## 공통 화면 전환
 
 - 화면 이동은 `useAppNavigate`, 링크는 `AppLink`를 사용한다. 기존 React Router의 `to`·`replace`·`state` 등 옵션을 그대로 전달하며 필요한 경우 `viewTransition: false`로 제외한다. 자동 인증 리다이렉트의 `Navigate`는 즉시 처리한다.
-- `Router.tsx`의 구독에서 `routeMotion.ts`와 앱 방문 이력으로 방향을 결정한다. 일반 진입은 오른쪽에서 들어오는 220ms 전환, 관측한 이력의 뒤로가기는 반대 방향, 하단 탭 간 이동은 120ms 페이드다. REPLACE와 로그인·계정 종료 진입은 페이드로 처리한다.
+- `Router.tsx`의 구독에서 `routeMotion.ts`와 앱 방문 이력으로 방향을 결정한다. 일반 진입은 오른쪽에서 들어오는 전환, 뒤로가기는 현재 화면이 오른쪽으로 빠지는 전환, 하단 탭 간 일반 이동은 페이드다. 일반 REPLACE와 로그인·계정 종료 진입은 페이드로 처리한다.
+- 특정 주소로 돌아가는 버튼은 `navigate(path, { motion: "back" })`을 사용한다. 이력 대신 목록 주소를 PUSH하거나 직접 진입 후 대체 경로로 REPLACE해도 뒤로가기 방향을 유지한다. 이 의도는 출발 위치 key와 함께 전달하여 폼 이탈 확인 후 재개할 때 유지하고, 취소 이후 다른 이동이나 브라우저 앞으로가기에 적용되지 않게 한다. `useBackNavigation`의 대체 경로에도 같은 규칙을 적용한다.
 - `useTimeSelectionScreen`은 같은 편집 화면을 유지한 채 `picker=time`을 전환한다. 열기·닫기에는 위아래 전환을 적용한다. 일반 필터·QA 쿼리 변경에는 전환을 적용하지 않는다.
 - React Router의 View Transition으로 브라우저가 이전 화면의 스냅샷을 유지한다. 이전 React 페이지를 복제하거나 라우트 key로 폼을 재마운트하지 않는다. 기존 `ScrollRestoration`, 입력 유지·이탈 확인, 본문/시간 버튼 포커스 처리를 유지한다.
 - View Transition 미지원 브라우저는 즉시 이동한다. `prefers-reduced-motion: reduce`에서는 페이지·모달·안내 효과를 끈다. 공통 CSS는 `styles/motion.css`, 모달은 `components/feedback/modal.css`에서 관리한다.

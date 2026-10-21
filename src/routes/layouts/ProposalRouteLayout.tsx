@@ -26,7 +26,7 @@ export function ProposalRouteLayout() {
     return (
       <DetailLayout
         title="확인할 내용"
-        onBack={() => void navigate(paths.spaces)}
+        onBack={() => void navigate(paths.spaces, { motion: "back" })}
         notice={<MockNotice message="실제 공간 조회·권한 확인 연결 전" />}
       >
         <ErrorState

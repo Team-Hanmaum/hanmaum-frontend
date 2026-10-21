@@ -53,7 +53,8 @@ export function ProposalConfirmPage() {
     : draft?.requestId
       ? withReturn(proposalRequestPath(space.id, draft.requestId))
       : withReturn(proposalListPath(space.id));
-  const onReview = () => void navigate(reviewPath, { replace: true });
+  const onReview = () =>
+    void navigate(reviewPath, { replace: true, motion: "back" });
   function decide(decision: "applied" | "rejected") {
     if (!valid) return;
     submit(

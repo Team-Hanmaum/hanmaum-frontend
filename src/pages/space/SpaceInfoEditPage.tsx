@@ -56,7 +56,7 @@ export function SpaceInfoEditPage() {
   const back = () => {
     if (pending || resultId) return;
     if (confirm) setConfirm(false);
-    else void navigate(spaceInfoPath(space.id));
+    else void navigate(spaceInfoPath(space.id), { motion: "back" });
   };
   function submit() {
     setError("");

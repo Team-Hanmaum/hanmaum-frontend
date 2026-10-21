@@ -41,7 +41,8 @@ export function CareReconfirmPage() {
   }
   const { pending, run } = useMockAction();
   const navigate = useAppNavigate();
-  const back = () => void navigate(careItemPath(space.id, itemId));
+  const back = () =>
+    void navigate(careItemPath(space.id, itemId), { motion: "back" });
   const dirty = Boolean(evidence || Object.values(fields).some(Boolean));
   const { blocker, allowNavigation } = useUnsavedChanges(dirty);
   const locked = isConfirmedQuestion(item);

@@ -19,7 +19,7 @@ export function RecordRouteLayout() {
     return (
       <DetailLayout
         title="소식"
-        onBack={() => void navigate(paths.spaces)}
+        onBack={() => void navigate(paths.spaces, { motion: "back" })}
         notice={<MockNotice message="실제 공간 조회·권한 확인 연결 전" />}
       >
         <h1 className="sr-only">소식</h1>

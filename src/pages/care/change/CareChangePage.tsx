@@ -44,7 +44,7 @@ export function CareChangePage() {
       <ProposalPageLayout
         title="돌봄 변경"
         spaceId={space.id}
-        onBack={() => void navigate(careListPath(space.id))}
+        onBack={() => void navigate(careListPath(space.id), { motion: "back" })}
       >
         <EmptyState
           title="지금은 변경할 수 없어요"

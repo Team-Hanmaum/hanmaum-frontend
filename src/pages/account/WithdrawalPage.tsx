@@ -40,7 +40,8 @@ export function WithdrawalPage() {
   const complete = () =>
     void navigate(paths.withdrawalComplete, { replace: true });
   const cancel = () => {
-    if (!pending && !unknown) void navigate(paths.account, { replace: true });
+    if (!pending && !unknown)
+      void navigate(paths.account, { replace: true, motion: "back" });
   };
   function submit() {
     setError("");

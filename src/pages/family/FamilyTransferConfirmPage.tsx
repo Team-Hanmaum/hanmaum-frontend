@@ -39,7 +39,10 @@ export function FamilyTransferConfirmPage() {
   const forbidden =
     space.role !== "owner" || state === "forbidden" || member?.self;
   const toFamily = () =>
-    void navigate(spacePath(space.id, "family"), { replace: true });
+    void navigate(spacePath(space.id, "family"), {
+      replace: true,
+      motion: "back",
+    });
   const recover = withdrawing ? returnToWithdrawal : toFamily;
   const recoveryLabel = withdrawing ? "탈퇴 절차로 돌아가기" : "가족 화면으로";
   const comparison = (

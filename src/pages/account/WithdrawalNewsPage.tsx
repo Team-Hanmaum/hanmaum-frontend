@@ -9,7 +9,7 @@ import { paths, spacePath } from "@/routes/paths";
 export function WithdrawalNewsPage() {
   const { spaces } = useMockCareSpaces();
   const navigate = useAppNavigate();
-  const back = () => void navigate(paths.withdrawal);
+  const back = () => void navigate(paths.withdrawal, { motion: "back" });
   return (
     <AccountPageLayout
       title="탈퇴 전 소식 확인"

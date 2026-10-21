@@ -30,6 +30,7 @@ export function CareSharePage() {
       item && !item.deletedAt
         ? careItemPath(space.id, itemId)
         : careListPath(space.id),
+      { motion: "back" },
     );
   return (
     <ProposalPageLayout

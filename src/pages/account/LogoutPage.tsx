@@ -48,7 +48,9 @@ export function LogoutPage() {
     <AccountPageLayout
       title="로그아웃"
       onBack={
-        unknown ? () => void navigate(paths.logout, { replace: true }) : onBack
+        unknown
+          ? () => void navigate(paths.logout, { replace: true, motion: "back" })
+          : onBack
       }
       preview={{
         value: state,

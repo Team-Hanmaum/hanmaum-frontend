@@ -8,7 +8,8 @@ import { paths } from "@/routes/paths";
 export function WithdrawalCompletePage() {
   const account = useMockAccount();
   const navigate = useAppNavigate();
-  const home = () => void navigate(paths.landing, { replace: true });
+  const home = () =>
+    void navigate(paths.landing, { replace: true, motion: "back" });
   if (account.status !== "withdrawn")
     return (
       <Navigate

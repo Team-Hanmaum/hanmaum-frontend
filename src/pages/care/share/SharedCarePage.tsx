@@ -27,7 +27,7 @@ export function SharedCarePage() {
     <ProposalPageLayout
       title="한마음"
       spaceId={space.id}
-      onBack={() => void navigate(paths.spaces)}
+      onBack={() => void navigate(paths.spaces, { motion: "back" })}
       preview={{ value: state, options: sharedCareStates, onChange: setState }}
       actions={
         !login && (

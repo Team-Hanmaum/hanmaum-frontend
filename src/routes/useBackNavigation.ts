@@ -6,6 +6,6 @@ export function useBackNavigation(fallback: string) {
   const navigate = useAppNavigate();
   return () => {
     if (hasPreviousAppEntry()) void navigate(-1);
-    else void navigate(fallback, { replace: true });
+    else void navigate(fallback, { replace: true, motion: "back" });
   };
 }

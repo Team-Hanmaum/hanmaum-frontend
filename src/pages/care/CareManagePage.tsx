@@ -21,6 +21,7 @@ export function CareManagePage() {
   const back = () =>
     void navigate(
       item ? careItemPath(space.id, item.id) : careListPath(space.id),
+      { motion: "back" },
     );
   const valid = item && !item.deletedAt && !item.needsReconfirmation;
   const locked = isConfirmedQuestion(item);

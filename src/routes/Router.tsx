@@ -557,6 +557,8 @@ router.subscribe(({ location, historyAction }) => {
       previousLocation,
       location,
       navigationDirection(location.key, historyAction),
+      historyAction !== "POP" &&
+        location.state?.__hmBackFrom === previousLocation.key,
     );
     previousLocation = location;
     qaMode.readSearch(location.search);

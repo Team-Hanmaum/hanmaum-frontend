@@ -71,7 +71,11 @@ export function CareChangeDetailPage() {
       <ProposalPageLayout
         title="처리 결과 확인"
         spaceId={space.id}
-        onBack={() => void navigate(withReturn(careRequestsPath(space.id)))}
+        onBack={() =>
+          void navigate(withReturn(careRequestsPath(space.id)), {
+            motion: "back",
+          })
+        }
         actions={
           <Button
             onClick={() =>
@@ -99,7 +103,11 @@ export function CareChangeDetailPage() {
     <ProposalPageLayout
       title={canDecide ? "요청 검토" : waiting ? "요청 상태" : "처리 결과"}
       spaceId={space.id}
-      onBack={() => void navigate(withReturn(careRequestsPath(space.id)))}
+      onBack={() =>
+        void navigate(withReturn(careRequestsPath(space.id)), {
+          motion: "back",
+        })
+      }
       tabs
       activeTab="care"
       actions={

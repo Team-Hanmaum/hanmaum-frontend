@@ -40,7 +40,9 @@ export function SpaceInfoRequestPage() {
   const visible =
     change && (space.role === "owner" || change.authorId === self?.id);
   const toList = () =>
-    void navigate(withReturn(spaceInfoRequestsPath(space.id)));
+    void navigate(withReturn(spaceInfoRequestsPath(space.id)), {
+      motion: "back",
+    });
   const toInfo = () => void navigate(withReturn(spaceInfoPath(space.id)));
   const owner =
     (space.role === "owner" || ownerPreview) &&

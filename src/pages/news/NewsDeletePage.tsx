@@ -50,7 +50,8 @@ export function NewsDeletePage() {
     state !== "permission" &&
     (space.role === "owner" || record?.author.id === self?.id);
   const impacted = recordImpact(data, recordId);
-  const onList = () => void navigate(withReturn(spacePath(space.id, "news")));
+  const onList = () =>
+    void navigate(withReturn(spacePath(space.id, "news")), { motion: "back" });
   const back = () =>
     void navigate(
       withReturn(
@@ -58,6 +59,7 @@ export function NewsDeletePage() {
           ? newsDetailPath(space.id, recordId)
           : spacePath(space.id, "news"),
       ),
+      { motion: "back" },
     );
   const deleted = state === "deleted" || (!record && Boolean(previous));
   function remove() {
@@ -245,7 +247,8 @@ export function NewsDeletionResultPage() {
   const data = useMockProposals(space);
   const deletion = data.deletions?.find((entry) => entry.id === deletionId);
   const navigate = useAppNavigate();
-  const onList = () => void navigate(withReturn(spacePath(space.id, "news")));
+  const onList = () =>
+    void navigate(withReturn(spacePath(space.id, "news")), { motion: "back" });
   const items = data.items.filter((item) =>
     deletion?.itemIds.includes(item.id),
   );

@@ -63,7 +63,11 @@ export function ProposalEditPage() {
       <ProposalPageLayout
         title="제안 내용 수정"
         spaceId={space.id}
-        onBack={() => void navigate(withReturn(proposalListPath(space.id)))}
+        onBack={() =>
+          void navigate(withReturn(proposalListPath(space.id)), {
+            motion: "back",
+          })
+        }
       >
         <EmptyState
           title={
@@ -115,7 +119,9 @@ function ProposalEditor({
     JSON.stringify(fields) !== JSON.stringify(proposalFields(proposal));
   const { blocker, allowNavigation } = useUnsavedChanges(dirty);
   const back = () =>
-    void navigate(withReturn(proposalReviewPath(space.id, proposal.recordId)));
+    void navigate(withReturn(proposalReviewPath(space.id, proposal.recordId)), {
+      motion: "back",
+    });
   const missing =
     state === "source-deleted" ||
     !records.some((record) => record.id === proposal.recordId);
