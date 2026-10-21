@@ -2,6 +2,15 @@
 
 React Router Data 모드 사용. `Router.tsx`에서 URL·페이지·레이아웃을 등록하고 `paths.ts`의 경로 상수와 생성 함수를 사용한다.
 
+## 공통 화면 전환
+
+- 화면 이동은 `useAppNavigate`, 링크는 `AppLink`를 사용한다. 기존 React Router의 `to`·`replace`·`state` 등 옵션을 그대로 전달하며 필요한 경우 `viewTransition: false`로 제외한다. 자동 인증 리다이렉트의 `Navigate`는 즉시 처리한다.
+- `Router.tsx`의 구독에서 `routeMotion.ts`와 앱 방문 이력으로 방향을 결정한다. 일반 진입은 오른쪽에서 들어오는 220ms 전환, 관측한 이력의 뒤로가기는 반대 방향, 하단 탭 간 이동은 120ms 페이드다. REPLACE와 로그인·계정 종료 진입은 페이드로 처리한다.
+- `useTimeSelectionScreen`은 같은 편집 화면을 유지한 채 `picker=time`을 전환한다. 열기·닫기에는 위아래 전환을 적용한다. 일반 필터·QA 쿼리 변경에는 전환을 적용하지 않는다.
+- React Router의 View Transition으로 브라우저가 이전 화면의 스냅샷을 유지한다. 이전 React 페이지를 복제하거나 라우트 key로 폼을 재마운트하지 않는다. 기존 `ScrollRestoration`, 입력 유지·이탈 확인, 본문/시간 버튼 포커스 처리를 유지한다.
+- View Transition 미지원 브라우저는 즉시 이동한다. `prefers-reduced-motion: reduce`에서는 페이지·모달·안내 효과를 끈다. 공통 CSS는 `styles/motion.css`, 모달은 `components/feedback/modal.css`에서 관리한다.
+- 설치 안내는 `App`에서 허용한 화면에서만 자동으로 표시하며 `components/pwa`와 `lib/pwa`는 업무 도메인·라우터에 의존하지 않는다.
+
 `Router.tsx`는 이동·지연 로딩 보조 함수 → 화면별 라우트 그룹 → 최종 라우터 조합 순서로 구성한다. 공간 진입 전 화면은 `entryRoutes`, 기본 탭은 `tabRoutes`, 소식 작성·상세는 `recordRoutes`, 제안·요청·결과는 `proposalRoutes`, 공간 안의 레이아웃 조합은 `spaceRoutes`, 개발 전용 화면은 `developmentRoutes`에서 관리한다. 기존 URL·등록 순서·중첩 레이아웃·제목과 활성 탭 정보는 유지하며, 새 화면은 해당 그룹에 추가한다.
 
 ## 경로
