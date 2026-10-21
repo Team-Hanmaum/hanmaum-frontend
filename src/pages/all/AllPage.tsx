@@ -1,5 +1,6 @@
 import { useNavigate, useOutletContext } from "react-router";
 import { Badge, MenuRow } from "@/components/ui";
+import { usePwaInstall } from "@/lib/pwa/installContext";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import {
   accountPath,
@@ -17,6 +18,7 @@ import {
 export function AllPage() {
   const space = useOutletContext<CareSpaceView>();
   const navigate = useNavigate();
+  const { installed, showInstall } = usePwaInstall();
   const self = space.members.find((member) => member.self)!;
   const go = (path: string) => () => void navigate(path);
   return (
@@ -113,6 +115,14 @@ export function AllPage() {
         />
       )}
       <h2 className="text-hm-heading-section">내 계정</h2>
+      {!installed && (
+        <MenuRow
+          icon="plus"
+          title="한마음 설치"
+          description="홈 화면에 추가하는 방법"
+          onClick={showInstall}
+        />
+      )}
       <MenuRow
         icon="person"
         title="내 계정"
