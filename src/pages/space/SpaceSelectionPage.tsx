@@ -1,4 +1,6 @@
-import { Link, useLocation, useNavigate } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { AppLink } from "@/routes/AppLink";
+import { useLocation } from "react-router";
 import { Header, PageLayout } from "@/components/layout";
 import {
   EmptyState,
@@ -22,7 +24,7 @@ const states = [
   { value: "error", label: "조회 오류" },
 ] as const;
 export function SpaceSelectionPage() {
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { spaces, currentId, lastExit } = useMockCareSpaces();
   const location = useLocation();
   const exit =
@@ -99,12 +101,12 @@ export function SpaceSelectionPage() {
           onClick={() => void navigate(paths.account)}
         />
         {isMockPreviewEnabled && (
-          <Link
+          <AppLink
             to={paths.invitationExample}
             className="hm-focus-ring rounded-hm-8 p-hm-12 text-center text-hm-body-small text-hm-text-brand underline"
           >
             Mock 초대 참여 예시 보기
-          </Link>
+          </AppLink>
         )}
       </PageLayout>
     </>

@@ -30,4 +30,63 @@
     max-height: calc(100dvh - 20px);
     border-radius: var(--hm-radius-24) var(--hm-radius-24) 0 0;
   }
+
+  /* 닫힐 때도 브라우저가 top layer를 유지한다. 미지원 브라우저는 즉시 닫힌다. */
+  @supports (transition-behavior: allow-discrete) {
+    .hm-modal {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+      transition:
+        opacity 180ms ease-out,
+        transform 220ms ease-out,
+        overlay 220ms allow-discrete,
+        display 220ms allow-discrete;
+    }
+    .hm-modal[data-variant="sheet"] {
+      transform: translateY(100%);
+    }
+    .hm-modal[open] {
+      opacity: 1;
+      transform: none;
+    }
+    .hm-modal::backdrop {
+      background-color: transparent;
+      transition:
+        background-color 180ms ease-out,
+        overlay 220ms allow-discrete,
+        display 220ms allow-discrete;
+    }
+    .hm-modal[open]::backdrop {
+      background-color: color-mix(
+        in srgb,
+        var(--hm-color-text-primary) 40%,
+        transparent
+      );
+    }
+    @starting-style {
+      .hm-modal[open] {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+      }
+      .hm-modal[data-variant="sheet"][open] {
+        transform: translateY(100%);
+      }
+      .hm-modal[open]::backdrop {
+        background-color: transparent;
+      }
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hm-modal,
+    .hm-modal::backdrop {
+      transition: none;
+    }
+    @starting-style {
+      .hm-modal[open],
+      .hm-modal[data-variant="sheet"][open] {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  }
 }

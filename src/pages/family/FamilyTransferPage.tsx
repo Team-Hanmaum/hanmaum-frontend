@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import { useNavigate, useOutletContext } from "react-router";
+import { useOutletContext } from "react-router";
 import { ErrorState, Notice } from "@/components/feedback";
 import { Button, SelectionRow, TextAction } from "@/components/ui";
 import {
@@ -19,7 +20,7 @@ import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 export function FamilyTransferPage() {
   const space = useOutletContext<CareSpaceView>();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn, withdrawing, returnToWithdrawal } = useWithdrawalReturn();
   const onBack = useBackNavigation(spacePath(space.id, "family"));
   const [selectedId, setSelectedId] = useState("");

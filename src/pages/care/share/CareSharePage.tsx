@@ -1,4 +1,5 @@
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useOutletContext, useParams } from "react-router";
 import { Notice } from "@/components/feedback";
 import { Badge, Button, MenuRow, TextAction } from "@/components/ui";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -18,7 +19,7 @@ export function CareSharePage() {
   const data = useMockProposals(space);
   const item = data.items.find((entry) => entry.id === itemId);
   const { state, setState, pending, open } = useMockCareShare();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const unavailable =
     !item ||
     item.deletedAt ||

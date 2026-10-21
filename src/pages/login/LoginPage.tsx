@@ -1,9 +1,10 @@
+import { AppLink } from "@/routes/AppLink";
 import { DetailLayout } from "@/components/layout";
 import { MockNotice } from "@/components/feedback/MockNotice";
 import { Notice } from "@/components/feedback";
 import { BrandSymbol } from "@/components/ui";
 import { SocialLoginOptions } from "@/features/auth/ui/SocialLoginOptions";
-import { Link, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 import { paths } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useLoginPreview } from "./useLoginPreview";
@@ -22,12 +23,12 @@ export function LoginPage() {
       notice={
         <MockNotice message={message}>
           {import.meta.env.DEV && (
-            <Link
+            <AppLink
               className="hm-focus-ring rounded-hm-5 underline underline-offset-4"
               to={paths.components}
             >
               컴포넌트 보기
-            </Link>
+            </AppLink>
           )}
         </MockNotice>
       }

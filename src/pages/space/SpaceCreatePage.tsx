@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import { useNavigate } from "react-router";
+
 import { ActionBar, DetailLayout } from "@/components/layout";
 import { MockStateSelect } from "@/components/feedback/MockStateSelect";
 import { CareSpaceForm } from "@/features/carespace/ui/CareSpaceForm";
@@ -15,7 +16,7 @@ const states = [
   { value: "error", label: "생성 오류" },
 ] as const;
 export function SpaceCreatePage() {
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const onBack = useBackNavigation(paths.onboardingGuide);
   const [value, setValue] = useState("");
   const [error, setError] = useState<string>();

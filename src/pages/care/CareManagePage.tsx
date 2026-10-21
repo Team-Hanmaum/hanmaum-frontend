@@ -1,4 +1,5 @@
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useOutletContext, useParams } from "react-router";
 import { EmptyState, Notice } from "@/components/feedback";
 import { Badge, Button, MenuRow } from "@/components/ui";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -16,7 +17,7 @@ export function CareManagePage() {
   const { itemId } = useParams();
   const data = useMockProposals(space);
   const item = data.items.find((entry) => entry.id === itemId);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const back = () =>
     void navigate(
       item ? careItemPath(space.id, item.id) : careListPath(space.id),

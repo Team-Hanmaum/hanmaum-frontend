@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useRef } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import { DetailLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
 import {
@@ -32,7 +33,7 @@ function invitationUrl(token: string) {
 export function SpaceInvitePage() {
   const { careSpaceId } = useParams();
   const { spaces, ended } = useMockCareSpaces();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const onBack = useBackNavigation(paths.spaces);
   const space = spaces.find((item) => item.id === careSpaceId);
   if (careSpaceId && ended[careSpaceId]) return <SpaceAccessState />;
@@ -61,7 +62,7 @@ export function SpaceInvitePage() {
 }
 function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
   const { withdrawing, returnToWithdrawal } = useWithdrawalReturn();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const onBack = useBackNavigation(spacePath(space.id));
   const [state, setState] = useMockScreenState(
     invitationScreenStates,
@@ -148,13 +149,12 @@ function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
           </FixedBottomArea>
         }
       >
-        {state === "copied" && (
-          <Notice
-            role="status"
-            title="초대 링크를 복사했어요"
-            body="가족과 대화하는 곳에 붙여넣어 보내 주세요."
-          />
-        )}
+        <Notice
+          visible={state === "copied"}
+          role="status"
+          title="초대 링크를 복사했어요"
+          body="가족과 대화하는 곳에 붙여넣어 보내 주세요."
+        />
         <h1 className="text-hm-title-page">
           {failed ? (
             <>

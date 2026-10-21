@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useOutletContext, useParams } from "react-router";
 import { Button, TextAction } from "@/components/ui";
 import { EmptyState, Notice } from "@/components/feedback";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -36,7 +37,7 @@ export function ProposalReviewPage() {
   const { selected, toggle } = useProposalRouteSelection(proposals, data);
   const { pending, failure, submit } = useProposalAction(space);
   const [state, setState] = useMockScreenState(proposalReviewStates, "default");
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const onBack = useBackNavigation(withReturn(proposalListPath(space.id)));
   const owner = space.role === "owner";

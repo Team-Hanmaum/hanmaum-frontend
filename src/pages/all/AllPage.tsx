@@ -1,4 +1,5 @@
-import { useNavigate, useOutletContext } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useOutletContext } from "react-router";
 import { Badge, MenuRow } from "@/components/ui";
 import { usePwaInstall } from "@/lib/pwa/installContext";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -17,7 +18,7 @@ import {
 
 export function AllPage() {
   const space = useOutletContext<CareSpaceView>();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { installed, showInstall } = usePwaInstall();
   const self = space.members.find((member) => member.self)!;
   const go = (path: string) => () => void navigate(path);

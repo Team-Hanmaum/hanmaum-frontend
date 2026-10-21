@@ -1,9 +1,5 @@
-import {
-  useMatches,
-  useNavigate,
-  useOutletContext,
-  useParams,
-} from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useMatches, useOutletContext, useParams } from "react-router";
 import { EmptyState } from "@/components/feedback";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import { useMockProposals } from "@/features/proposal/model/useMockProposals";
@@ -32,7 +28,7 @@ export function CareChangePage() {
     (kindParam && Object.hasOwn(careKindLabels, kindParam)
       ? (kindParam as CareItemKind)
       : undefined);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const unavailable =
     operation === "create"
       ? !kind || !["schedule", "task", "question"].includes(kind)

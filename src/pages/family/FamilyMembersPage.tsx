@@ -1,4 +1,5 @@
-import { useNavigate, useOutletContext } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useOutletContext } from "react-router";
 import { ErrorState } from "@/components/feedback";
 import { Button, MenuRow } from "@/components/ui";
 import {
@@ -22,7 +23,7 @@ import { useBackNavigation } from "@/routes/useBackNavigation";
 export function FamilyMembersPage() {
   const space = useOutletContext<CareSpaceView>();
   const { items } = useMockProposals(space);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const onBack = useBackNavigation(spacePath(space.id, "family"));
   return (
     <FamilyPageLayout

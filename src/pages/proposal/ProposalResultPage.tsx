@@ -1,6 +1,7 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { useState } from "react";
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useOutletContext, useParams } from "react-router";
 import { BottomSheet, EmptyState } from "@/components/feedback";
 import { Badge, Button, MenuRow, TextAction } from "@/components/ui";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -24,7 +25,7 @@ export function ProposalResultPage() {
   const data = useMockProposals(space);
   const records = useMockRecords(space);
   const result = data.results.find((item) => item.id === resultId);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const [sheet, setSheet] = useState<"items" | "history" | "decision" | null>(
     null,

@@ -21,7 +21,11 @@ function App() {
 
   useEffect(() => {
     document.title = title === "한마음" ? title : `${title} · 한마음`;
-    document.querySelector<HTMLElement>("main")?.focus({ preventScroll: true });
+    if (!document.querySelector("dialog[open]")) {
+      document
+        .querySelector<HTMLElement>("main")
+        ?.focus({ preventScroll: true });
+    }
   }, [pathname, title]);
 
   return (

@@ -1,11 +1,7 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { useState } from "react";
-import {
-  useNavigate,
-  useOutletContext,
-  useParams,
-  useSearchParams,
-} from "react-router";
+import { useOutletContext, useParams, useSearchParams } from "react-router";
 import {
   EmptyState,
   ErrorState,
@@ -97,7 +93,7 @@ export function ProposalTargetPage() {
       { replace: true },
     );
   }
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const back = () =>
     void navigate(

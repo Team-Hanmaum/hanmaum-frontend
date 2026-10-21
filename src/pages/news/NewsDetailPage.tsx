@@ -1,4 +1,5 @@
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useOutletContext, useParams } from "react-router";
 import { DetailLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
 import { ErrorState } from "@/components/feedback";
@@ -36,7 +37,7 @@ export function NewsDetailPage() {
   const record = getRecordsWithProposals(records, proposals).find(
     (item) => item.id === recordId,
   );
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const listPath = withReturn(spacePath(space.id, "news"));
   const onBack = useBackNavigation(listPath);
   const options = record?.proposal

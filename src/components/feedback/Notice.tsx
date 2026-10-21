@@ -7,6 +7,8 @@ export type NoticeProps = Omit<
   title: string;
   body: string;
   tone?: "info" | "neutral" | "error";
+  /** 종료 효과가 필요한 안내는 조건부 마운트 대신 visible로 표시한다. */
+  visible?: boolean;
   action?: { label: string; onClick: () => void; disabled?: boolean };
 };
 const tones: Record<
@@ -33,6 +35,7 @@ export function Notice({
   title,
   body,
   tone = "info",
+  visible = true,
   action,
   className = "",
   ...props
@@ -40,7 +43,10 @@ export function Notice({
   return (
     <div
       {...props}
-      className={`flex w-full min-w-0 flex-col gap-hm-8 rounded-hm-14 p-hm-16 wrap-anywhere ${tones[tone].classes} ${className}`}
+      hidden={!visible}
+      aria-hidden={!visible || undefined}
+      inert={!visible}
+      className={`hm-notice flex w-full min-w-0 flex-col gap-hm-8 rounded-hm-14 p-hm-16 wrap-anywhere ${tones[tone].classes} ${className}`}
     >
       <div className="flex items-center gap-hm-8">
         <Icon name={tones[tone].icon} />

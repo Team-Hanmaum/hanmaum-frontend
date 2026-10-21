@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import { ActionBar, Header, PageLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
 import { MockStateSelect } from "@/components/feedback/MockStateSelect";
@@ -30,7 +31,7 @@ export function InvitationPage() {
   );
 }
 function InvitationPreview({ token }: { token: string }) {
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const [state, setState] = useMockScreenState(states, "default");
   const [provider, setProvider] = useState<SocialProvider | null>(null);
   const { pending, run } = useMockAction();

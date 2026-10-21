@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useOutletContext, useParams } from "react-router";
 import { ErrorState, Notice } from "@/components/feedback";
 import { Badge, Button, Comparison, TextAction } from "@/components/ui";
 import {
@@ -25,7 +26,7 @@ import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 export function FamilyTransferConfirmPage() {
   const space = useOutletContext<CareSpaceView>();
   const { memberId = "" } = useParams();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn, withdrawing, returnToWithdrawal } = useWithdrawalReturn();
   const onBack = useBackNavigation(withReturn(familyTransferPath(space.id)));
   const [state, setState] = useMockScreenState(familyActionStates, "default");

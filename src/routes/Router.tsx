@@ -31,7 +31,8 @@ import { TabLayout } from "./layouts/TabLayout";
 import { RecordRouteLayout } from "./layouts/RecordRouteLayout";
 import { ProposalRouteLayout } from "./layouts/ProposalRouteLayout";
 import { FamilyRouteLayout } from "./layouts/FamilyRouteLayout";
-import { recordNavigation } from "./navigationHistory";
+import { recordNavigation, navigationDirection } from "./navigationHistory";
+import { getRouteMotion } from "./routeMotion";
 import { paths, spacePath } from "./paths";
 
 // 경로 이동 처리
@@ -547,11 +548,17 @@ const router = createBrowserRouter([
 
 // 앱 내부 뒤로가기 판단을 위한 방문 이력 연결
 recordNavigation(router.state.location.key, "POP");
-let qaLocationKey = router.state.location.key;
+let previousLocation = router.state.location;
 router.subscribe(({ location, historyAction }) => {
   // 로딩 중 이전 URL이 재통지되어도 종료한 QA를 다시 켜지 않는다.
-  if (qaLocationKey !== location.key) {
-    qaLocationKey = location.key;
+  if (previousLocation.key !== location.key) {
+    // RouterProvider가 화면 스냅샷을 만들기 전에 이동 방향을 정한다.
+    document.documentElement.dataset.routeMotion = getRouteMotion(
+      previousLocation,
+      location,
+      navigationDirection(location.key, historyAction),
+    );
+    previousLocation = location;
     qaMode.readSearch(location.search);
   }
   recordNavigation(location.key, historyAction);

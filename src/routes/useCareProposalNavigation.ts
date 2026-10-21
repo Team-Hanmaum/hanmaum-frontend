@@ -1,9 +1,10 @@
-import { useNavigate } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+
 import type { ProposalView } from "@/features/proposal/model/proposalViewTypes";
 import { proposalRequestPath, proposalReviewPath } from "./paths";
 
 export function useCareProposalNavigation(spaceId: string) {
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   return (proposal: ProposalView) =>
     void navigate(
       proposal.status === "requested" && proposal.requestId

@@ -1,10 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import {
-  useNavigate,
-  useOutletContext,
-  useParams,
-  useSearchParams,
-} from "react-router";
+import { useOutletContext, useParams, useSearchParams } from "react-router";
 import { EmptyState, Notice } from "@/components/feedback";
 import { Badge, Button, MenuRow, TextAction } from "@/components/ui";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -35,7 +31,7 @@ export function CareChangeDetailPage() {
   const [ownerPreview, setOwnerPreview] = useState(false);
   const [error, setError] = useState("");
   const { pending, run } = useMockAction();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const actorSpace: CareSpaceView = ownerPreview
     ? {

@@ -1,4 +1,5 @@
-import { useNavigate, useSearchParams } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useSearchParams } from "react-router";
 import { ErrorState, LoadingState } from "@/components/feedback";
 import { MenuRow } from "@/components/ui";
 import { useMockAccount } from "@/features/user/model/mockAccount";
@@ -19,7 +20,7 @@ export function AccountPage() {
   const { spaces } = useMockCareSpaces();
   const [params] = useSearchParams();
   const space = spaces.find((entry) => entry.id === params.get("space"));
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const onBack = useBackNavigation(
     space ? spacePath(space.id, "all") : paths.spaces,
   );

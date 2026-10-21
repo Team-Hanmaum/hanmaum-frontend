@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import { Outlet, useMatches, useNavigate, useParams } from "react-router";
+import { Outlet, useMatches, useParams } from "react-router";
 import { Header, PageLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
 import { ErrorState } from "@/components/feedback";
@@ -43,7 +44,7 @@ function SpaceHeader({
   onRetry: () => void;
 }) {
   const { spaces } = useMockCareSpaces();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { pending, run } = useMockAction();
   const [targetId, setTargetId] = useState<string>();
   const [failed, setFailed] = useState(false);
@@ -90,7 +91,7 @@ function SpaceHeader({
 export function TabLayout() {
   const { careSpaceId } = useParams();
   const { spaces, ended } = useMockCareSpaces();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const matches = useMatches();
   const handle = matches.at(-1)?.handle as { tab?: SpaceTab } | undefined;
   const active = handle?.tab;
@@ -216,7 +217,7 @@ function NewsCreateAction({
   empty?: boolean;
 }) {
   const records = useMockRecords(space);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   if (mode === "news" && !records.length) return null;
   const first = empty && (!space.empty || !records.length);
   return (

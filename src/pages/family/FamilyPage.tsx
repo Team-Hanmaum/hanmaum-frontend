@@ -1,4 +1,5 @@
-import { useLocation, useNavigate, useOutletContext } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useLocation, useOutletContext } from "react-router";
 import {
   EmptyState,
   ErrorState,
@@ -27,7 +28,7 @@ export function FamilyPage() {
   const space = useOutletContext<CareSpaceView>();
   const { items } = useMockProposals(space);
   const [state, setState] = useMockScreenState(familyListStates, "default");
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const location = useLocation();
   const removal = (
     location.state as {

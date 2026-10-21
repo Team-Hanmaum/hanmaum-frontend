@@ -1,4 +1,5 @@
-import { Link } from "react-router";
+import { AppLink } from "@/routes/AppLink";
+
 import { BottomNav, type NavItemProps } from "@/components/layout";
 import { spacePath, type SpaceTab } from "../paths";
 
@@ -6,7 +7,7 @@ const renderNavLink: NonNullable<NavItemProps["renderLink"]> = ({
   href,
   ...props
 }) => (
-  <Link
+  <AppLink
     to={href}
     {...props}
   />

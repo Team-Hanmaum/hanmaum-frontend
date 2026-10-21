@@ -1,4 +1,5 @@
-import { Outlet, useNavigate, useParams } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { Outlet, useParams } from "react-router";
 import { DetailLayout } from "@/components/layout";
 import { ErrorState } from "@/components/feedback";
 import { MockNotice } from "@/components/feedback/MockNotice";
@@ -18,7 +19,7 @@ export function ProposalRouteLayout() {
     changeId,
   } = useParams();
   const { spaces, ended } = useMockCareSpaces();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const space = spaces.find((item) => item.id === careSpaceId);
   if (careSpaceId && ended[careSpaceId]) return <SpaceAccessState />;
   if (!isMockPreviewEnabled || !space)

@@ -1,10 +1,11 @@
-import { useNavigate } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+
 import { Header, PageLayout, ActionBar } from "@/components/layout";
 import { Notice } from "@/components/feedback";
 import { MockNotice } from "@/components/feedback/MockNotice";
 import { paths } from "../paths";
 export function SpaceAccessState() {
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   return (
     <PageLayout
       header={<Header variant="main" />}

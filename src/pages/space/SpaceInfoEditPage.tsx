@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useRef, useState } from "react";
-import { useBlocker, useNavigate, useOutletContext } from "react-router";
+import { useBlocker, useOutletContext } from "react-router";
 import { Button, Field, TextAction } from "@/components/ui";
 import { ConfirmDialog, Notice } from "@/components/feedback";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -24,7 +25,7 @@ const states = [
 ] as const;
 export function SpaceInfoEditPage() {
   const space = useOutletContext<CareSpaceView>();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const [value, setValue] = useState(space.subjectLabel);
   const [baseline, setBaseline] = useState({
     version: space.infoVersion ?? 0,

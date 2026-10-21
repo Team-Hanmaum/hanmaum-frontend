@@ -1,4 +1,5 @@
-import { Navigate, useNavigate } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { Navigate } from "react-router";
 import { Button } from "@/components/ui";
 import { Notice } from "@/components/feedback";
 import { useMockAccount } from "@/features/user/model/mockAccount";
@@ -6,7 +7,7 @@ import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
 import { paths } from "@/routes/paths";
 export function WithdrawalCompletePage() {
   const account = useMockAccount();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const home = () => void navigate(paths.landing, { replace: true });
   if (account.status !== "withdrawn")
     return (

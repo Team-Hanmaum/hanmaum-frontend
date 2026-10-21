@@ -1,4 +1,5 @@
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useOutletContext, useParams } from "react-router";
 import { EmptyState, Notice } from "@/components/feedback";
 import { Badge, Button, MenuRow } from "@/components/ui";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -85,7 +86,7 @@ export function CareHistoryPage() {
   const reconfirmation = reconfirmations.find(
     (entry) => entry.id === historyId,
   );
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const onBack = useBackNavigation(
     withReturn(

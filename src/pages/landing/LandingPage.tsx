@@ -1,10 +1,11 @@
-import { useNavigate } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+
 import { ActionBar, Header, PageLayout } from "@/components/layout";
 import { Badge, Comparison } from "@/components/ui";
 import { paths } from "@/routes/paths";
 
 export function LandingPage() {
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const openLogin = () => void navigate(paths.login);
   return (
     <PageLayout

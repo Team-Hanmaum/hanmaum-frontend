@@ -1,4 +1,5 @@
-import { useNavigate, useOutletContext } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useOutletContext } from "react-router";
 import { ErrorState, Notice } from "@/components/feedback";
 import { Button, MenuRow, TextAction } from "@/components/ui";
 import {
@@ -26,7 +27,7 @@ import { useMockScreenState } from "@/routes/useMockScreenState";
 export function FamilyLeavePage() {
   const space = useOutletContext<CareSpaceView>();
   const { items } = useMockProposals(space);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const onBack = useBackNavigation(spacePath(space.id, "family"));
   const [state, setState] = useMockScreenState(familyExitStates, "default");
   const { pending, error, submit, clearError } = useFamilyExit(

@@ -3,6 +3,7 @@
 @import "./styles/tokens.css";
 @import "./styles/theme.css";
 @import "./styles/typography.css";
+@import "./styles/motion.css";
 
 @layer base {
   body {

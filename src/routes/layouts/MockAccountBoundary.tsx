@@ -1,5 +1,7 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { AppLink } from "@/routes/AppLink";
 import type { ReactNode } from "react";
-import { Link, Navigate, useLocation, useNavigate } from "react-router";
+import { Navigate, useLocation } from "react-router";
 import { useMockAccount } from "@/features/user/model/mockAccount";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { paths } from "../paths";
@@ -9,7 +11,7 @@ import { Notice } from "@/components/feedback";
 export function MockAccountBoundary({ children }: { children: ReactNode }) {
   const { status } = useMockAccount();
   const { pathname } = useLocation();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const protectedPath = /^\/(spaces|account)(\/|$)/.test(pathname);
   if (!isMockPreviewEnabled && /^\/account(\/|$)/.test(pathname))
     return (
@@ -21,7 +23,7 @@ export function MockAccountBoundary({ children }: { children: ReactNode }) {
           title="계정 기능 연결 전이에요"
           body="현재 계정 화면은 Mock 모드에서만 확인할 수 있어요."
         />
-        <Link to={paths.login}>로그인 화면으로</Link>
+        <AppLink to={paths.login}>로그인 화면으로</AppLink>
       </DetailLayout>
     );
   if (isMockPreviewEnabled) {

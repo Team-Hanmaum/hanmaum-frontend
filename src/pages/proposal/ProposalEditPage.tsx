@@ -1,6 +1,7 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { useState } from "react";
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useOutletContext, useParams } from "react-router";
 import { EmptyState, Notice } from "@/components/feedback";
 import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog";
 import { Badge, Button, TextAction } from "@/components/ui";
@@ -49,7 +50,7 @@ export function ProposalEditPage() {
       !item.sourceDeleted &&
       item.operation !== "link",
   );
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const locked =
     proposal &&
@@ -104,7 +105,7 @@ function ProposalEditor({
   );
   const [error, setError] = useState("");
   const records = useMockRecords(space);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const [state, setState] = useMockScreenState(states, "default");
   const { pending, run } = useMockAction();
