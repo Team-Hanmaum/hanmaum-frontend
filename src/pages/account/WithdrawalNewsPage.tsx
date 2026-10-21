@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+
 import { Button, MenuRow } from "@/components/ui";
 import { EmptyState, Notice } from "@/components/feedback";
 import { useMockCareSpaces } from "@/features/carespace/model/useMockCareSpaces";
@@ -7,8 +8,8 @@ import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
 import { paths, spacePath } from "@/routes/paths";
 export function WithdrawalNewsPage() {
   const { spaces } = useMockCareSpaces();
-  const navigate = useNavigate();
-  const back = () => void navigate(paths.withdrawal);
+  const navigate = useAppNavigate();
+  const back = () => void navigate(paths.withdrawal, { motion: "back" });
   return (
     <AccountPageLayout
       title="탈퇴 전 소식 확인"

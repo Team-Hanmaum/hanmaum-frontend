@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import { ActionBar, Header, PageLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
 import { MockStateSelect } from "@/components/feedback/MockStateSelect";
@@ -30,7 +31,7 @@ export function InvitationPage() {
   );
 }
 function InvitationPreview({ token }: { token: string }) {
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const [state, setState] = useMockScreenState(states, "default");
   const [provider, setProvider] = useState<SocialProvider | null>(null);
   const { pending, run } = useMockAction();
@@ -58,7 +59,15 @@ function InvitationPreview({ token }: { token: string }) {
   }
   return (
     <PageLayout
-      header={<Header variant="main" />}
+      header={
+        <Header
+          variant="main"
+          brandAction={{
+            label: "한마음 시작 화면으로",
+            onClick: () => void navigate(paths.landing),
+          }}
+        />
+      }
       notice={
         <MockStateSelect
           message="화면 확인용 · 실제 로그인·가족 참여 없음"

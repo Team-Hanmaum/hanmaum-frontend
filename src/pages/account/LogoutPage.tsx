@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import { useNavigate } from "react-router";
+
 import { Notice } from "@/components/feedback";
 import { Button, TextAction } from "@/components/ui";
 import { mockAccount, useMockAccount } from "@/features/user/model/mockAccount";
@@ -17,7 +18,7 @@ const states = [
   { value: "expired", label: "인증 만료" },
 ] as const;
 export function LogoutPage() {
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const onBack = useBackNavigation(paths.account);
   const account = useMockAccount();
   const [state, setState] = useMockScreenState(states, "default");
@@ -47,7 +48,9 @@ export function LogoutPage() {
     <AccountPageLayout
       title="로그아웃"
       onBack={
-        unknown ? () => void navigate(paths.logout, { replace: true }) : onBack
+        unknown
+          ? () => void navigate(paths.logout, { replace: true, motion: "back" })
+          : onBack
       }
       preview={{
         value: state,

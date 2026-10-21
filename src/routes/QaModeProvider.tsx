@@ -1,12 +1,13 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useSyncExternalStore, type ReactNode } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation } from "react-router";
 import { qaMode } from "@/lib/qaMode";
 import { QaModeContext } from "@/lib/useQaMode";
 
 export function QaModeProvider({ children }: { children: ReactNode }) {
   const enabled = useSyncExternalStore(qaMode.subscribe, qaMode.getSnapshot);
   const location = useLocation();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
 
   function exit() {
     const params = new URLSearchParams(location.search);

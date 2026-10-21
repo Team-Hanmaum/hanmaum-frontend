@@ -1,4 +1,5 @@
-import { useNavigate, useOutletContext } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useOutletContext } from "react-router";
 import { ActionBar, DetailLayout } from "@/components/layout";
 import { MockStateSelect } from "@/components/feedback/MockStateSelect";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -12,7 +13,7 @@ import { useMockScreenState } from "@/routes/useMockScreenState";
 
 export function NewsCreatePage() {
   const space = useOutletContext<CareSpaceView>();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const onBack = useBackNavigation(spacePath(space.id, "news"));
   const [state, setState] = useMockScreenState(newsCreateStates, "default");
   const { body, changeBody, error, pending, canSubmit, submit } =

@@ -1,4 +1,5 @@
-import { useNavigate, useOutletContext } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useOutletContext } from "react-router";
 import { Button, MenuRow } from "@/components/ui";
 import { ErrorState, LoadingState, Notice } from "@/components/feedback";
 import {
@@ -22,7 +23,7 @@ const states = [
 ] as const;
 export function SpaceInfoPage() {
   const space = useOutletContext<CareSpaceView>();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const onBack = useBackNavigation(spacePath(space.id, "all"));
   const [state, setState] = useMockScreenState(states, "default");
   return (

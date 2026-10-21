@@ -1,4 +1,5 @@
-import { useNavigate, useOutletContext } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useOutletContext } from "react-router";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import { useMockRecords } from "@/features/record/model/useMockRecords";
 import { newsListStates } from "@/features/record/model/newsScreenStates";
@@ -24,7 +25,7 @@ import {
 export function NewsPage() {
   const { withdrawing, withReturn, returnToWithdrawal } = useWithdrawalReturn();
   const space = useOutletContext<CareSpaceView>();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const records = useMockRecords(space);
   const proposals = useMockProposals(space);
   const spaceChanges = useMockSpaceInfoChanges(space.id);

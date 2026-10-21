@@ -1,12 +1,13 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+
 import type { SocialProvider } from "@/components/ui";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { paths } from "@/routes/paths";
 import { mockAccount } from "@/features/user/model/mockAccount";
 
 export function useLoginPreview() {
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const enabled = isMockPreviewEnabled;
   const [provider, setProvider] = useState<SocialProvider | null>(null);
   const [message, setMessage] = useState(

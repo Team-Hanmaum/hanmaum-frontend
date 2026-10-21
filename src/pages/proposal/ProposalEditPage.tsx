@@ -1,6 +1,7 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { useState } from "react";
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useOutletContext, useParams } from "react-router";
 import { EmptyState, Notice } from "@/components/feedback";
 import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog";
 import { Badge, Button, TextAction } from "@/components/ui";
@@ -49,7 +50,7 @@ export function ProposalEditPage() {
       !item.sourceDeleted &&
       item.operation !== "link",
   );
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const locked =
     proposal &&
@@ -62,7 +63,11 @@ export function ProposalEditPage() {
       <ProposalPageLayout
         title="제안 내용 수정"
         spaceId={space.id}
-        onBack={() => void navigate(withReturn(proposalListPath(space.id)))}
+        onBack={() =>
+          void navigate(withReturn(proposalListPath(space.id)), {
+            motion: "back",
+          })
+        }
       >
         <EmptyState
           title={
@@ -104,7 +109,7 @@ function ProposalEditor({
   );
   const [error, setError] = useState("");
   const records = useMockRecords(space);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const [state, setState] = useMockScreenState(states, "default");
   const { pending, run } = useMockAction();
@@ -114,7 +119,9 @@ function ProposalEditor({
     JSON.stringify(fields) !== JSON.stringify(proposalFields(proposal));
   const { blocker, allowNavigation } = useUnsavedChanges(dirty);
   const back = () =>
-    void navigate(withReturn(proposalReviewPath(space.id, proposal.recordId)));
+    void navigate(withReturn(proposalReviewPath(space.id, proposal.recordId)), {
+      motion: "back",
+    });
   const missing =
     state === "source-deleted" ||
     !records.some((record) => record.id === proposal.recordId);

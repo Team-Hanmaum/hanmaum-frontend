@@ -1,4 +1,5 @@
-import { useNavigate, useOutletContext } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useOutletContext } from "react-router";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import { HomeContent } from "@/features/dashboard/ui/HomeContent";
 import { homeScreenStates } from "@/features/dashboard/model/homeScreenStates";
@@ -26,7 +27,7 @@ export function HomePage() {
   const space = useOutletContext<CareSpaceView>();
   const records = useMockRecords(space);
   const proposals = useMockProposals(space);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const now = useCareNow();
   const spaceChanges = useMockSpaceInfoChanges(space.id);
   const data = getMockHomeData(

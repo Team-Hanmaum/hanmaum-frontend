@@ -1,11 +1,13 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useLayoutEffect, useRef } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router";
+import { useLocation, useSearchParams } from "react-router";
+import { canAnimateNavigation } from "./routeMotion";
 
 // 편집 페이지를 유지한 채 별도 화면을 표시해 아직 저장하지 않은 입력을 보존한다.
 export function useTimeSelectionScreen(enabled: boolean) {
   const [params, setParams] = useSearchParams();
   const location = useLocation();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const open = enabled && params.get("picker") === "time";
   const wasOpen = useRef(false);
   useLayoutEffect(() => {
@@ -38,6 +40,8 @@ export function useTimeSelectionScreen(enabled: boolean) {
     next.set("picker", "time");
     void setParams(next, {
       state: { ...location.state, timeSelectionFrom: location.pathname },
+      viewTransition: canAnimateNavigation(),
+      preventScrollReset: true,
     });
   }
   function close() {
@@ -46,7 +50,11 @@ export function useTimeSelectionScreen(enabled: boolean) {
     } else {
       const next = new URLSearchParams(params);
       next.delete("picker");
-      void setParams(next, { replace: true });
+      void setParams(next, {
+        replace: true,
+        viewTransition: canAnimateNavigation(),
+        preventScrollReset: true,
+      });
     }
   }
   return { open, show, close };

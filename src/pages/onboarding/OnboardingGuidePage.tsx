@@ -1,4 +1,6 @@
-import { Link, useNavigate } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { AppLink } from "@/routes/AppLink";
+
 import { ActionBar, DetailLayout } from "@/components/layout";
 import { Notice } from "@/components/feedback";
 import { MockNotice } from "@/components/feedback/MockNotice";
@@ -8,7 +10,7 @@ import { useBackNavigation } from "@/routes/useBackNavigation";
 
 export function OnboardingGuidePage() {
   const onBack = useBackNavigation(paths.login);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
 
   return (
     <>
@@ -53,12 +55,12 @@ export function OnboardingGuidePage() {
           }
         />
         {isMockPreviewEnabled && (
-          <Link
+          <AppLink
             to={paths.spaces}
             className="hm-focus-ring rounded-hm-8 p-hm-12 text-center text-hm-text-brand underline"
           >
             Mock 공간 둘러보기
-          </Link>
+          </AppLink>
         )}
       </DetailLayout>
     </>

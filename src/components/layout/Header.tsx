@@ -5,6 +5,11 @@ type HeaderCommon = { actions?: ReactNode; className?: string };
 type MainHeader = HeaderCommon & {
   variant: "main";
   brandName?: string;
+  brandAction?: {
+    label: string;
+    onClick: () => void;
+    disabled?: boolean;
+  };
   space?: {
     name: string;
     onClick: () => void;
@@ -22,15 +27,34 @@ type BackHeader = HeaderCommon & {
 export type HeaderProps = MainHeader | BackHeader;
 
 export function Header(props: HeaderProps) {
+  const brand = props.variant === "main" && (
+    <>
+      <BrandSymbol decorative />
+      <span className="truncate">{props.brandName ?? "한마음"}</span>
+    </>
+  );
   return (
     <header
       className={`flex min-h-16 w-full items-center gap-hm-8 bg-hm-bg-surface px-hm-20 py-hm-10 ${props.className ?? ""}`}
     >
       {props.variant === "main" ? (
         <>
-          <div className="flex min-w-0 flex-1 items-center gap-hm-12 text-hm-heading-section text-hm-text-brand">
-            <BrandSymbol decorative />
-            <span className="truncate">{props.brandName ?? "한마음"}</span>
+          <div className="min-w-0 flex-1">
+            {props.brandAction ? (
+              <button
+                type="button"
+                aria-label={props.brandAction.label}
+                onClick={props.brandAction.onClick}
+                disabled={props.brandAction.disabled}
+                className="hm-focus-ring flex min-h-hm-touch-min max-w-full items-center gap-hm-12 rounded-hm-8 text-left text-hm-heading-section text-hm-text-brand disabled:opacity-40"
+              >
+                {brand}
+              </button>
+            ) : (
+              <div className="flex min-h-hm-touch-min items-center gap-hm-12 text-hm-heading-section text-hm-text-brand">
+                {brand}
+              </div>
+            )}
           </div>
           {props.space && (
             <button

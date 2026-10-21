@@ -1,4 +1,5 @@
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useOutletContext, useParams } from "react-router";
 import { Notice } from "@/components/feedback";
 import { Button, SocialLoginButton } from "@/components/ui";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -14,7 +15,7 @@ export function SharedCarePage() {
   const data = useMockProposals(space);
   const item = data.items.find((entry) => entry.id === itemId);
   const [state, setState] = useMockScreenState(sharedCareStates, "login");
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const unavailable =
     !item ||
     item.deletedAt ||
@@ -26,7 +27,7 @@ export function SharedCarePage() {
     <ProposalPageLayout
       title="한마음"
       spaceId={space.id}
-      onBack={() => void navigate(paths.spaces)}
+      onBack={() => void navigate(paths.spaces, { motion: "back" })}
       preview={{ value: state, options: sharedCareStates, onChange: setState }}
       actions={
         !login && (

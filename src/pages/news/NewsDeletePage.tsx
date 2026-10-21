@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useOutletContext, useParams } from "react-router";
 import { EmptyState, Notice } from "@/components/feedback";
 import { Badge, Button, MenuRow, TextAction } from "@/components/ui";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -43,13 +44,14 @@ export function NewsDeletePage() {
     "confirm",
   );
   const { pending, run } = useMockAction();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const self = space.members.find((member) => member.self);
   const permitted =
     state !== "permission" &&
     (space.role === "owner" || record?.author.id === self?.id);
   const impacted = recordImpact(data, recordId);
-  const onList = () => void navigate(withReturn(spacePath(space.id, "news")));
+  const onList = () =>
+    void navigate(withReturn(spacePath(space.id, "news")), { motion: "back" });
   const back = () =>
     void navigate(
       withReturn(
@@ -57,6 +59,7 @@ export function NewsDeletePage() {
           ? newsDetailPath(space.id, recordId)
           : spacePath(space.id, "news"),
       ),
+      { motion: "back" },
     );
   const deleted = state === "deleted" || (!record && Boolean(previous));
   function remove() {
@@ -243,8 +246,9 @@ export function NewsDeletionResultPage() {
   const { deletionId } = useParams();
   const data = useMockProposals(space);
   const deletion = data.deletions?.find((entry) => entry.id === deletionId);
-  const navigate = useNavigate();
-  const onList = () => void navigate(withReturn(spacePath(space.id, "news")));
+  const navigate = useAppNavigate();
+  const onList = () =>
+    void navigate(withReturn(spacePath(space.id, "news")), { motion: "back" });
   const items = data.items.filter((item) =>
     deletion?.itemIds.includes(item.id),
   );

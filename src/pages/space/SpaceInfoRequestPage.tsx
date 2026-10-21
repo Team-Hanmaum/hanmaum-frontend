@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useOutletContext, useParams } from "react-router";
 import { Badge, Button, MenuRow, TextAction } from "@/components/ui";
 import { ErrorState, Notice } from "@/components/feedback";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -26,7 +27,7 @@ export function SpaceInfoRequestPage() {
   const { requestId } = useParams();
   const changes = useMockSpaceInfoChanges(space.id);
   const change = changes.find((entry) => entry.id === requestId);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const [decision, setDecision] = useState<"apply" | "reject" | null>(null);
   const [error, setError] = useState("");
@@ -39,7 +40,9 @@ export function SpaceInfoRequestPage() {
   const visible =
     change && (space.role === "owner" || change.authorId === self?.id);
   const toList = () =>
-    void navigate(withReturn(spaceInfoRequestsPath(space.id)));
+    void navigate(withReturn(spaceInfoRequestsPath(space.id)), {
+      motion: "back",
+    });
   const toInfo = () => void navigate(withReturn(spaceInfoPath(space.id)));
   const owner =
     (space.role === "owner" || ownerPreview) &&

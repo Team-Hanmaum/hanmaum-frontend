@@ -1,4 +1,5 @@
-import { useNavigate, useOutletContext } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useOutletContext } from "react-router";
 import { ErrorState, Notice } from "@/components/feedback";
 import { Button, TextAction } from "@/components/ui";
 import {
@@ -23,7 +24,7 @@ import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 export function FamilyDeletePage() {
   const space = useOutletContext<CareSpaceView>();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withdrawing, withReturn, returnToWithdrawal } = useWithdrawalReturn();
   const onBack = useBackNavigation(familyLeavePath(space.id));
   const [state, setState] = useMockScreenState(familyExitStates, "default");

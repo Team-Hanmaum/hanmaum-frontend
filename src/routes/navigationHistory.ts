@@ -3,6 +3,18 @@
 let keys: string[] = [];
 let index = -1;
 
+export function navigationDirection(
+  key: string,
+  action: "POP" | "PUSH" | "REPLACE",
+) {
+  if (action === "PUSH") return "forward";
+  if (action === "POP") {
+    const next = keys.indexOf(key);
+    if (next >= 0 && next !== index) return next < index ? "back" : "forward";
+  }
+  return "none";
+}
+
 export function recordNavigation(
   key: string,
   action: "POP" | "PUSH" | "REPLACE",

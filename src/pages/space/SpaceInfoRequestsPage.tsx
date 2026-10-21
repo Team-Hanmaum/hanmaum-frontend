@@ -1,4 +1,5 @@
-import { useNavigate, useOutletContext, useSearchParams } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useOutletContext, useSearchParams } from "react-router";
 import { MenuRow, Tabs } from "@/components/ui";
 import { EmptyState } from "@/components/feedback";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -15,7 +16,7 @@ const tabs = [
 export function SpaceInfoRequestsPage() {
   const space = useOutletContext<CareSpaceView>();
   const changes = useMockSpaceInfoChanges(space.id);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const [params, setParams] = useSearchParams();
   const status =

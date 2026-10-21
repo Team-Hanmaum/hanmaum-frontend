@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useOutletContext, useParams } from "react-router";
 import { ErrorState, Notice } from "@/components/feedback";
 import { Button, TextAction } from "@/components/ui";
 import {
@@ -22,7 +23,7 @@ export function FamilyRemovePage() {
   const space = useOutletContext<CareSpaceView>();
   const { memberId = "" } = useParams();
   const { items } = useMockProposals(space);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const onBack = useBackNavigation(familyMembersPath(space.id));
   const [state, setState] = useMockScreenState(familyActionStates, "default");
   const { pending, run } = useMockAction();

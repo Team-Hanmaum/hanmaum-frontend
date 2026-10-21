@@ -1,4 +1,5 @@
-import { useNavigate, useOutletContext, useSearchParams } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useOutletContext, useSearchParams } from "react-router";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import { useMockRecords } from "@/features/record/model/useMockRecords";
 import { useMockProposals } from "@/features/proposal/model/useMockProposals";
@@ -29,7 +30,7 @@ export function ProposalListPage() {
   const data = useMockProposals(space);
   const records = useMockRecords(space);
   const spaceChanges = useMockSpaceInfoChanges(space.id);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const [params, setParams] = useSearchParams();
   const status =

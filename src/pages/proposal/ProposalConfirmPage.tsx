@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
-import { useLocation, useNavigate, useOutletContext } from "react-router";
+import { useLocation, useOutletContext } from "react-router";
 import { EmptyState, Notice } from "@/components/feedback";
 import { Badge, Button, TextAction } from "@/components/ui";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -27,7 +28,7 @@ export function ProposalConfirmPage() {
   const draft = readProposalConfirmation(historyState);
   const data = useMockProposals(space);
   const records = useMockRecords(space);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const [state, setState] = useMockScreenState(
     proposalConfirmStates,
@@ -52,7 +53,8 @@ export function ProposalConfirmPage() {
     : draft?.requestId
       ? withReturn(proposalRequestPath(space.id, draft.requestId))
       : withReturn(proposalListPath(space.id));
-  const onReview = () => void navigate(reviewPath, { replace: true });
+  const onReview = () =>
+    void navigate(reviewPath, { replace: true, motion: "back" });
   function decide(decision: "applied" | "rejected") {
     if (!valid) return;
     submit(

@@ -1,4 +1,5 @@
-import { isRouteErrorResponse, Link, useRouteError } from "react-router";
+import { AppLink } from "@/routes/AppLink";
+import { isRouteErrorResponse, useRouteError } from "react-router";
 import { ErrorState } from "@/components/feedback";
 import { PageLayout } from "@/components/layout";
 import { paths } from "@/routes/paths";
@@ -15,13 +16,13 @@ export function RouteErrorPage() {
         reason="load-error"
         onAction={() => window.location.reload()}
       />
-      <Link
+      <AppLink
         to={paths.landing}
         replace
         className="hm-focus-ring rounded-hm-8 p-hm-12 text-center text-hm-text-brand underline"
       >
         시작 화면으로
-      </Link>
+      </AppLink>
     </PageLayout>
   );
 }

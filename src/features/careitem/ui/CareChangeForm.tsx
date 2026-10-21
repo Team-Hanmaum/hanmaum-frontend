@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 import { Badge, Button, MenuRow, TextAction } from "@/components/ui";
 import { BottomSheet, Notice } from "@/components/feedback";
 import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog";
@@ -69,7 +70,7 @@ export function CareChangeForm({
   const [sources, setSources] = useState(false);
   const [state, setState] = useMockScreenState(states, "default");
   const { pending, run } = useMockAction();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const records = useMockRecords(space);
   const { blocker, allowNavigation } = useUnsavedChanges(
     JSON.stringify(draft) !== JSON.stringify(initial),
@@ -80,6 +81,7 @@ export function CareChangeForm({
       item
         ? careItemPath(space.id, item.id)
         : careListPath(space.id, { type: kind }),
+      { motion: "back" },
     );
   const direct = canApplyCareChange(space, draft, item);
   const label = careKindLabels[kind];

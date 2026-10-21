@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+
 import { Button } from "@/components/ui";
 import { careKindLabels } from "@/features/careitem/model/careItemViewTypes";
 import { careListStates } from "@/features/careitem/model/careScreenStates";
@@ -9,7 +10,7 @@ import { newsCreatePath, careCreatePath } from "../paths";
 export function CareListAction({ spaceId }: { spaceId: string }) {
   const { filter } = useCareListFilter();
   const [state] = useMockScreenState(careListStates, "default");
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   if (state === "loading" || state === "error") return null;
   const news = filter.type === "observation" || filter.type === "guidance";
   return (

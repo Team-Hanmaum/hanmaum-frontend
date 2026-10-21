@@ -1,10 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
-import {
-  useNavigate,
-  useOutletContext,
-  useParams,
-  useSearchParams,
-} from "react-router";
+import { useOutletContext, useParams, useSearchParams } from "react-router";
 import { EmptyState, Notice } from "@/components/feedback";
 import { Badge, Button, TextAction } from "@/components/ui";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -31,7 +27,7 @@ export function ProposalRequestPage() {
   const { requestId } = useParams();
   const data = useMockProposals(space);
   const records = useMockRecords(space);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const [params, setParams] = useSearchParams();
   const content = params.get("view") === "content";

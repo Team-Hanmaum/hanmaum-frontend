@@ -1,14 +1,23 @@
-import { useNavigate } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+
 import { ActionBar, Header, PageLayout } from "@/components/layout";
 import { Badge, Comparison } from "@/components/ui";
 import { paths } from "@/routes/paths";
 
 export function LandingPage() {
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const openLogin = () => void navigate(paths.login);
   return (
     <PageLayout
-      header={<Header variant="main" />}
+      header={
+        <Header
+          variant="main"
+          brandAction={{
+            label: "한마음 시작 화면으로",
+            onClick: () => void navigate(paths.landing, { replace: true }),
+          }}
+        />
+      }
       footer={
         <ActionBar
           position="fixed"

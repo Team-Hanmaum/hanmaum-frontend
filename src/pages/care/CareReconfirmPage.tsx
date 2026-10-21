@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useOutletContext, useParams } from "react-router";
 import { EmptyState, Notice } from "@/components/feedback";
 import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog";
 import { Badge, Button, Field, TextAction } from "@/components/ui";
@@ -39,8 +40,9 @@ export function CareReconfirmPage() {
     setVersion(item.version);
   }
   const { pending, run } = useMockAction();
-  const navigate = useNavigate();
-  const back = () => void navigate(careItemPath(space.id, itemId));
+  const navigate = useAppNavigate();
+  const back = () =>
+    void navigate(careItemPath(space.id, itemId), { motion: "back" });
   const dirty = Boolean(evidence || Object.values(fields).some(Boolean));
   const { blocker, allowNavigation } = useUnsavedChanges(dirty);
   const locked = isConfirmedQuestion(item);

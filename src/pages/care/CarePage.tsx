@@ -1,4 +1,5 @@
-import { useNavigate, useOutletContext } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useOutletContext } from "react-router";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import { CareList } from "@/features/careitem/ui/CareList";
 import { careListStates } from "@/features/careitem/model/careScreenStates";
@@ -17,7 +18,7 @@ export function CarePage() {
   const data = useMockProposals(space);
   const { filter, setType, setStatus } = useCareListFilter();
   const [state, setState] = useMockScreenState(careListStates, "default");
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const onProposal = useCareProposalNavigation(space.id);
   const now = useCareNow();
   return (

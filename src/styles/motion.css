@@ -1,0 +1,129 @@
+@layer components {
+  /* 이전 화면은 브라우저의 스냅샷으로 유지한다. React 화면/폼을 복제하지 않는다. */
+  ::view-transition-group(root) {
+    animation-duration: 300ms;
+    animation-timing-function: ease-out;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    mix-blend-mode: normal;
+    animation-duration: 300ms;
+    animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+    animation-fill-mode: both;
+  }
+  html[data-route-motion="forward"]::view-transition-old(root) {
+    animation-name: hm-page-recede;
+  }
+  html[data-route-motion="forward"]::view-transition-new(root) {
+    animation-name: hm-page-enter;
+  }
+  html[data-route-motion="back"]::view-transition-old(root) {
+    animation-name: hm-page-leave;
+    z-index: 2;
+  }
+  html[data-route-motion="back"]::view-transition-new(root) {
+    animation-name: hm-page-return;
+    z-index: 1;
+  }
+  html[data-route-motion="sheet-open"]::view-transition-old(root) {
+    animation-name: hm-fade-out;
+  }
+  html[data-route-motion="sheet-open"]::view-transition-new(root) {
+    animation-name: hm-screen-rise;
+  }
+  html[data-route-motion="sheet-close"]::view-transition-old(root) {
+    animation-name: hm-screen-lower;
+    z-index: 2;
+  }
+  html[data-route-motion="sheet-close"]::view-transition-new(root) {
+    animation-name: hm-fade-in;
+    z-index: 1;
+  }
+  html[data-route-motion="fade"]::view-transition-old(root) {
+    animation: hm-fade-out 120ms ease-out both;
+  }
+  html[data-route-motion="fade"]::view-transition-new(root) {
+    animation: hm-fade-in 120ms ease-out both;
+  }
+  html[data-route-motion="none"]::view-transition-group(root),
+  html[data-route-motion="none"]::view-transition-old(root),
+  html[data-route-motion="none"]::view-transition-new(root) {
+    animation: none;
+  }
+
+  .hm-notice {
+    animation: hm-fade-in 160ms ease-out;
+  }
+  @supports (transition-behavior: allow-discrete) {
+    .hm-notice {
+      animation: none;
+      opacity: 1;
+      transition:
+        opacity 160ms ease-out,
+        display 160ms allow-discrete;
+    }
+    .hm-notice[hidden] {
+      opacity: 0;
+    }
+    @starting-style {
+      .hm-notice {
+        opacity: 0;
+      }
+    }
+  }
+}
+
+@keyframes hm-page-enter {
+  from {
+    transform: translateX(min(100vw, 512px));
+  }
+}
+@keyframes hm-page-leave {
+  to {
+    transform: translateX(min(100vw, 512px));
+  }
+}
+@keyframes hm-page-recede {
+  to {
+    transform: translateX(-6%);
+    opacity: 0.65;
+  }
+}
+@keyframes hm-page-return {
+  from {
+    transform: translateX(-6%);
+    opacity: 0.65;
+  }
+}
+@keyframes hm-screen-rise {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes hm-screen-lower {
+  to {
+    transform: translateY(100%);
+  }
+}
+@keyframes hm-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes hm-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+  .hm-notice {
+    animation: none !important;
+    transition: none !important;
+  }
+}

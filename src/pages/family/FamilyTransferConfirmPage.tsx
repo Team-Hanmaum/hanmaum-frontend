@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useOutletContext, useParams } from "react-router";
 import { ErrorState, Notice } from "@/components/feedback";
 import { Badge, Button, Comparison, TextAction } from "@/components/ui";
 import {
@@ -25,7 +26,7 @@ import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 export function FamilyTransferConfirmPage() {
   const space = useOutletContext<CareSpaceView>();
   const { memberId = "" } = useParams();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn, withdrawing, returnToWithdrawal } = useWithdrawalReturn();
   const onBack = useBackNavigation(withReturn(familyTransferPath(space.id)));
   const [state, setState] = useMockScreenState(familyActionStates, "default");
@@ -38,7 +39,10 @@ export function FamilyTransferConfirmPage() {
   const forbidden =
     space.role !== "owner" || state === "forbidden" || member?.self;
   const toFamily = () =>
-    void navigate(spacePath(space.id, "family"), { replace: true });
+    void navigate(spacePath(space.id, "family"), {
+      replace: true,
+      motion: "back",
+    });
   const recover = withdrawing ? returnToWithdrawal : toFamily;
   const recoveryLabel = withdrawing ? "탈퇴 절차로 돌아가기" : "가족 화면으로";
   const comparison = (

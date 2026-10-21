@@ -1,10 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import {
-  useNavigate,
-  useOutletContext,
-  useParams,
-  useSearchParams,
-} from "react-router";
+import { useOutletContext, useParams, useSearchParams } from "react-router";
 import { EmptyState, Notice } from "@/components/feedback";
 import { Badge, Button, MenuRow, TextAction } from "@/components/ui";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
@@ -35,7 +31,7 @@ export function CareChangeDetailPage() {
   const [ownerPreview, setOwnerPreview] = useState(false);
   const [error, setError] = useState("");
   const { pending, run } = useMockAction();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const actorSpace: CareSpaceView = ownerPreview
     ? {
@@ -75,7 +71,11 @@ export function CareChangeDetailPage() {
       <ProposalPageLayout
         title="처리 결과 확인"
         spaceId={space.id}
-        onBack={() => void navigate(withReturn(careRequestsPath(space.id)))}
+        onBack={() =>
+          void navigate(withReturn(careRequestsPath(space.id)), {
+            motion: "back",
+          })
+        }
         actions={
           <Button
             onClick={() =>
@@ -103,7 +103,11 @@ export function CareChangeDetailPage() {
     <ProposalPageLayout
       title={canDecide ? "요청 검토" : waiting ? "요청 상태" : "처리 결과"}
       spaceId={space.id}
-      onBack={() => void navigate(withReturn(careRequestsPath(space.id)))}
+      onBack={() =>
+        void navigate(withReturn(careRequestsPath(space.id)), {
+          motion: "back",
+        })
+      }
       tabs
       activeTab="care"
       actions={

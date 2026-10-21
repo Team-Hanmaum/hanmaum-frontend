@@ -1,5 +1,6 @@
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 import { Badge, Button, MenuRow, TextAction } from "@/components/ui";
 import { ErrorState, LoadingState, Notice } from "@/components/feedback";
 import { useMockCareSpaces } from "@/features/carespace/model/useMockCareSpaces";
@@ -28,7 +29,7 @@ const states = [
 export function WithdrawalPage() {
   const { spaces } = useMockCareSpaces();
   const account = useMockAccount();
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const [params] = useSearchParams();
   const owned = spaces.filter((space) => space.role === "owner");
   const [state, setState] = useMockScreenState(states, "default");
@@ -39,7 +40,8 @@ export function WithdrawalPage() {
   const complete = () =>
     void navigate(paths.withdrawalComplete, { replace: true });
   const cancel = () => {
-    if (!pending && !unknown) void navigate(paths.account, { replace: true });
+    if (!pending && !unknown)
+      void navigate(paths.account, { replace: true, motion: "back" });
   };
   function submit() {
     setError("");

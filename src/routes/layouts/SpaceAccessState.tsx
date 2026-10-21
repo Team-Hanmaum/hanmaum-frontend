@@ -1,13 +1,22 @@
-import { useNavigate } from "react-router";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+
 import { Header, PageLayout, ActionBar } from "@/components/layout";
 import { Notice } from "@/components/feedback";
 import { MockNotice } from "@/components/feedback/MockNotice";
 import { paths } from "../paths";
 export function SpaceAccessState() {
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   return (
     <PageLayout
-      header={<Header variant="main" />}
+      header={
+        <Header
+          variant="main"
+          brandAction={{
+            label: "한마음 돌봄 공간 선택으로",
+            onClick: () => void navigate(paths.spaces, { replace: true }),
+          }}
+        />
+      }
       notice={<MockNotice message="Mock 참여 상태 · 실제 서버 권한 확인 전" />}
       footer={
         <ActionBar
