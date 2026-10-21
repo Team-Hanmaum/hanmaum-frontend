@@ -38,7 +38,7 @@
       transform: translateY(8px) scale(0.98);
       transition:
         opacity 180ms ease-out,
-        transform 220ms ease-out,
+        transform 300ms ease-out,
         overlay 220ms allow-discrete,
         display 220ms allow-discrete;
     }

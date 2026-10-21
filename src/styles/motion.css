@@ -1,7 +1,7 @@
 @layer components {
   /* 이전 화면은 브라우저의 스냅샷으로 유지한다. React 화면/폼을 복제하지 않는다. */
   ::view-transition-group(root) {
-    animation-duration: 220ms;
+    animation-duration: 300ms;
     animation-timing-function: ease-out;
   }
   ::view-transition-old(root),
