@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { QaToolbar } from "@/components/feedback/QaToolbar";
+import { PwaInstalledBanner } from "@/components/pwa/PwaInstalledBanner";
 
 export type PageLayoutProps = {
   children: ReactNode;
@@ -49,6 +50,7 @@ export function PageLayout({
         <QaToolbar />
         {notice}
         {header}
+        <PwaInstalledBanner />
       </div>
       <main
         tabIndex={-1}

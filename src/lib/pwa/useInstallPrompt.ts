@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import {
   getInstallGuide,
   isInstallDismissed,
-  isStandalone,
+  isInstalledBannerDismissed,
   saveInstallDismissal,
+  saveInstalledBannerDismissal,
 } from "./installEnvironment";
+import { useInstalledPwa } from "./useInstalledPwa";
 
 interface InstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -13,7 +15,10 @@ interface InstallPromptEvent extends Event {
 
 export function useInstallPrompt(autoPrompt: boolean) {
   const [open, setOpen] = useState(false);
-  const [installed, setInstalled] = useState(isStandalone);
+  const { installed, installedInBrowser, checking } = useInstalledPwa();
+  const [bannerDismissed, setBannerDismissed] = useState(
+    isInstalledBannerDismissed,
+  );
   const [dismissed, setDismissed] = useState(isInstallDismissed);
   const [promptEvent, setPromptEvent] = useState<InstallPromptEvent | null>(
     null,
@@ -30,28 +35,22 @@ export function useInstallPrompt(autoPrompt: boolean) {
       event.preventDefault();
       setPromptEvent(event as InstallPromptEvent);
     };
-    const complete = () => {
-      setInstalled(true);
-      setOpen(false);
-      setPromptEvent(null);
-    };
-    const displayMode = window.matchMedia("(display-mode: standalone)");
-    const updateDisplayMode = () => {
-      if (isStandalone()) complete();
-    };
     window.addEventListener("beforeinstallprompt", capturePrompt);
-    window.addEventListener("appinstalled", complete);
-    displayMode.addEventListener("change", updateDisplayMode);
     return () => {
       mounted.current = false;
       window.removeEventListener("beforeinstallprompt", capturePrompt);
-      window.removeEventListener("appinstalled", complete);
-      displayMode.removeEventListener("change", updateDisplayMode);
     };
   }, []);
 
   useEffect(() => {
-    if (!autoPrompt || installed || dismissed || guide === "desktop") return;
+    if (
+      !autoPrompt ||
+      checking ||
+      installed ||
+      dismissed ||
+      guide === "desktop"
+    )
+      return;
     let shown = false;
     let timer = 0;
     const schedule = () => {
@@ -80,7 +79,7 @@ export function useInstallPrompt(autoPrompt: boolean) {
       document.removeEventListener("visibilitychange", schedule);
       document.removeEventListener("close", schedule, true);
     };
-  }, [autoPrompt, installed, dismissed, guide]);
+  }, [autoPrompt, checking, installed, dismissed, guide]);
 
   function dismiss(permanent = false) {
     saveInstallDismissal(permanent);
@@ -96,9 +95,8 @@ export function useInstallPrompt(autoPrompt: boolean) {
     try {
       // 브라우저 설치 창은 사용자가 버튼을 누른 직후에만 호출한다.
       await promptEvent.prompt();
-      const choice = await promptEvent.userChoice;
+      await promptEvent.userChoice;
       if (!mounted.current) return;
-      if (choice.outcome === "accepted") setInstalled(true);
       dismiss();
     } catch {
       if (mounted.current)
@@ -115,8 +113,13 @@ export function useInstallPrompt(autoPrompt: boolean) {
   }
 
   return {
-    open: open && !installed,
+    open: open && !installed && !checking,
     installed,
+    showInstalledBanner: autoPrompt && installedInBrowser && !bannerDismissed,
+    dismissInstalledBanner: () => {
+      saveInstalledBannerDismissal();
+      setBannerDismissed(true);
+    },
     guide,
     busy,
     error,

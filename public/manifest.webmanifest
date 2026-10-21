@@ -9,6 +9,13 @@
   "display": "standalone",
   "background_color": "#f7f8f6",
   "theme_color": "#ffffff",
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "/manifest.webmanifest",
+      "id": "https://hanmaumcare.vercel.app/"
+    }
+  ],
   "icons": [
     {
       "src": "/icons/pwa-192.png",

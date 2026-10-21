@@ -13,7 +13,12 @@ export function PwaInstallProvider({
   const prompt = useInstallPrompt(autoPrompt);
   return (
     <InstallContext
-      value={{ installed: prompt.installed, showInstall: prompt.showInstall }}
+      value={{
+        installed: prompt.installed,
+        showInstall: prompt.showInstall,
+        showInstalledBanner: prompt.showInstalledBanner,
+        dismissInstalledBanner: prompt.dismissInstalledBanner,
+      }}
     >
       {children}
       <PwaInstallSheet {...prompt} />

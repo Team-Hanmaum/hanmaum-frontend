@@ -20,6 +20,23 @@ export function isStandalone() {
 }
 
 export const installDismissKey = "hanmaum:install-dismissed";
+const installedBannerDismissKey = "hanmaum:installed-banner-dismissed";
+
+export function isInstalledBannerDismissed() {
+  try {
+    return sessionStorage.getItem(installedBannerDismissKey) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function saveInstalledBannerDismissal() {
+  try {
+    sessionStorage.setItem(installedBannerDismissKey, "1");
+  } catch {
+    // 저장소가 차단되어도 현재 실행 중에는 닫힌 상태를 유지한다.
+  }
+}
 
 export function isInstallDismissed() {
   try {
