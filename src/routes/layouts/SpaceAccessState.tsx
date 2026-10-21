@@ -8,7 +8,15 @@ export function SpaceAccessState() {
   const navigate = useAppNavigate();
   return (
     <PageLayout
-      header={<Header variant="main" />}
+      header={
+        <Header
+          variant="main"
+          brandAction={{
+            label: "한마음 돌봄 공간 선택으로",
+            onClick: () => void navigate(paths.spaces, { replace: true }),
+          }}
+        />
+      }
       notice={<MockNotice message="Mock 참여 상태 · 실제 서버 권한 확인 전" />}
       footer={
         <ActionBar

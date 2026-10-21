@@ -1,6 +1,6 @@
 import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
-import { Outlet, useMatches, useParams } from "react-router";
+import { Outlet, useLocation, useMatches, useParams } from "react-router";
 import { Header, PageLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
 import { ErrorState } from "@/components/feedback";
@@ -44,6 +44,7 @@ function SpaceHeader({
   onRetry: () => void;
 }) {
   const { spaces } = useMockCareSpaces();
+  const { pathname } = useLocation();
   const navigate = useAppNavigate();
   const { pending, run } = useMockAction();
   const [targetId, setTargetId] = useState<string>();
@@ -64,6 +65,10 @@ function SpaceHeader({
       space={space}
       spaces={spaces}
       switchingId={pending ? targetId : undefined}
+      onHome={() => {
+        const home = spacePath(space.id);
+        if (pathname !== home) void navigate(home);
+      }}
       state={
         failed
           ? "switch-error"
@@ -118,7 +123,15 @@ export function TabLayout() {
   if (!space || !isMockPreviewEnabled)
     return (
       <PageLayout
-        header={<Header variant="main" />}
+        header={
+          <Header
+            variant="main"
+            brandAction={{
+              label: "한마음 돌봄 공간 선택으로",
+              onClick: () => void navigate(paths.spaces),
+            }}
+          />
+        }
         notice={<MockNotice message="실제 공간 조회·권한 확인 연결 전" />}
       >
         <h1 className="text-hm-title-page">돌봄 공간 확인</h1>

@@ -59,7 +59,15 @@ function InvitationPreview({ token }: { token: string }) {
   }
   return (
     <PageLayout
-      header={<Header variant="main" />}
+      header={
+        <Header
+          variant="main"
+          brandAction={{
+            label: "한마음 시작 화면으로",
+            onClick: () => void navigate(paths.landing),
+          }}
+        />
+      }
       notice={
         <MockStateSelect
           message="화면 확인용 · 실제 로그인·가족 참여 없음"

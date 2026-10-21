@@ -341,6 +341,10 @@ export default function ComponentPreviewPage() {
             <div className="min-w-0 rounded-hm-14 border border-hm-border-default">
               <Header
                 variant="main"
+                brandAction={{
+                  label: "한마음 홈으로",
+                  onClick: () => setMessage("로고 홈 이동 클릭 확인"),
+                }}
                 space={{
                   name: "예시 돌봄 공간",
                   onClick: () =>

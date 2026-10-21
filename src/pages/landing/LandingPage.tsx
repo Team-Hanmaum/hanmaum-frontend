@@ -9,7 +9,15 @@ export function LandingPage() {
   const openLogin = () => void navigate(paths.login);
   return (
     <PageLayout
-      header={<Header variant="main" />}
+      header={
+        <Header
+          variant="main"
+          brandAction={{
+            label: "한마음 시작 화면으로",
+            onClick: () => void navigate(paths.landing, { replace: true }),
+          }}
+        />
+      }
       footer={
         <ActionBar
           position="fixed"

@@ -9,6 +9,7 @@ export function CareSpaceMenu({
   spaces,
   state = "default",
   switchingId,
+  onHome,
   onSelect,
   onAllSpaces,
   onRetry,
@@ -17,6 +18,7 @@ export function CareSpaceMenu({
   spaces: CareSpaceView[];
   state?: "default" | "loading" | "error" | "switch-error";
   switchingId?: string;
+  onHome: () => void;
   onSelect: (id: string) => void;
   onAllSpaces: () => void;
   onRetry: () => void;
@@ -45,7 +47,7 @@ export function CareSpaceMenu({
           event.preventDefault();
           setOpen(false);
           root.current
-            ?.querySelector<HTMLButtonElement>("header button")
+            ?.querySelector<HTMLButtonElement>("header button[aria-expanded]")
             ?.focus();
         }
       }}
@@ -59,6 +61,14 @@ export function CareSpaceMenu({
     >
       <Header
         variant="main"
+        brandAction={{
+          label: "한마음 홈으로",
+          disabled: Boolean(switchingId),
+          onClick: () => {
+            setOpen(false);
+            onHome();
+          },
+        }}
         space={{
           name: careSpaceName(space),
           expanded: open,

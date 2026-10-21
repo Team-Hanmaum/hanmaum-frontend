@@ -26,6 +26,7 @@ const states = [
 export function SpaceSelectionPage() {
   const navigate = useAppNavigate();
   const { spaces, currentId, lastExit } = useMockCareSpaces();
+  const currentSpace = spaces.find((space) => space.id === currentId);
   const location = useLocation();
   const exit =
     lastExit?.id ===
@@ -36,7 +37,18 @@ export function SpaceSelectionPage() {
   return (
     <>
       <PageLayout
-        header={<Header variant="main" />}
+        header={
+          <Header
+            variant="main"
+            brandAction={{
+              label: currentSpace ? "한마음 홈으로" : "한마음 시작 화면으로",
+              onClick: () =>
+                void navigate(
+                  currentSpace ? spacePath(currentSpace.id) : paths.landing,
+                ),
+            }}
+          />
+        }
         notice={
           <MockStateSelect
             message="예시 공간 · 실제 참여·조회 없음 · 새로고침 시 초기화"
