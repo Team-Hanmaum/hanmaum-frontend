@@ -42,6 +42,8 @@ export type CareReconfirmation = {
 export type CareItemView = {
   id: string;
   kind: CareItemKind;
+  // 현재 항목이 처음 반영된 시각. 수정·근거 추가 시에도 유지한다.
+  createdAt: number;
   status: CareItemStatus;
   statusChangedAt?: number;
   answer?: { content: string; confirmedBy: string };

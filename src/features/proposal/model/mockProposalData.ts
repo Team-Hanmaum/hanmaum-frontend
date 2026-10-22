@@ -73,6 +73,7 @@ export function getMockProposalData(space: CareSpaceView): ProposalSpaceState {
       {
         id: schedule.targetId,
         kind: "schedule",
+        createdAt: Date.parse("2026-09-27T09:00:00+09:00"),
         title: schedule.title,
         value: schedule.beforeValue,
         meta: "2026년 · 오전 10:00 · 예정",
@@ -81,6 +82,7 @@ export function getMockProposalData(space: CareSpaceView): ProposalSpaceState {
       {
         id: batchSchedule.targetId,
         kind: "schedule",
+        createdAt: Date.parse("2026-09-27T10:00:00+09:00"),
         title: batchSchedule.title,
         value: batchSchedule.beforeValue,
         meta: "2026년 · 오후 2:00 · 예정",
@@ -89,6 +91,7 @@ export function getMockProposalData(space: CareSpaceView): ProposalSpaceState {
       {
         id: task.targetId,
         kind: "task",
+        createdAt: Date.parse("2026-09-27T11:00:00+09:00"),
         title: task.title,
         value: task.beforeValue,
         meta: "미시작",
@@ -97,6 +100,7 @@ export function getMockProposalData(space: CareSpaceView): ProposalSpaceState {
       {
         id: requested.targetId,
         kind: "task",
+        createdAt: Date.parse("2026-09-27T12:00:00+09:00"),
         title: requested.title,
         value: requested.beforeValue,
         meta: "미시작",
