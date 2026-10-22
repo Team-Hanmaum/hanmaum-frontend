@@ -51,6 +51,7 @@ export type NewsCardProps = {
   title: string;
   author: string;
   body: string;
+  previewBody?: boolean;
   status: NewsStatus;
   statusMessage?: string;
   onAction?: () => void;
@@ -62,6 +63,7 @@ export function NewsCard({
   title,
   author,
   body,
+  previewBody = false,
   status,
   statusMessage,
   onAction,
@@ -78,7 +80,11 @@ export function NewsCard({
         {author}
       </p>
       <h3 className="w-full text-hm-heading-section">{title}</h3>
-      <p className="w-full text-hm-body-reading whitespace-pre-wrap">{body}</p>
+      <p
+        className={`w-full text-hm-body-reading whitespace-pre-wrap ${previewBody ? "line-clamp-3" : ""}`}
+      >
+        {body}
+      </p>
       <Badge
         label={presentation.label}
         tone={presentation.tone}

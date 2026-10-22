@@ -54,7 +54,7 @@ export function NewsList({
           <h2 className="text-hm-heading-section">
             {record.author.name} · {formatRecordDate(record.createdAt)}
           </h2>
-          <p className="text-hm-body-default whitespace-pre-wrap">
+          <p className="line-clamp-3 text-hm-body-default whitespace-pre-wrap">
             {record.body}
           </p>
         </article>
@@ -116,6 +116,7 @@ export function NewsList({
                 title={record.title}
                 author={`${record.author.name} · ${formatRecordTime(record.createdAt)}`}
                 body={record.body}
+                previewBody
                 status={record.proposalSummary?.status ?? record.analysisStatus}
                 statusMessage={
                   record.proposalSummary?.message ??
