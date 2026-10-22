@@ -39,6 +39,7 @@ export function applyMockProposals(
     const item: CareItemView = {
       id: proposal.targetId,
       kind: proposal.kind,
+      createdAt: previous?.createdAt ?? createdAt,
       status: previous?.status ?? initialCareStatus(proposal.kind),
       statusChangedAt: previous?.statusChangedAt,
       answer: previous?.answer,

@@ -66,6 +66,7 @@ export function withProposalExamples(
   items.push({
     id: "mock-question-1",
     kind: "question",
+    createdAt: Date.parse("2026-09-28T14:10:00+09:00"),
     status: "unconfirmed",
     title: questionFields.title,
     value: questionFields.content,

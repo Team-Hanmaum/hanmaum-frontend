@@ -30,6 +30,7 @@ export function getMockCareItems(
     return {
       id,
       kind,
+      createdAt: Date.parse("2026-09-22T10:00:00+09:00"),
       status,
       title: value.title || value.content,
       fields: value,
@@ -146,8 +147,12 @@ export function getMockCareItems(
     ...(item.status === "completed"
       ? { statusChangedAt: Date.parse("2026-09-30T13:00:00+09:00") }
       : {}),
+    ...(item.status === "cancelled"
+      ? { statusChangedAt: Date.parse("2026-09-30T14:00:00+09:00") }
+      : {}),
     ...(item.status === "confirmed"
       ? {
+          statusChangedAt: Date.parse("2026-09-30T15:00:00+09:00"),
           answer: {
             content: "센터는 일요일에 운영하지 않아요.",
             confirmedBy: owner.name,

@@ -58,6 +58,7 @@ function applyChange(
     ...item,
     id: draft.itemId,
     kind: draft.kind,
+    createdAt: item?.createdAt ?? now,
     fields,
     status,
     title: fields.title || fields.content,
