@@ -1,14 +1,12 @@
+import { useRef } from "react";
 import { EmptyState, ErrorState, Notice } from "@/components/feedback";
 import { SectionHeader } from "@/components/layout";
-import { MenuRow, Spinner } from "@/components/ui";
-import {
-  formatRecordDate,
-  formatRecordTime,
-  groupRecordsByDay,
-} from "../model/recordDates";
+import { Button, MenuRow, Spinner } from "@/components/ui";
+import { formatRecordTime, groupRecordsByDay } from "../model/recordDates";
 import type { RecordView } from "../model/recordViewTypes";
 import type { NewsListState } from "../model/newsScreenStates";
 import { NewsCard } from "./NewsCard";
+import { sortNewsRecords } from "../model/newsPagination";
 
 export function NewsList({
   records,
@@ -18,6 +16,8 @@ export function NewsList({
   onReview,
   onRetry,
   pendingCount,
+  visibleCount,
+  onMore,
 }: {
   records: readonly RecordView[];
   state: NewsListState;
@@ -26,7 +26,17 @@ export function NewsList({
   onReview: () => void;
   onRetry: () => void;
   pendingCount: number;
+  visibleCount: number;
+  onMore: () => void;
 }) {
+  const nextFocus = useRef<string | null>(null);
+  const sorted = sortNewsRecords(records);
+  const visible = sorted.slice(0, visibleCount);
+  const hasMore = visible.length < sorted.length;
+  function showMore() {
+    nextFocus.current = sorted[visible.length]?.id ?? null;
+    onMore();
+  }
   if (state === "loading")
     return (
       <>
@@ -45,37 +55,6 @@ export function NewsList({
       </>
     );
   const empty = state === "empty" || records.length === 0;
-  if (state === "more-error" && records[0]) {
-    const record = records[0];
-    return (
-      <>
-        <h1 className="text-hm-title-page">소식</h1>
-        <article className="flex flex-col gap-hm-16 rounded-hm-16 bg-hm-bg-surface p-hm-20 wrap-anywhere">
-          <h2 className="text-hm-heading-section">
-            {record.author.name} · {formatRecordDate(record.createdAt)}
-          </h2>
-          <p className="text-hm-body-default whitespace-pre-wrap">
-            {record.body}
-          </p>
-        </article>
-        <MenuRow
-          icon="news-brand"
-          title="소식 자세히 보기"
-          onClick={() => onOpen(record.id)}
-        />
-        <Notice
-          tone="neutral"
-          title="나머지 소식을 불러오지 못했어요"
-          body="지금 보이는 소식은 계속 확인할 수 있어요."
-        />
-        <MenuRow
-          icon="refresh"
-          title="나머지 소식 다시 불러오기"
-          onClick={onRetry}
-        />
-      </>
-    );
-  }
   return (
     <>
       <h1 className="text-hm-title-page">가족 소식</h1>
@@ -103,7 +82,7 @@ export function NewsList({
           action={{ label: "첫 소식 남기기", onClick: onCreate }}
         />
       ) : (
-        groupRecordsByDay(records).map((group) => (
+        groupRecordsByDay(visible).map((group) => (
           <section
             key={group.id}
             className="flex flex-col gap-hm-24"
@@ -111,24 +90,71 @@ export function NewsList({
           >
             <SectionHeader title={group.label} />
             {group.records.map((record) => (
-              <NewsCard
+              <div
                 key={record.id}
-                title={record.title}
-                author={`${record.author.name} · ${formatRecordTime(record.createdAt)}`}
-                body={record.body}
-                status={record.proposalSummary?.status ?? record.analysisStatus}
-                statusMessage={
-                  record.proposalSummary?.message ??
-                  (record.analysisStatus === "review"
-                    ? "변경 제안 1건을 확인해 주세요."
-                    : undefined)
-                }
-                actionLabel="소식 자세히 보기"
-                onAction={() => onOpen(record.id)}
-              />
+                role="group"
+                tabIndex={-1}
+                aria-label={record.title}
+                ref={(element) => {
+                  if (element && nextFocus.current === record.id) {
+                    nextFocus.current = null;
+                    element.focus({ preventScroll: true });
+                  }
+                }}
+              >
+                <NewsCard
+                  title={record.title}
+                  author={`${record.author.name} · ${formatRecordTime(record.createdAt)}`}
+                  body={record.body}
+                  previewBody
+                  status={
+                    record.proposalSummary?.status ?? record.analysisStatus
+                  }
+                  statusMessage={
+                    record.proposalSummary?.message ??
+                    (record.analysisStatus === "review"
+                      ? "변경 제안 1건을 확인해 주세요."
+                      : undefined)
+                  }
+                  actionLabel="소식 자세히 보기"
+                  onAction={() => onOpen(record.id)}
+                />
+              </div>
             ))}
           </section>
         ))
+      )}
+      {!empty && state !== "error" && (
+        <div className="flex flex-col gap-hm-12">
+          <p
+            role="status"
+            className="text-center text-hm-body-small text-hm-text-secondary"
+          >
+            전체 {records.length}건 중 {visible.length}건
+          </p>
+          {state === "more-error" ? (
+            <>
+              <Notice
+                tone="neutral"
+                title="나머지 소식을 불러오지 못했어요"
+                body="지금 보이는 소식은 계속 확인할 수 있어요."
+              />
+              <Button
+                variant="secondary"
+                onClick={showMore}
+              >
+                나머지 소식 다시 불러오기
+              </Button>
+            </>
+          ) : hasMore ? (
+            <Button
+              variant="secondary"
+              onClick={showMore}
+            >
+              이전 소식 더 보기
+            </Button>
+          ) : null}
+        </div>
       )}
     </>
   );

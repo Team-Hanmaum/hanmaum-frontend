@@ -7,6 +7,7 @@
   ::view-transition-old(root),
   ::view-transition-new(root) {
     mix-blend-mode: normal;
+    opacity: 1;
     animation-duration: 300ms;
     animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
     animation-fill-mode: both;
@@ -26,7 +27,7 @@
     z-index: 1;
   }
   html[data-route-motion="sheet-open"]::view-transition-old(root) {
-    animation-name: hm-fade-out;
+    animation: none;
   }
   html[data-route-motion="sheet-open"]::view-transition-new(root) {
     animation-name: hm-screen-rise;
@@ -36,14 +37,20 @@
     z-index: 2;
   }
   html[data-route-motion="sheet-close"]::view-transition-new(root) {
-    animation-name: hm-fade-in;
+    animation: none;
     z-index: 1;
   }
+  html[data-route-motion="fade"]::view-transition-group(root) {
+    animation-duration: 120ms;
+  }
+  /* 두 스냅샷을 동시에 투명하게 만들면 중간에 바탕이 비쳐 깜빡인다. */
   html[data-route-motion="fade"]::view-transition-old(root) {
-    animation: hm-fade-out 120ms ease-out both;
+    animation: none;
+    z-index: 1;
   }
   html[data-route-motion="fade"]::view-transition-new(root) {
     animation: hm-fade-in 120ms ease-out both;
+    z-index: 2;
   }
   html[data-route-motion="none"]::view-transition-group(root),
   html[data-route-motion="none"]::view-transition-old(root),
@@ -86,13 +93,11 @@
 @keyframes hm-page-recede {
   to {
     transform: translateX(-6%);
-    opacity: 0.65;
   }
 }
 @keyframes hm-page-return {
   from {
     transform: translateX(-6%);
-    opacity: 0.65;
   }
 }
 @keyframes hm-screen-rise {
@@ -107,11 +112,6 @@
 }
 @keyframes hm-fade-in {
   from {
-    opacity: 0;
-  }
-}
-@keyframes hm-fade-out {
-  to {
     opacity: 0;
   }
 }

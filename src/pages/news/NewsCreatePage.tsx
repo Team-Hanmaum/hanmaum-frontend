@@ -2,6 +2,7 @@ import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useOutletContext } from "react-router";
 import { ActionBar, DetailLayout } from "@/components/layout";
 import { MockStateSelect } from "@/components/feedback/MockStateSelect";
+import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import { useNewsComposer } from "@/features/record/model/useNewsComposer";
 import { newsCreateStates } from "@/features/record/model/newsScreenStates";
@@ -16,12 +17,21 @@ export function NewsCreatePage() {
   const navigate = useAppNavigate();
   const onBack = useBackNavigation(spacePath(space.id, "news"));
   const [state, setState] = useMockScreenState(newsCreateStates, "default");
-  const { body, changeBody, error, pending, canSubmit, submit } =
-    useNewsComposer({
-      space,
-      onCreated: (id) =>
-        void navigate(newsDetailPath(space.id, id), { replace: true }),
-    });
+  const {
+    body,
+    changeBody,
+    error,
+    failed,
+    resetFailure,
+    blocker,
+    pending,
+    canSubmit,
+    submit,
+  } = useNewsComposer({
+    space,
+    onCreated: (id) =>
+      void navigate(newsDetailPath(space.id, id), { replace: true }),
+  });
   return (
     <DetailLayout
       title="소식 남기기"
@@ -31,14 +41,18 @@ export function NewsCreatePage() {
           message="작성 UI 예시 · 실제 저장·분석 없음 · 새로고침 시 초기화"
           value={state}
           options={newsCreateStates}
-          onChange={setState}
+          onChange={(value) => {
+            resetFailure();
+            setState(value);
+          }}
         />
       }
       footer={
         <ActionBar
           position="fixed"
           primary={{
-            label: state === "error" ? "다시 등록하기" : "소식 등록하기",
+            label:
+              failed || state === "error" ? "다시 등록하기" : "소식 등록하기",
             type: "submit",
             form: "news-form",
             disabled: !canSubmit,
@@ -53,10 +67,19 @@ export function NewsCreatePage() {
         space={space}
         body={body}
         onChange={changeBody}
-        onSubmit={submit}
+        onSubmit={() => submit(state === "error" && !failed)}
         error={error}
-        failed={state === "error"}
+        failed={failed || state === "error"}
         disabled={pending || !isMockPreviewEnabled}
+      />
+      <UnsavedChangesDialog
+        open={blocker.state === "blocked"}
+        onStay={() => blocker.reset?.()}
+        onLeave={() => blocker.proceed?.()}
+        title="작성 중인 소식에서 나갈까요?"
+        body="아직 등록하지 않은 내용은 사라져요."
+        confirmLabel="작성하지 않고 나가기"
+        cancelLabel="계속 작성하기"
       />
     </DetailLayout>
   );
