@@ -10,6 +10,7 @@ import {
   getRecordsWithProposals,
 } from "@/features/proposal/model/proposalSelectors";
 import { useMockScreenState } from "@/routes/useMockScreenState";
+import { useNewsListPagination } from "@/routes/useNewsListPagination";
 import {
   newsCreatePath,
   newsDetailPath,
@@ -27,6 +28,7 @@ export function NewsPage() {
   const space = useOutletContext<CareSpaceView>();
   const navigate = useAppNavigate();
   const records = useMockRecords(space);
+  const { visibleCount, showMore } = useNewsListPagination(records.length);
   const proposals = useMockProposals(space);
   const spaceChanges = useMockSpaceInfoChanges(space.id);
   const [state, setState] = useMockScreenState(newsListStates, "default");
@@ -39,6 +41,8 @@ export function NewsPage() {
       )}
       <NewsList
         records={getRecordsWithProposals(records, proposals)}
+        visibleCount={visibleCount}
+        onMore={showMore}
         pendingCount={
           getPendingProposalCount(proposals, space) +
           pendingSpaceInfoCount(spaceChanges, space)
