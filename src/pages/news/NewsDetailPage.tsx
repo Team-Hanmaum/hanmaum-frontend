@@ -1,5 +1,5 @@
 import { useAppNavigate } from "@/routes/useAppNavigate";
-import { useOutletContext, useParams } from "react-router";
+import { useOutletContext, useParams, useSearchParams } from "react-router";
 import { DetailLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
 import { ErrorState } from "@/components/feedback";
@@ -24,6 +24,10 @@ import {
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
+import {
+  newsPageSize,
+  readNewsVisibleCount,
+} from "@/features/record/model/newsPagination";
 
 export function NewsDetailPage() {
   const { withdrawing, withReturn, returnToWithdrawal } = useWithdrawalReturn();
@@ -38,7 +42,15 @@ export function NewsDetailPage() {
     (item) => item.id === recordId,
   );
   const navigate = useAppNavigate();
-  const listPath = withReturn(spacePath(space.id, "news"));
+  const [params] = useSearchParams();
+  const visibleCount = readNewsVisibleCount(
+    params.get("shown"),
+    records.length,
+  );
+  const listPath = withReturn(
+    spacePath(space.id, "news") +
+      (visibleCount > newsPageSize ? `?shown=${visibleCount}` : ""),
+  );
   const onBack = useBackNavigation(listPath);
   const options = record?.proposal
     ? newsDetailStates
@@ -54,7 +66,7 @@ export function NewsDetailPage() {
   const hasProposal = Boolean(record?.proposalSummary);
   const hasSecondary =
     hasProposal || status === "review" || status === "failed";
-  const onList = () => void navigate(listPath);
+  const onList = () => void navigate(listPath, { motion: "back" });
   function onProposals() {
     const related = proposals.proposals.filter(
       (item) => item.recordId === recordId,

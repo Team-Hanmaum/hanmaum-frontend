@@ -11,6 +11,7 @@ import {
 } from "@/features/proposal/model/proposalSelectors";
 import { useMockScreenState } from "@/routes/useMockScreenState";
 import { useNewsListPagination } from "@/routes/useNewsListPagination";
+import { newsPageSize } from "@/features/record/model/newsPagination";
 import {
   newsCreatePath,
   newsDetailPath,
@@ -49,7 +50,16 @@ export function NewsPage() {
         }
         state={state}
         onCreate={() => void navigate(newsCreatePath(space.id))}
-        onOpen={(id) => void navigate(withReturn(newsDetailPath(space.id, id)))}
+        onOpen={(id) => {
+          const detail = newsDetailPath(space.id, id);
+          void navigate(
+            withReturn(
+              visibleCount > newsPageSize
+                ? `${detail}?shown=${visibleCount}`
+                : detail,
+            ),
+          );
+        }}
         onReview={() => void navigate(withReturn(proposalListPath(space.id)))}
         onRetry={() => setState("default")}
       />

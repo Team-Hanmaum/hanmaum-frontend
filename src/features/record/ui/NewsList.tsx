@@ -92,6 +92,7 @@ export function NewsList({
             {group.records.map((record) => (
               <div
                 key={record.id}
+                role="group"
                 tabIndex={-1}
                 aria-label={record.title}
                 ref={(element) => {
