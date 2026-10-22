@@ -2,6 +2,7 @@ import { SectionHeader } from "@/components/layout";
 import { Button } from "@/components/ui";
 import { FamilyAvatar, FamilyMember } from "@/features/carespace/ui";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
+import { homePreviewLimits } from "../model/homePreviewLimits";
 
 export function HomeFamilySection({
   members,
@@ -31,7 +32,7 @@ export function HomeFamilySection({
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-hm-12 rounded-hm-16 bg-hm-bg-surface p-hm-16">
-          {members.slice(0, 3).map((member) => (
+          {members.slice(0, homePreviewLimits.family).map((member) => (
             <FamilyAvatar
               key={member.id}
               name={member.name}

@@ -207,7 +207,7 @@ export function HomeContent({
           </section>
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
-              title={`남은 할 일 ${data.tasks.length}`}
+              title={`남은 할 일 ${data.totalCounts.tasks}`}
               action={{
                 label: "모두 보기",
                 onClick: () => onCare({ type: "task", status: "remaining" }),
@@ -232,7 +232,7 @@ export function HomeContent({
           </section>
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
-              title={`미확인 질문 ${data.questions.length}`}
+              title={`미확인 질문 ${data.totalCounts.questions}`}
               action={{
                 label: "모두 보기",
                 onClick: () =>
