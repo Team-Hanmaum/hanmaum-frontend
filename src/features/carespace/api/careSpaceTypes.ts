@@ -35,7 +35,9 @@ export function isCareSpaceSummary(value: unknown): value is CareSpaceSummary {
     typeof value.subjectLabel === "string" &&
     typeof value.membershipId === "string" &&
     (value.role === "OWNER" || value.role === "MEMBER") &&
-    typeof value.memberCount === "number"
+    // 인원수는 소유자·본인을 포함한 현재 참여자 수라 1 이상의 정수다.
+    Number.isInteger(value.memberCount) &&
+    (value.memberCount as number) >= 1
   );
 }
 
