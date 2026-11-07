@@ -14,7 +14,7 @@ pnpm dev
 - `/`: 최신 Figma `HM-ON-A01` 랜딩 화면. 시작하기·이미 계정이 있어요 → `/login`.
 - `/login`: 최신 Figma `HM-ON-A02` 로그인 대표 화면. QA 모드의 상단 Mock 안내는 확인용 UI이며 실제 인증·계정 생성은 발생하지 않는다.
 - `/_dev/components`: 개발 모드 전용 공통 컴포넌트 확인 화면. 기존 `/?preview=components` 주소도 이 화면으로 이동한다.
-- `/spaces`: 참여 공간 선택 화면. 예시 공간과 현재 실행 중 만든 Mock 공간의 목록·역할·인원 표시.
+- `/spaces`: 참여 공간 선택 화면. 예시 공간과 현재 실행 중 만든 Mock 공간의 목록·역할·인원 표시. Mock 미리보기가 꺼져 있으면 `GET /api/spaces`의 참여 공간 목록을 표시하고, `/spaces/new`는 `POST /api/spaces`로 공간을 만든 뒤 해당 공간으로 이동한다. 생성 요청 ID는 같은 호칭의 재시도 동안 유지한다.
 - `/spaces/:careSpaceId/home`: 일반·빈 홈, 생성·참여 직후, 로딩·오류와 공간 전환 UI. 최근 소식은 소식 목록과 같은 Mock 저장소 사용.
 - `/spaces/:careSpaceId/news`: 날짜별 소식 목록과 빈 상태·로딩·전체/추가 조회 오류.
 - `/spaces/:careSpaceId/news/new`: 소식 작성·공백 입력 방지·등록 중·등록 실패 예시. 등록 후 해당 소식의 상세 화면으로 이동.
