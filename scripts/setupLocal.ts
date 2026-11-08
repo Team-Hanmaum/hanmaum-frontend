@@ -7,11 +7,9 @@ import {
   closeSync,
   copyFileSync,
   existsSync,
-  mkdirSync,
   openSync,
   readFileSync,
   readdirSync,
-  writeFileSync,
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,8 +18,11 @@ import {
   checkDevelopmentEnv,
   planHostsEntry,
   readLocalCertificate,
-  updateDevelopmentEnv,
 } from "./localEnvironment.ts";
+import {
+  acquireLocalSetupLock,
+  writeDevelopmentEnv,
+} from "./localSetupFiles.ts";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const windows = process.platform === "win32";
@@ -36,13 +37,13 @@ const installation = windows
   ? "winget install --id FiloSottile.mkcert --exact --source winget"
   : process.platform === "darwin"
     ? "brew install mkcert (Firefox 사용 시 brew install nss)"
-    : "README의 Linux mkcert·NSS 설치 안내";
+    : "README의 Linux mkcert 설치 안내";
 
 function run(command: string, args: string[]) {
   const result = spawnSync(command, args, {
     stdio: "inherit",
     windowsHide: true,
-    // Browser certificates only; do not modify an unrelated JDK trust store.
+    // mkcert skips unavailable NSS tools with a warning. Never include Java.
     env: {
       ...process.env,
       TRUST_STORES: windows ? "system" : "system,nss",
@@ -161,12 +162,20 @@ async function main() {
       );
     }
   }
+  const release = acquireLocalSetupLock(certDirectory);
+  try {
+    await configureLocal(addition);
+  } finally {
+    release();
+  }
+}
+
+async function configureLocal(addition: string) {
   console.log(
     "이 PC에 mkcert 개발 CA를 신뢰하도록 설치하고, 로컬 도메인과 개발 전용 환경 파일을 설정합니다.",
   );
   console.log(".certs의 개인 키 및 mkcert의 rootCA-key.pem은 공유하지 마세요.");
   run(mkcertCommand, ["-install"]);
-  mkdirSync(certDirectory, { recursive: true, mode: 0o700 });
 
   const caRoot = spawnSync(mkcertCommand, ["-CAROOT"], {
     encoding: "utf8",
@@ -218,13 +227,7 @@ async function main() {
     }
   }
   await checkDns();
-  const previous = readEnv();
-  const next = updateDevelopmentEnv(previous);
-  if (previous !== next) {
-    if (existsSync(envPath))
-      copyFileSync(envPath, join(certDirectory, `env.before-${Date.now()}`));
-    writeFileSync(envPath, next, { mode: 0o600 });
-  }
+  writeDevelopmentEnv(envPath, certDirectory);
   console.log(`완료: pnpm dev → ${localDevelopment.origin}`);
   console.log(
     "브라우저를 재시작하세요. 실제 로그인은 BE의 개발 Origin·OAuth 복귀 지원 반영 후 확인합니다.",

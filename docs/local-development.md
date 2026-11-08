@@ -50,14 +50,18 @@ pnpm setup:local
 
 ### Linux
 
-배포판에 맞는 mkcert와 NSS 도구가 필요하다. Ubuntu/Debian의 설치 예시:
+배포판에 맞는 mkcert가 필요하다. Ubuntu/Debian의 설치 예시:
 
 ```sh
-sudo apt install mkcert libnss3-tools
+sudo apt install mkcert
+# Firefox 등 NSS 저장소를 사용하는 브라우저를 위한 선택 설치
+sudo apt install libnss3-tools
 pnpm setup:local
 ```
 
 패키지가 제공되지 않는 배포판은 [mkcert 공식 Linux 안내](https://github.com/FiloSottile/mkcert#linux)를 따른다. macOS와 동일하게 전체 스크립트에 sudo를 붙이지 않는다. WSL에서는 Windows 브라우저와 Linux의 hosts·인증서 저장소가 다르므로 이 절차가 자동 공유되지 않는다. Windows 브라우저로 개발하는 팀원은 Windows 환경에서 설정·실행하는 것을 기준으로 한다.
+
+macOS·Linux에서 NSS 도구가 없으면 mkcert는 NSS 설치를 건너뛰고 시스템 인증서 저장소 설정을 진행한다. NSS 저장소가 필요한 브라우저에서 신뢰 오류가 나면 위 선택 패키지를 설치하고 `pnpm setup:local`을 다시 실행한다. NSS 도구가 설치된 상태에서 발생하는 실제 설치 오류는 숨기지 않는다.
 
 ## 스크립트가 설정하는 항목
 
@@ -72,7 +76,7 @@ pnpm setup:local
    127.0.0.1 local.hanmaum.site # Hanmaum local FE
    ```
 
-5. `.env.development.local`의 아래 네 값을 설정. 다른 키는 보존하고 기존 파일이 변경되면 `.certs/env.before-*`로 백업.
+5. `.env.development.local`의 아래 네 값을 설정. 다른 키는 보존하고 기존 파일이 변경되면 `.certs/env.before-*`로 백업. 같은 폴더의 임시 파일에 작성·동기화를 마친 뒤 rename으로 교체하므로 작성 중 실패해도 기존 파일을 먼저 비우지 않음. 교체 직전 다른 편집이 감지되면 최신 내용으로 다시 병합하고, 변경이 계속되면 중단.
 
    ```dotenv
    HANMAUM_LOCAL_HTTPS=true
@@ -82,6 +86,10 @@ pnpm setup:local
    ```
 
 hosts 수정 전 백업도 `.certs/hosts.before-*`에 저장한다. 원본 전체 복원은 그 이후 다른 프로그램이 추가한 항목을 지울 수 있으므로 자동으로 수행하지 않는다. 도중 실패하면 출력된 문제를 해결한 뒤 같은 명령을 다시 실행한다.
+
+같은 체크아웃에서는 `.certs/setup.lock`으로 설정을 한 번에 하나만 실행한다. 인증서·개인 키 발급과 환경 파일 갱신이 끝날 때까지 잠금을 유지하며, 두 번째 실행은 파일을 덮어쓰지 않고 중단한다. `--check`는 잠금을 생성하지 않는다.
+
+**setup.lock 복구:** 정상 완료나 오류 종료 시 잠금은 해제된다. 강제 종료·재부팅 후 잠금이 남았다면 먼저 실행 중인 `pnpm setup:local` 및 mkcert 프로세스가 없는지 확인한다. 잠금 파일의 숫자는 설정 Node 프로세스의 PID다. 관련 프로세스가 모두 종료된 것을 확인한 뒤 `.certs/setup.lock`만 삭제하고 재실행한다. `.env.setup-*.local` 임시 파일이 남았다면 같은 확인 후 삭제할 수 있다. 설정 중에는 환경 파일을 동시에 편집하지 않는다. 잠금은 설정 스크립트끼리만 공유되며 외부 편집기를 잠그지는 않는다.
 
 `.certs/`와 `*.local`은 Git에서 제외된다. 인증서 개인 키, mkcert의 `rootCA-key.pem`, 개인 환경 파일을 팀원에게 전달하거나 커밋하지 않는다. 각 PC에서 자체 인증서를 만든다. 기존 `pnpm install`의 Husky 설정은 유지한다.
 
