@@ -53,6 +53,8 @@ Axios와 TanStack Query 기반을 사용한다. `.env.example`은 로컬 BE 연�
 
 공통 응답은 최신 BE의 `success/code/message/data/errors/timestamp` 규격을 따른다. 도메인 API 함수는 `features/{domain}/api/`, 조회·변경 훅과 캐시 키는 `model/`에 둔다. 내 정보·로그아웃·세션 가드를 연결했으며 로그인 상태는 `useSession`에서 공통 관리한다. 로그인 성공 복귀 URL은 BE에서도 `/auth/callback`으로 설정해야 한다. [설정·호출 예시·CSRF·오류·캐시 규칙](src/lib/api/README.md) 참조.
 
+도메인 `api/` 안에서는 같은 기능 접두사의 `*Types.ts`(DTO), `*Validators.ts`(응답 검증), `*Api.ts`(요청 함수)로 분리한다. Query 훅·키·화면용 변환은 `model/`에서 관리한다. 신규 연동 시 [API 파일 규칙](AGENTS.md#api-파일-규칙)을 따른다.
+
 ## 파일·폴더 이름
 
 애플리케이션 소스와 직접 관리하는 자산에는 다음 규칙을 적용한다.

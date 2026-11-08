@@ -24,7 +24,11 @@ VITE_ENABLE_MOCK_PREVIEW=false
 | `lib/env.ts`                               | API Origin 검증                                      |
 | `lib/api/httpClient.ts`                    | credentials, 15초 타임아웃, `/api/` 경로 제한        |
 | `lib/api/apiClient.ts`                     | 공통 응답·204·변경 요청 CSRF 처리                    |
-| `lib/api/apiTypes.ts`, `apiError.ts`       | 공통 계약과 오류 정규화                              |
+| `lib/api/apiTypes.ts`                      | 공통 응답·요청 옵션·오류·CSRF 타입                   |
+| `lib/api/apiValidators.ts`                 | 공통 응답과 CSRF 응답의 런타임 검증                  |
+| `lib/api/responseValidators.ts`            | 객체·문자열·건수·시각의 공용 검증 함수               |
+| `lib/api/responseData.ts`                  | 공통 요청 후 도메인 검증을 거쳐 data 반환            |
+| `lib/api/apiError.ts`                      | 오류 객체와 오류 정규화                              |
 | `lib/api/csrf.ts`                          | CSRF 발급 공유·메모리 보관·초기화                    |
 | `lib/api/apiSession.ts`                    | 요청 세대·취소·401 통지. 화면 이동에는 의존하지 않음 |
 | `features/auth/model/sessionController.ts` | 세션 확인·만료·계정 변경·로그아웃의 단일 상태 관리   |
@@ -35,14 +39,54 @@ VITE_ENABLE_MOCK_PREVIEW=false
 
 공통 lib는 도메인·페이지·라우터를 import하지 않는다. 도메인 요청은 `@/lib/api`를 사용하며 httpClient 직접 호출로 CSRF·응답 처리를 우회하지 않는다. 로그인 상태는 `useSession`, 내 정보의 독립 조회는 `useMe`, 로그아웃은 세션 컨트롤러에 연결된 `useLogout`을 사용한다.
 
+## 도메인 API 파일 구성
+
+같은 기능의 타입·검증·요청은 동일한 접두사의 파일로 구분한다. 현재 공간 목록/생성은 `careSpace*`, 공간 상세/구성원은 `spaceDetail*`, 홈 현황판은 `dashboard*`, 소식 조회는 `recordRead*`, 내 정보는 `user*`로 구성한다.
+
+```text
+features/carespace/
+├─ api/
+│  ├─ careSpaceTypes.ts        # 요청·응답 DTO
+│  ├─ careSpaceValidators.ts   # 응답 data의 순수 검증 함수
+│  ├─ careSpaceApi.ts          # 요청과 검증 호출
+│  ├─ spaceDetailTypes.ts
+│  ├─ spaceDetailValidators.ts
+│  └─ spaceDetailApi.ts
+└─ model/                     # Query 키·훅·화면용 변환
+```
+
+- Types는 type/interface만 정의하고 소비 파일은 `import type`으로 직접 참조한다. Api에서 타입을 다시 export하지 않는다.
+- Validators는 Types와 공용 검증 함수를 사용하며 네트워크 요청, React 상태, 캐시를 다루지 않는다. 검증 결과는 형식의 유효성이지 실제 업무 내용의 정확성을 보장하는 것은 아니다.
+- Api는 경로·메서드·요청 값·AbortSignal을 전달하고 검증을 통과한 결과를 반환한다. 요청 공간과 응답 공간의 ID 비교도 유지한다.
+- DTO를 UI 모델로 바꾸는 작업과 Query 캐시 관리는 model에 둔다. 화면에서는 훅과 변환 결과를 사용한다.
+- 204 로그아웃처럼 별도 데이터 타입·검증이 없는 기능은 빈 파일을 만들지 않는다. [저장소 API 파일 규칙](../../../AGENTS.md#api-파일-규칙)을 함께 따른다.
+
 ## 응답과 오류
 
 업무 응답은 `success/code/message/data/errors/timestamp` 여섯 필드다. 실패 data는 null, errors는 `{field, reason}[]`다. `apiClient.request<T>`는 `{status, body}`를 반환하며 도메인 함수가 body.data의 런타임 형태도 확인한다. 제네릭 타입만으로 서버 데이터가 검증되지는 않는다.
 
 ```ts
-const result = await apiClient.request<MyProfile>("/api/users/me", { signal });
-// result.body.data의 도메인 형태를 확인한 뒤 반환
+// careSpaceApi.ts: 공통 응답 검사 후 data를 도메인 규격으로 검사한다.
+import { apiClient, ApiError } from "@/lib/api";
+import type { CareSpaceSummary } from "./careSpaceTypes";
+import { isCareSpaceListResponse } from "./careSpaceValidators";
+
+export async function getCareSpaces(
+  signal?: AbortSignal,
+): Promise<CareSpaceSummary[]> {
+  const result = await apiClient.request<unknown>("/api/spaces", { signal });
+  if (!isCareSpaceListResponse(result.body.data)) {
+    throw new ApiError({
+      kind: "invalid-response",
+      status: result.status,
+      message: "참여 공간 목록 응답 형식을 확인할 수 없습니다.",
+    });
+  }
+  return result.body.data.items;
+}
 ```
+
+`readApiData(path, validator, options)`는 위 요청·data 검증을 재사용하는 공통 헬퍼다. 검증 실패 시 일반 응답 오류 문구를 사용한다. 도메인별 오류 문구나 HTTP 상태·메타데이터가 필요하면 위 예시처럼 `apiClient.request<unknown>`과 검증 함수를 직접 조합한다. 타입·검증·요청의 파일 분리 규칙은 두 방식 모두 동일하다.
 
 - 204는 `requestEmpty`로 처리한다. 로그아웃은 `POST /api/auth/logout`의 본문 없는 204다.
 - CSRF는 예외적으로 `GET /api/auth/csrf`의 원시 `{headerName, token}`을 읽는다.

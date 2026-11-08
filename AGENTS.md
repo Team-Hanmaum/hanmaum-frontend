@@ -30,6 +30,18 @@
 - 폴더는 소문자 kebab-case, 페이지 파일은 PascalCase와 Page 접미사를 사용한다. UI·훅·상태 파일이 필요해지는 시점에 해당 폴더를 만들고 빈 폴더를 미리 늘리지 않는다.
 - 폴더 경로와 URL은 별개다. URL은 routes에서 명시적으로 등록하며 폴더 이동만으로 기존 URL이나 화면 동작을 바꾸지 않는다.
 
+### API 파일 규칙
+
+- 도메인 API는 `features/{domain}/api/`에 두고 같은 기능 접두사로 `*Types.ts`, `*Validators.ts`, `*Api.ts`를 구분한다. 예: `careSpaceTypes.ts`, `careSpaceValidators.ts`, `careSpaceApi.ts`. 한 도메인이 커지면 `spaceDetail*`, `recordRead*`처럼 기능 단위로 나누며 전역 api 폴더로 모으지 않는다.
+- `*Types.ts`에는 요청·응답 DTO의 type/interface만 둔다. HTTP 호출, 런타임 검증, 화면 상태·표시용 타입을 섞지 않는다. 타입은 해당 Types 파일에서 `import type`으로 가져오며 Api 파일에서 다시 export하지 않는다.
+- `*Validators.ts`에는 서버 응답을 `unknown`으로 받아 구조·필드·허용 값·nullable 여부 등을 검사하는 순수 함수를 둔다. 네트워크·캐시·화면 이동에 의존하지 않으며 값을 보정하거나 예시 데이터로 대체하지 않는다. 같은 도메인의 검증 함수는 재사용하고 범용 검증은 `lib/api/responseValidators.ts`를 사용한다.
+- `*Api.ts`에는 URL·HTTP 메서드·요청 인자·AbortSignal 및 반환 타입을 명시한 요청 함수를 둔다. 공통 API 계층을 통해 응답을 받고 Validators를 호출한 뒤 반환한다. 요청한 공간 ID와 응답 공간 ID의 일치 검사처럼 요청 맥락에 따른 검사도 유지한다.
+- `apiClient.request<unknown>`은 공통 응답 구조만 검증하므로 `body.data`는 도메인 Validators로 검사한다. 일반 data 반환에는 `readApiData`를 재사용할 수 있고, HTTP 상태·메타데이터가 필요한 요청은 `apiClient.request`의 결과를 유지한다. 타입 단언이나 제네릭만으로 검증을 대체하지 않으며 검증 실패는 `ApiError`의 `invalid-response`로 처리한다.
+- 공통 계약은 `lib/api/apiTypes.ts`, 공통 응답·CSRF 검증은 `apiValidators.ts`, HTTP·세션·CSRF·오류 처리는 기존 공통 모듈이 담당한다. 도메인에서 Axios/fetch를 직접 호출해 이 처리를 우회하지 않는다. 본문 없는 204는 `requestEmpty`, 공통 응답으로 감싸지지 않는 CSRF 발급은 기존 전용 처리를 유지한다.
+- Query 키·조회/변경 훅·캐시 무효화·화면용 데이터 변환은 `features/{domain}/model/`에 둔다. 페이지와 UI에서 DTO 검증이나 API 요청 구현을 중복하지 않는다.
+- 신규 연동이나 BE 계약 변경 시 Types·Validators·Api 및 소비 코드를 함께 확인한다. 파일을 분리할 때 기존 검증 조건·오류 문구·세션 동작을 임의로 바꾸지 않는다. 로그아웃처럼 DTO·검증 함수가 필요 없는 경우 빈 Types/Validators 파일을 만들지 않는다.
+- 호출 예시와 세션·오류 세부 규칙은 `src/lib/api/README.md`를 따른다.
+
 ## UI와 제품 기준
 
 - 최신 Figma 상세 UI를 기준으로 구현한다.
