@@ -16,8 +16,9 @@ import {
   proposalListPath,
   paths,
   careListPath,
+  newsDetailPath,
 } from "@/routes/paths";
-import { exampleNewsPath, exampleCarePath } from "@/routes/exampleDestinations";
+import { exampleCarePath } from "@/routes/exampleDestinations";
 
 export function ConnectedHomePage() {
   const { space } = useConnectedSpace();
@@ -74,7 +75,7 @@ export function ConnectedHomePage() {
         onFamily={() => void navigate(spacePath(space.spaceId, "family"))}
         onInvite={() => void navigate(spaceInvitePath(space.spaceId))}
         onNews={() => void navigate(spacePath(space.spaceId, "news"))}
-        onOpenNews={() => void navigate(exampleNewsPath(space.spaceId))}
+        onOpenNews={(id) => void navigate(newsDetailPath(space.spaceId, id))}
         onCare={(filter) => void navigate(careListPath(space.spaceId, filter))}
         onOpenCare={(id) => {
           const kind = dashboard.data.remainingTasks.items.some(

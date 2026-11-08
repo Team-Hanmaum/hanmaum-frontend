@@ -54,7 +54,7 @@ export function HomeContent({
       <SectionHeader
         title="최근 가족 소식"
         action={{
-          label: connected ? "소식 화면 예시" : "소식 보기",
+          label: "소식 보기",
           onClick: onNews,
         }}
       />
@@ -67,7 +67,7 @@ export function HomeContent({
           previewBody
           status={news.status}
           statusMessage={news.statusMessage}
-          actionLabel={connected ? "상세 화면 예시" : "소식 자세히 보기"}
+          actionLabel="소식 자세히 보기"
           onAction={() => onOpenNews(news.id)}
         />
       ))}

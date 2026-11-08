@@ -15,7 +15,6 @@ import { LoadingState, ErrorState } from "@/components/feedback";
 import { ExampleSurface } from "./ExampleSurface";
 import { CareListAction } from "./CareListAction";
 import { SpaceAccessState } from "./SpaceAccessState";
-import { Badge } from "@/components/ui";
 import { ApiError } from "@/lib/api";
 
 export function ConnectedTabLayout() {
@@ -30,7 +29,7 @@ export function ConnectedTabLayout() {
     (match?.handle as { tab: SpaceTab } | undefined)?.tab ?? "home";
   const members = useSpaceMembers(space.spaceId, active === "all");
   const examples = useMockCareSpaces();
-  const example = active === "care" || active === "news";
+  const example = active === "care";
   const membersDenied =
     members.error instanceof ApiError &&
     [403, 404].includes(members.error.status ?? 0);
@@ -74,13 +73,7 @@ export function ConnectedTabLayout() {
                 className="w-full"
                 onClick={() => void navigate(newsCreatePath(space.spaceId))}
               >
-                소식 남기기{" "}
-                {active === "home" && (
-                  <Badge
-                    label="예시"
-                    tone="neutral"
-                  />
-                )}
+                소식 남기기
               </Button>
             </div>
           )}
