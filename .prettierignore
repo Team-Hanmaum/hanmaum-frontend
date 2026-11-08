@@ -3,6 +3,7 @@ dist
 dist-ssr
 build
 coverage
+.certs
 
 
 # Package Manager files

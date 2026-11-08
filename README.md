@@ -11,6 +11,8 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
+**배포 BE와 로컬에서 연동할 팀원은 최초 1회 [로컬 HTTPS 설정](docs/local-development.md)을 진행한다.** mkcert 설치 후 `pnpm setup:local`을 실행하면 hosts·인증서·개발 환경 파일을 준비한다. 이후 기존 `pnpm dev`로 실행하고 `https://local.hanmaum.site:5173`에 접속한다. BE의 개발 Origin CORS와 로그인 복귀 분기 반영도 필요하다.
+
 - `/`: 최신 Figma `HM-ON-A01` 랜딩 화면. 시작하기·이미 계정이 있어요 → `/login`.
 - `/login`: Figma `HM-ON-A02` 로그인 UI 재사용. 실제 모드는 BE OAuth 주소로 이동하며 Mock 모드만 예시 이동을 사용한다.
 - `/auth/callback`: `/api/users/me` 확인 후 저장된 내부 경로 또는 참여 공간으로 이동. 한 곳이면 홈, 0곳 또는 여러 곳이면 목록. 오류는 재시도 제공.
@@ -36,7 +38,7 @@ React Router의 Data 모드를 사용하며 `src/routes/Router.tsx`에서 URL을
 
 현재 `.env.production`은 `VITE_API_BASE_URL=https://api.hanmaum.site`, `VITE_ENABLE_MOCK_PREVIEW=false`, `VITE_ENABLE_QA_TOOLS=false`다. 실제 모드는 소셜 로그인 → `/auth/callback` 세션 확인 → 참여 공간 진입으로 연결한다. 공간 목록·생성은 #48의 API 구현을 사용한다. 다른 도메인은 아직 미연동이므로 예시 데이터 대신 준비 중 안내를 표시한다.
 
-전체 Mock UI를 보려면 `VITE_ENABLE_MOCK_PREVIEW=true`로 실행한다. 로컬 `pnpm dev`는 환경 변수가 없으면 기존 Mock 기본값을 유지한다. `.env.example`을 `.env.local`로 복사하면 로컬 BE와 실제 API 모드를 사용하므로 실행 목적에 맞게 설정한다.
+전체 Mock UI를 보려면 `VITE_ENABLE_MOCK_PREVIEW=true`로 실행한다. 로컬 `pnpm dev`는 환경 변수가 없으면 기존 Mock 기본값을 유지한다. 배포 BE 연동은 `pnpm setup:local`, 로컬 BE 연동은 `.env.example`을 `.env.development.local`로 복사해 설정한다. 개발 전용 파일은 Production 빌드에 적용되지 않는다.
 
 실제 인증·업무 데이터 연결 전에는 `VITE_ENABLE_MOCK_PREVIEW=false`로 변경하고 다시 빌드한다. 이 설정은 Mock 로그인 이동·공간 데이터·생성·참여·소식 조회/작성/재시도를 제어하며 실제 인증·접근 권한 검증을 대신하지 않는다. 개발용 컴포넌트 확인 화면의 코드와 경로는 계속 프로덕션 빌드에서 제외한다. [설정 우선순위와 검증 절차](docs/deployment.md) 참조.
 
@@ -49,7 +51,7 @@ React Router의 Data 모드를 사용하며 `src/routes/Router.tsx`에서 URL을
 - **QA 종료**는 현재 화면과 입력·Mock 데이터를 유지하면서 도구와 QA 선택 상태를 해제한다. `?qa=0`으로도 도구를 끌 수 있다.
 - QA에서 고른 상태는 `qaState`로 관리하며 QA가 꺼져 있으면 무시한다. 기존 생성·참여·공유 흐름의 `mockState`와 구분한다.
 - `컴포넌트 보기` 링크는 로컬 QA에서만 표시한다. `/_dev/components` 경로는 계속 로컬 개발 전용이다.
-- `VITE_ENABLE_QA_TOOLS`는 QA 사용 허용 여부이며, `true`여도 자동으로 도구가 표시되지는 않는다. 미설정 시 로컬 개발에서만 허용한다. 현재 배포용 설정은 `true`이다.
+- `VITE_ENABLE_QA_TOOLS`는 QA 사용 허용 여부이며, `true`여도 자동으로 도구가 표시되지는 않는다. 미설정 시 로컬 개발에서만 허용한다. 현재 Production 기본값은 `false`, 로컬 설정 스크립트의 개발 값은 `true`이다.
 - 실제 운영 시 `VITE_ENABLE_QA_TOOLS=false`로 다시 빌드한다. 저장된 QA 설정과 `qa=1`은 무시하며, 404로 보내지 않고 원래 화면을 표시한다. Mock 동작은 별도 설정인 `VITE_ENABLE_MOCK_PREVIEW`로 제어한다.
 
 ## 홈 화면 설치 (PWA)
@@ -69,7 +71,7 @@ React Router의 Data 모드를 사용하며 `src/routes/Router.tsx`에서 URL을
 
 ## 공통 API와 서버 상태
 
-Axios와 TanStack Query 기반을 사용한다. `.env.example`을 `.env.local`로 복사하면 API 서버 주소의 설정 예시를 확인할 수 있다. `VITE_API_BASE_URL`에는 서버 주소만 지정하고 `/api`는 도메인 요청 함수에 포함한다. 기존 Mock 화면은 API 주소 없이도 실행하며 실제 API 요청을 자동으로 시작하지 않는다.
+Axios와 TanStack Query 기반을 사용한다. `.env.example`은 로컬 BE 연결 예시이며 `.env.development.local`로 복사한다. 배포 BE 연결은 [로컬 HTTPS 설정](docs/local-development.md)을 따른다. `VITE_API_BASE_URL`에는 서버 주소만 지정하고 `/api`는 도메인 요청 함수에 포함한다. 기존 Mock 화면은 API 주소 없이도 실행하며 실제 API 요청을 자동으로 시작하지 않는다.
 
 공통 응답은 최신 BE의 `success/code/message/data/errors/timestamp` 규격을 따른다. 도메인 API 함수는 `features/{domain}/api/`, 조회·변경 훅과 캐시 키는 `model/`에 둔다. 내 정보·로그아웃·세션 가드를 연결했으며 로그인 상태는 `useSession`에서 공통 관리한다. 로그인 성공 복귀 URL은 BE에서도 `/auth/callback`으로 설정해야 한다. [설정·호출 예시·CSRF·오류·캐시 규칙](src/lib/api/README.md) 참조.
 

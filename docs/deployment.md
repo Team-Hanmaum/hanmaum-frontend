@@ -9,7 +9,7 @@
 3. Vercel Production의 유효 값 확인: `VITE_API_BASE_URL=https://api.hanmaum.site`, `VITE_ENABLE_MOCK_PREVIEW=false`, `VITE_ENABLE_QA_TOOLS=false`. Vercel 변수는 저장소 env 파일보다 우선하며 변경 후 재빌드 필요.
 4. 실제 기기에서 Google·카카오 로그인 → callback → me/공간 조회, 새로고침, 로그아웃(CSRF + 204), 재로그인 확인.
 
-현재 BE CORS는 `https://hanmaum.site`만 허용한다. localhost·www·Vercel 임시 주소에서 운영 API 연동을 확인할 수 있다고 가정하지 않는다. 로컬은 로컬 BE와 호스트/CORS를 맞추고, 원격 테스트는 BE가 허용한 HTTPS Origin과 쿠키 조건을 준비한다. CORS 허용만으로 서로 다른 사이트의 SameSite=Lax 쿠키 제한이 해결되지는 않는다.
+현재 확인한 BE CORS는 `https://hanmaum.site`만 허용한다. localhost·www·Vercel 임시 주소에서 운영 API 연동을 확인할 수 있다고 가정하지 않는다. 배포 BE를 로컬 FE에서 사용하려면 [로컬 HTTPS 개발 환경과 BE 전달 사항](local-development.md)을 적용한다. `https://local.hanmaum.site:5173`의 정확한 CORS 허용 및 `frontend=local` OAuth 복귀 분기는 BE 후속 작업이다. CORS 허용만으로 서로 다른 사이트의 SameSite=Lax 쿠키 제한이 해결되지는 않는다.
 
 OAuth 실패는 현재 BE JSON 응답이다. FE 로그인 오류 화면으로 돌아오게 하려면 BE 실패 리다이렉트 계약을 추가해야 한다. 이번 FE 코드 변경은 BE·Vercel 프로젝트 설정을 직접 수정하지 않는다.
 
@@ -53,12 +53,13 @@ Discord 알림은 기존 GitHub 저장소 웹훅의 `check_run`·`check_suite` �
 
 ## 실제 API와 Mock 화면 설정
 
-| 실행 환경                        | 설정                                | 동작                             |
-| -------------------------------- | ----------------------------------- | -------------------------------- |
-| 로컬 pnpm dev, 환경 변수 없음    | 개발 기본값                         | 전체 Mock UI, 실제 API 요청 없음 |
-| .env.example을 .env.local로 복사 | Mock false, localhost:8080          | 로컬 BE의 실제 세션·공간 API     |
-| Production 빌드                  | API api.hanmaum.site, Mock/QA false | 실제 로그인·세션·공간 목록/생성  |
-| 별도 UI Preview                  | Mock true, 필요 시 QA true          | 기존 전체 Mock 화면 확인         |
+| 실행 환경                                    | 설정                                                | 동작                                 |
+| -------------------------------------------- | --------------------------------------------------- | ------------------------------------ |
+| 로컬 pnpm dev, 환경 변수 없음                | 개발 기본값                                         | 전체 Mock UI, 실제 API 요청 없음     |
+| pnpm setup:local 후 pnpm dev                 | HTTPS local.hanmaum.site:5173, 배포 API, Mock false | BE 개발 Origin·콜백 지원 후 실제 API |
+| .env.example을 .env.development.local로 복사 | HTTP localhost, Mock false, localhost:8080          | 로컬 BE의 실제 세션·공간 API         |
+| Production 빌드                              | API api.hanmaum.site, Mock/QA false                 | 실제 로그인·세션·공간 목록/생성      |
+| 별도 UI Preview                              | Mock true, 필요 시 QA true                          | 기존 전체 Mock 화면 확인             |
 
 Preview에서 전체 UI를 검증하려면 Vercel Preview 환경에 `VITE_ENABLE_MOCK_PREVIEW=true`를 명시한다. 해당 모드에서는 실제 계정·공간 요청을 하지 않는다. 운영 API와 Preview 임시 도메인을 임의로 연결하지 않는다. VITE 변수에는 공개 설정만 저장한다. `/_dev/components`는 로컬 개발 전용이다.
 
