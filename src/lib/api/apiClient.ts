@@ -6,38 +6,40 @@ import {
   type ApiResult,
   type ApiSuccess,
 } from "./apiTypes";
-import { getCsrfToken } from "./csrf";
+import { getCsrfToken, resetCsrfToken } from "./csrf";
 import { getApiUrl, httpClient } from "./httpClient";
-
-function ensureNotCancelled(signal?: AbortSignal): void {
-  if (signal?.aborted) {
-    throw new ApiError({
-      kind: "cancelled",
-      message: "요청이 취소되었습니다.",
-    });
-  }
-}
+import { notifyUnauthenticated, trackApiRequest } from "./apiSession";
 
 async function send(path: ApiPath, options: ApiRequestOptions = {}) {
+  const request = trackApiRequest(options.signal);
   try {
-    ensureNotCancelled(options.signal);
+    request.assertCurrent();
     const url = getApiUrl(path);
     const method = options.method ?? "GET";
     const csrf = method !== "GET" ? await getCsrfToken() : undefined;
-    ensureNotCancelled(options.signal);
+    request.assertCurrent();
 
-    return await httpClient.request<unknown>({
+    const response = await httpClient.request<unknown>({
       url,
       method,
       params: options.params,
       data: options.body,
-      signal: options.signal,
+      signal: request.signal,
       ...(options.timeoutMs !== undefined && { timeout: options.timeoutMs }),
       ...(csrf && { headers: { [csrf.headerName]: csrf.token } }),
     });
+    request.assertCurrent();
+    return response;
   } catch (error) {
+    request.assertCurrent();
     // No redirect or automatic write retry: FORBIDDEN also means no permission.
-    throw normalizeApiError(error);
+    const failure = normalizeApiError(error);
+    if (failure.status === 403 && options.method && options.method !== "GET")
+      resetCsrfToken(); // A later explicit retry obtains a new token; never resend here.
+    notifyUnauthenticated(failure);
+    throw failure;
+  } finally {
+    request.release();
   }
 }
 

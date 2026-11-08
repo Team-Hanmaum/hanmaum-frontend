@@ -1,6 +1,17 @@
 # Vercel 배포
 
-현재 앱은 BE API를 연결하기 전의 UI 미리보기다. Vercel Preview와 Production 모두 `pnpm build`로 만든 프로덕션 번들을 사용한다. 실제 휴대폰에서 로그인 이후 화면을 확인할 수 있도록 `.env.production`의 공개 설정 `VITE_ENABLE_MOCK_PREVIEW=true`로 Mock 화면 이동을 활성화한다. 실제 인증·계정 생성·업무 API 요청은 발생하지 않으며 `/_dev/components`는 계속 로컬 개발 전용이다.
+실제 인증 API 기본 주소는 `https://api.hanmaum.site`, FE 정식 Origin은 `https://hanmaum.site`다. `.env.production`은 실제 인증·공간 API 모드이며 Mock/QA는 false다. 아직 연결하지 않은 도메인은 준비 중 안내를 표시한다.
+
+## 인증 전환 시 함께 설정할 항목 (#49)
+
+1. FE `/auth/callback` 경로를 포함한 빌드 반영.
+2. BE 성공 복귀 설정 `FRONTEND_URL=https://hanmaum.site/auth/callback` 반영. 공급자에 등록한 BE callback(`/login/oauth2/code/google|kakao`) 변경 불필요.
+3. Vercel Production의 유효 값 확인: `VITE_API_BASE_URL=https://api.hanmaum.site`, `VITE_ENABLE_MOCK_PREVIEW=false`, `VITE_ENABLE_QA_TOOLS=false`. Vercel 변수는 저장소 env 파일보다 우선하며 변경 후 재빌드 필요.
+4. 실제 기기에서 Google·카카오 로그인 → callback → me/공간 조회, 새로고침, 로그아웃(CSRF + 204), 재로그인 확인.
+
+현재 BE CORS는 `https://hanmaum.site`만 허용한다. localhost·www·Vercel 임시 주소에서 운영 API 연동을 확인할 수 있다고 가정하지 않는다. 로컬은 로컬 BE와 호스트/CORS를 맞추고, 원격 테스트는 BE가 허용한 HTTPS Origin과 쿠키 조건을 준비한다. CORS 허용만으로 서로 다른 사이트의 SameSite=Lax 쿠키 제한이 해결되지는 않는다.
+
+OAuth 실패는 현재 BE JSON 응답이다. FE 로그인 오류 화면으로 돌아오게 하려면 BE 실패 리다이렉트 계약을 추가해야 한다. 이번 FE 코드 변경은 BE·Vercel 프로젝트 설정을 직접 수정하지 않는다.
 
 ## Preview와 Production 배포
 
@@ -36,25 +47,20 @@ Vercel의 Git 연결과 Production Branch `dev`는 유지한다. `vercel.json`�
 | `VERCEL_ORG_ID`     | 로컬 `.vercel/project.json`의 `orgId`           | 필수      |
 | `VERCEL_PROJECT_ID` | 로컬 `.vercel/project.json`의 `projectId`       | 필수      |
 
-토큰은 [Vercel 계정의 Tokens](https://vercel.com/account/tokens)에서 생성하고 만료 전에 갱신한다. 비밀 값은 저장소·워크플로우 본문·`VITE_` 변수에 넣지 않는다. 앱의 Production 환경 변수는 Vercel 프로젝트에서 관리하며 Actions는 `vercel pull`로 가져온다. BE API 주소와 OAuth 비밀 키는 이번 설정에 추가하지 않는다.
+토큰은 [Vercel 계정의 Tokens](https://vercel.com/account/tokens)에서 생성하고 만료 전에 갱신한다. 비밀 값은 저장소·워크플로우 본문·`VITE_` 변수에 넣지 않는다. 앱의 Production 환경 변수는 Vercel 프로젝트에서 관리하며 Actions는 `vercel pull`로 가져온다. BE API 주소는 공개 VITE 설정으로 관리하고 OAuth 비밀 키는 FE에 추가하지 않는다.
 
 Discord 알림은 기존 GitHub 저장소 웹훅의 `check_run`·`check_suite` 이벤트 연동을 사용한다. 워크플로우에서 Discord로 직접 메시지를 전송하지 않으며 별도 알림용 Secret은 필요 없다. 실제 메시지 수신은 첫 Actions 실행 후 확인한다.
 
-## Mock 화면 이동 설정
+## 실제 API와 Mock 화면 설정
 
-`src/lib/mockPreview.ts`의 `isMockPreviewEnabled`를 로그인과 안내·공간 선택 페이지에서 함께 사용한다.
+| 실행 환경                        | 설정                                | 동작                             |
+| -------------------------------- | ----------------------------------- | -------------------------------- |
+| 로컬 pnpm dev, 환경 변수 없음    | 개발 기본값                         | 전체 Mock UI, 실제 API 요청 없음 |
+| .env.example을 .env.local로 복사 | Mock false, localhost:8080          | 로컬 BE의 실제 세션·공간 API     |
+| Production 빌드                  | API api.hanmaum.site, Mock/QA false | 실제 로그인·세션·공간 목록/생성  |
+| 별도 UI Preview                  | Mock true, 필요 시 QA true          | 기존 전체 Mock 화면 확인         |
 
-| 실행 환경                                      | 설정                                                | 동작                                            |
-| ---------------------------------------------- | --------------------------------------------------- | ----------------------------------------------- |
-| 로컬 `pnpm dev`                                | 환경 변수 없음                                      | Mock 이동 활성화                                |
-| Vercel Preview·Production 및 로컬 `pnpm build` | `.env.production`의 `VITE_ENABLE_MOCK_PREVIEW=true` | Mock 이동 활성화                                |
-| 모든 환경                                      | `VITE_ENABLE_MOCK_PREVIEW=false`                    | 소셜 버튼·핸들러 이동 차단, Mock 공간 링크 제외 |
-
-확인 경로는 랜딩 → 로그인 → 시작 전 안내 → 안내 확인하고 계속 → Mock 공간 둘러보기 → 예시 공간 1/2 → 홈·돌봄·소식·가족·전체다. 안내 확인은 동의 기록이나 공간 생성 완료가 아니며, 다섯 탭은 현재 공통 레이아웃을 확인하는 임시 화면이다.
-
-Vercel 프로젝트에 같은 환경 변수를 직접 등록하면 저장소의 `.env.production`보다 우선한다. 빌드 시 결정되므로 설정 변경 후 새 배포가 필요하다. 이 파일에는 비밀 값이 아닌 화면 미리보기 설정만 저장하며, `VITE_` 변수에 비밀 키를 넣지 않는다.
-
-실제 인증·업무 데이터 연결 전에는 저장소와 Vercel 환경 변수의 유효 값을 `false`로 맞추고 다시 빌드한다. 이 플래그는 Mock 화면 이동만 제어하며 공간 URL의 접근 권한을 검증하지 않는다. 실제 데이터는 BE의 세션·참여 권한 확인을 연결한 후 사용한다. API 응답 Mock·MSW·도메인 fixture 구성은 별도 이슈 #12 범위다.
+Preview에서 전체 UI를 검증하려면 Vercel Preview 환경에 `VITE_ENABLE_MOCK_PREVIEW=true`를 명시한다. 해당 모드에서는 실제 계정·공간 요청을 하지 않는다. 운영 API와 Preview 임시 도메인을 임의로 연결하지 않는다. VITE 변수에는 공개 설정만 저장한다. `/_dev/components`는 로컬 개발 전용이다.
 
 ## 최초 배포 기록
 
@@ -108,10 +114,10 @@ pnpm build
 - 파비콘·로고·폰트·JS·CSS 정적 파일의 정상 응답
 - 잘못된 주소에서 앱의 404 화면 표시
 - `/_dev/components` 접근 시 앱의 404 화면 표시
-- 소셜 로그인 버튼 활성, 두 제공사의 로딩·중복 클릭 차단 및 `/onboarding/guide` 이동
-- 안내 시트의 Mock 공간 둘러보기 → 예시 공간 선택 → 다섯 탭 이동
-- 일반 접속 시 상단 Mock 안내·확인 도구 숨김, QA 모드에서 표시 및 실제 OAuth/API 요청 미발생
-- `VITE_ENABLE_MOCK_PREVIEW=false` 별도 빌드에서 소셜 버튼·핸들러 이동 차단 및 Mock 공간 링크 제외
+- 실제 모드: 두 OAuth 진입 → `/auth/callback` → 참여 공간 0/1/여러 개 분기
+- 실제 모드: 401 만료, 403 실패, 조회 재시도, 로그아웃 204와 응답 유실 후 재확인
+- 별도 Mock 빌드: 안내 → 공간 생성/선택 → 다섯 탭, 실제 OAuth/API 요청 미발생
+- 운영 빌드: Mock 데이터·QA 도구 비노출
 
 SPA rewrite는 브라우저가 직접 요청한 페이지 경로에도 `index.html`을 제공한다. 실제 화면과 알 수 없는 경로의 404 표시는 React Router에서 처리하므로 앱의 404 화면과 HTTP 404 상태 코드는 구분한다.
 
@@ -119,7 +125,7 @@ SPA rewrite는 브라우저가 직접 요청한 페이지 경로에도 `index.ht
 
 ### 운영 환경의 QA 도구
 
-현재 `.env.production`의 `VITE_ENABLE_QA_TOOLS=true`는 `qa=1`을 통한 도구 활성화를 허용한다. 일반 접속에서는 로컬과 동일하게 도구를 숨긴다. 실제 운영에서는 이 값을 `false`로 바꾸거나 Vercel의 대상 환경 변수에 `false`를 지정한 뒤 다시 빌드·배포한다. 이전 빌드의 동작은 환경 변수만 변경해서 바뀌지 않는다.
+현재 `.env.production`의 `VITE_ENABLE_QA_TOOLS=false`는 QA 도구 활성화를 차단한다. 별도 Mock Preview에서만 필요에 따라 true로 지정한다. 이전 빌드의 동작은 환경 변수만 변경해서 바뀌지 않으므로 다시 빌드·배포한다.
 
 비활성화된 빌드는 저장된 QA 모드와 `qa=1`을 무시하고 원래 화면을 표시한다. URL 쿼리만으로 404로 이동시키지 않는다. QA 도구와 Mock 동작은 별개이므로 실제 API 전환 시 `VITE_ENABLE_MOCK_PREVIEW=false` 및 실제 세션·권한 연결도 별도로 필요하다.
 
@@ -128,10 +134,10 @@ SPA rewrite는 브라우저가 직접 요청한 페이지 경로에도 `index.ht
 - 실제 API 주소 및 개발·운영 환경 구분
 - 배포 도메인의 CORS 허용, 세션 쿠키 속성과 CSRF 처리 계약
 - Google·카카오 OAuth의 콜백 및 성공·실패 후 이동 주소
-- 실제 세션·공간 참여 권한 검증과 로그인 버튼 연결
-- 개인정보 동의·공간 생성 등 후속 업무 API
+- 운영에서 세션·공간 참여 권한 검증과 로그인 버튼 연결 확인
+- 소식·돌봄·가족·초대·탈퇴 등 후속 업무 API
 
-현재 배포에는 실제 인증이나 업무 데이터 처리를 추가하지 않는다. API 주소나 OAuth 비밀 키를 임의로 등록하지 않으며 브라우저에 공개되는 `VITE_` 환경 변수에 비밀 값을 넣지 않는다. 사용자 도메인과 OAuth 콘솔 설정은 관련 계약이 정해진 뒤 연결한다.
+이번 인증 연결은 위 환경 변수와 BE 성공 복귀 설정을 함께 반영해야 한다. OAuth 비밀 키를 FE에 등록하지 않으며 브라우저에 공개되는 `VITE_` 환경 변수에 비밀 값을 넣지 않는다.
 
 ## 공식 참고
 

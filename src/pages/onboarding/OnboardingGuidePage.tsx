@@ -9,7 +9,9 @@ import { paths } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 
 export function OnboardingGuidePage() {
-  const onBack = useBackNavigation(paths.login);
+  const onBack = useBackNavigation(
+    isMockPreviewEnabled ? paths.login : paths.spaces,
+  );
   const navigate = useAppNavigate();
 
   return (
@@ -23,10 +25,7 @@ export function OnboardingGuidePage() {
             position="fixed"
             primary={{
               label: "안내 확인하고 계속",
-              disabled: !isMockPreviewEnabled,
-              onClick: () => {
-                if (isMockPreviewEnabled) void navigate(paths.spaceCreate);
-              },
+              onClick: () => void navigate(paths.spaceCreate),
             }}
           />
         }

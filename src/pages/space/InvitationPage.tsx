@@ -13,6 +13,7 @@ import { useMockAction } from "@/lib/useMockAction";
 import { paths, spacePath } from "@/routes/paths";
 import { mockAccount } from "@/features/user/model/mockAccount";
 import { useMockScreenState } from "@/routes/useMockScreenState";
+import { ConnectedInvitationPage } from "./ConnectedInvitationPage";
 
 const states = [
   { value: "default", label: "초대 안내" },
@@ -22,6 +23,8 @@ const states = [
 ] as const;
 export function InvitationPage() {
   const { invitationToken = "" } = useParams();
+  if (!isMockPreviewEnabled)
+    return <ConnectedInvitationPage key={invitationToken} />;
   // 다른 초대 주소로 이동할 때 공급자·진행 상태가 섞이지 않도록 분리한다.
   return (
     <InvitationPreview

@@ -174,7 +174,11 @@ export function SpaceSelectionPage() {
           icon="plus"
           title="돌봄 공간 만들기"
           description="새로운 돌봄 공간이 필요할 때"
-          onClick={() => void navigate(paths.spaceCreate)}
+          onClick={() =>
+            void navigate(
+              isMockPreviewEnabled ? paths.spaceCreate : paths.onboardingGuide,
+            )
+          }
         />
         <p className="text-hm-body-small text-hm-text-secondary">
           초대받은 링크가 있다면 그 링크로 가족의 공간에 참여해 주세요.

@@ -9,6 +9,8 @@ import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
 import { paths, spacePath } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
+import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import { ConnectedAccountPage } from "./ConnectedAccountPage";
 
 const states = [
   { value: "default", label: "계정 정보" },
@@ -16,6 +18,9 @@ const states = [
   { value: "error", label: "조회 실패" },
 ] as const;
 export function AccountPage() {
+  return isMockPreviewEnabled ? <MockAccountPage /> : <ConnectedAccountPage />;
+}
+function MockAccountPage() {
   const account = useMockAccount();
   const { spaces } = useMockCareSpaces();
   const [params] = useSearchParams();

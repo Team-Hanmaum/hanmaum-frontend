@@ -11,6 +11,7 @@ import { qaMode } from "@/lib/qaMode";
 // 공간 진입 전 화면
 import { LandingPage } from "@/pages/landing/LandingPage";
 import { LoginPage } from "@/pages/login/LoginPage";
+import { AuthCallbackPage } from "@/pages/login/AuthCallbackPage";
 import { InvitationPage } from "@/pages/space/InvitationPage";
 import { OnboardingGuidePage } from "@/pages/onboarding/OnboardingGuidePage";
 import { SpaceSelectionPage } from "@/pages/space/SpaceSelectionPage";
@@ -31,6 +32,7 @@ import { TabLayout } from "./layouts/TabLayout";
 import { RecordRouteLayout } from "./layouts/RecordRouteLayout";
 import { ProposalRouteLayout } from "./layouts/ProposalRouteLayout";
 import { FamilyRouteLayout } from "./layouts/FamilyRouteLayout";
+import { SpaceSessionLayout } from "./layouts/SpaceSessionLayout";
 import { recordNavigation, navigationDirection } from "./navigationHistory";
 import { getRouteMotion } from "./routeMotion";
 import { paths, spacePath } from "./paths";
@@ -79,6 +81,11 @@ function RouteLoadingFallback() {
 
 // 공간 진입 전 화면
 const entryRoutes: RouteObject[] = [
+  {
+    path: paths.authCallback,
+    Component: AuthCallbackPage,
+    handle: { title: "로그인 확인" },
+  },
   {
     index: true,
     Component: LandingPage,
@@ -538,6 +545,7 @@ const router = createBrowserRouter([
       ...accountRoutes,
       {
         path: `${paths.spaces}/:careSpaceId`,
+        Component: SpaceSessionLayout,
         children: spaceRoutes,
       },
       ...developmentRoutes,

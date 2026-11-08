@@ -5,7 +5,8 @@ import {
   useLocation,
   useMatches,
 } from "react-router";
-import { MockAccountBoundary } from "@/routes/layouts/MockAccountBoundary";
+import { SessionBoundary } from "@/routes/layouts/SessionBoundary";
+import { SessionProvider } from "@/features/auth/ui/SessionProvider";
 import { QaModeProvider } from "@/routes/QaModeProvider";
 import { PwaInstallProvider } from "@/components/pwa/PwaInstallProvider";
 
@@ -32,9 +33,11 @@ function App() {
     <>
       <PwaInstallProvider autoPrompt={autoPrompt}>
         <QaModeProvider>
-          <MockAccountBoundary>
-            <Outlet />
-          </MockAccountBoundary>
+          <SessionProvider>
+            <SessionBoundary>
+              <Outlet />
+            </SessionBoundary>
+          </SessionProvider>
         </QaModeProvider>
       </PwaInstallProvider>
       <ScrollRestoration />
