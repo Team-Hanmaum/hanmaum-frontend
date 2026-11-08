@@ -32,7 +32,7 @@ React Router Data 모드 사용. `Router.tsx`에서 URL·페이지·레이아웃
 | `/onboarding/guide`                                           | 기록 전 안내                       | 뒤로가기 헤더 + 계속 버튼                    |
 | `/spaces/new`                                                 | 공간 생성                          | 뒤로가기 헤더 + 고정 제출 버튼               |
 | `/spaces`                                                     | 공간 선택                          | 브랜드 헤더                                  |
-| `/invitations/:invitationToken`                               | 초대 수신·Mock 참여                | 브랜드 헤더 + 소셜 버튼, 하단 탭 없음        |
+| `/invitations/:invitationToken`                               | 초대 확인·참여                     | 브랜드 헤더 + 소셜 버튼, 하단 탭 없음        |
 | `/spaces/:careSpaceId/invite`                                 | 가족 초대                          | 뒤로가기 헤더 + 액션 + 가족 탭               |
 | `/spaces/:careSpaceId/home`                                   | 홈                                 | 공간 전환 헤더 + 소식 작성 액션 + 홈 탭      |
 | `/spaces/:careSpaceId/news`                                   | 소식 목록                          | 공간 헤더 + 작성 액션 + 소식 탭              |
