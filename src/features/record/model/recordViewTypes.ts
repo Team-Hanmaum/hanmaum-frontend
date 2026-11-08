@@ -2,7 +2,14 @@ import type { NewsStatus } from "../ui/NewsCard";
 
 export type RecordAnalysisStatus = Extract<
   NewsStatus,
-  "analyzing" | "review" | "no-change" | "failed" | "applied"
+  | "analyzing"
+  | "review"
+  | "no-change"
+  | "failed"
+  | "applied"
+  | "recorded"
+  | "analysis-completed"
+  | "analysis-discarded"
 >;
 
 // 화면 모델이며 BE DTO가 아니다. 원문은 분석·제안 표시와 별도로 유지한다.
