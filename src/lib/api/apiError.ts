@@ -1,23 +1,6 @@
 import axios from "axios";
-import { isApiResponse, type ApiFieldError } from "./apiTypes";
-
-export type ApiErrorKind =
-  | "http"
-  | "network"
-  | "timeout"
-  | "cancelled"
-  | "invalid-response"
-  | "configuration"
-  | "unknown";
-
-interface ApiErrorOptions {
-  kind: ApiErrorKind;
-  message: string;
-  status?: number;
-  code?: string;
-  errors?: ApiFieldError[];
-  timestamp?: string;
-}
+import type { ApiErrorKind, ApiErrorOptions, ApiFieldError } from "./apiTypes";
+import { isApiResponse } from "./apiValidators";
 
 export class ApiError extends Error {
   readonly kind: ApiErrorKind;

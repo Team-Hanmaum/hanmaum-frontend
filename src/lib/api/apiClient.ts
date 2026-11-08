@@ -1,11 +1,11 @@
 import { ApiError, normalizeApiError } from "./apiError";
-import {
-  isApiResponse,
-  type ApiPath,
-  type ApiRequestOptions,
-  type ApiResult,
-  type ApiSuccess,
+import type {
+  ApiPath,
+  ApiRequestOptions,
+  ApiResult,
+  ApiSuccess,
 } from "./apiTypes";
+import { isApiResponse } from "./apiValidators";
 import { getCsrfToken, resetCsrfToken } from "./csrf";
 import { getApiUrl, httpClient } from "./httpClient";
 import {

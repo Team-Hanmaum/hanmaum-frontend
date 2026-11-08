@@ -1,5 +1,6 @@
 import { apiClient, ApiError } from "@/lib/api";
-import { isMyProfile, type MyProfile } from "./userTypes";
+import type { MyProfile } from "./userTypes";
+import { isMyProfile } from "./userValidators";
 
 export async function getMe(signal?: AbortSignal): Promise<MyProfile> {
   const result = await apiClient.request<unknown>("/api/users/me", {

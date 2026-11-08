@@ -1,11 +1,11 @@
 import type {
   SpaceDetail,
   SpaceMember,
-} from "@/features/carespace/api/spaceDetailApi";
+} from "@/features/carespace/api/spaceDetailTypes";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
-import type { RecordListResponse } from "@/features/record/api/recordReadApi";
+import type { RecordListResponse } from "@/features/record/api/recordReadTypes";
 import type { NewsStatus } from "@/features/record/ui/NewsCard";
-import type { DashboardResponse, DashboardItem } from "../api/dashboardApi";
+import type { DashboardResponse, DashboardItem } from "../api/dashboardTypes";
 import type { HomeView } from "./homeViewTypes";
 import { homePreviewLimits as limits } from "./homePreviewLimits";
 

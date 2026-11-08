@@ -1,11 +1,13 @@
 import { apiClient, ApiError } from "@/lib/api";
+import type {
+  CareSpaceSummary,
+  CreateCareSpaceRequest,
+  CreatedCareSpace,
+} from "./careSpaceTypes";
 import {
   isCareSpaceListResponse,
   isCreatedCareSpace,
-  type CareSpaceSummary,
-  type CreateCareSpaceRequest,
-  type CreatedCareSpace,
-} from "./careSpaceTypes";
+} from "./careSpaceValidators";
 
 export async function getCareSpaces(
   signal?: AbortSignal,
