@@ -33,6 +33,8 @@ export type ApiMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 type QueryValue = string | number | boolean | null | undefined;
 
 export interface ApiRequestOptions {
+  /** Only identity probes, logout and explicitly public endpoints bypass the session gate. */
+  session?: "independent";
   method?: ApiMethod;
   params?: Record<string, QueryValue | QueryValue[]>;
   body?: unknown;

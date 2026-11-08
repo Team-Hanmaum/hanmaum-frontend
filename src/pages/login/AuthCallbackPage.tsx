@@ -13,6 +13,7 @@ import { SessionStatus } from "@/features/auth/ui/SessionStatus";
 import { useCareSpaces } from "@/features/carespace/model/useCareSpaces";
 import { paths, spacePath } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
+import { publishSessionChange } from "@/features/auth/model/sessionChanges";
 
 export function AuthCallbackPage() {
   return isMockPreviewEnabled ? (
@@ -39,7 +40,10 @@ function AuthCallback() {
     let active = true;
     resetCsrfToken();
     void check().then(() => {
-      if (active) setReady(true);
+      if (active) {
+        setReady(true);
+        publishSessionChange();
+      }
     });
     return () => {
       active = false;

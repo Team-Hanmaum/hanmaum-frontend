@@ -8,11 +8,17 @@ import {
 } from "./apiTypes";
 import { getCsrfToken, resetCsrfToken } from "./csrf";
 import { getApiUrl, httpClient } from "./httpClient";
-import { notifyUnauthenticated, trackApiRequest } from "./apiSession";
+import {
+  ensureRequestSession,
+  notifyUnauthenticated,
+  trackApiRequest,
+} from "./apiSession";
 
 async function send(path: ApiPath, options: ApiRequestOptions = {}) {
-  const request = trackApiRequest(options.signal);
+  const protectedRequest = options.session !== "independent";
+  const request = trackApiRequest(options.signal, protectedRequest);
   try {
+    if (protectedRequest) await ensureRequestSession();
     request.assertCurrent();
     const url = getApiUrl(path);
     const method = options.method ?? "GET";

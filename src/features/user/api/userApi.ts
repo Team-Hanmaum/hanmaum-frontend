@@ -2,7 +2,10 @@ import { apiClient, ApiError } from "@/lib/api";
 import { isMyProfile, type MyProfile } from "./userTypes";
 
 export async function getMe(signal?: AbortSignal): Promise<MyProfile> {
-  const result = await apiClient.request<unknown>("/api/users/me", { signal });
+  const result = await apiClient.request<unknown>("/api/users/me", {
+    signal,
+    session: "independent",
+  });
   if (!isMyProfile(result.body.data)) {
     throw new ApiError({
       kind: "invalid-response",

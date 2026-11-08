@@ -10,6 +10,10 @@ import type { MyProfile } from "@/features/user/api/userTypes";
 import { userKeys } from "@/features/user/model/userKeys";
 import { logout } from "../api/authApi";
 import { resetSessionState } from "./resetSessionState";
+import { cancelProtectedRequests } from "@/lib/api/apiSession";
+import { publishSessionChange } from "./sessionChanges";
+
+const recheckInterval = 60_000;
 
 export type SessionState =
   | { status: "checking" | "signing-out" }
@@ -29,6 +33,10 @@ export function createSessionController(queryClient: QueryClient) {
   let revision = 0;
   let logoutPending = false;
   let pendingCheck: Promise<void> | undefined;
+  let checkController: AbortController | undefined;
+  let verifiedAt = 0;
+  let uncertain = true;
+  let remoteChange = false;
   let cleanup: Promise<void> = Promise.resolve();
   const listeners = new Set<() => void>();
   const publish = (next: SessionState) => {
@@ -38,6 +46,9 @@ export function createSessionController(queryClient: QueryClient) {
   function clear(reason: "required" | "expired" | "signed-out") {
     revision += 1;
     pendingCheck = undefined;
+    checkController?.abort();
+    uncertain = true;
+    verifiedAt = 0;
     user = undefined;
     logoutPending = false;
     publish({ status: "anonymous", reason });
@@ -48,14 +59,65 @@ export function createSessionController(queryClient: QueryClient) {
     const reason = logoutPending ? "signed-out" : user ? "expired" : "required";
     void clear(reason);
   }
+  function invalidateIdentity(changed = false) {
+    if (state.status === "signing-out") return;
+    uncertain = true;
+    remoteChange ||= changed;
+    revision += 1;
+    checkController?.abort();
+    pendingCheck = undefined;
+    cancelProtectedRequests();
+    // Revert interrupted reads to their last verified data instead of showing errors.
+    cleanup = Promise.all([cleanup, queryClient.cancelQueries()]).then(
+      () => undefined,
+    );
+    if (changed) resetCsrfToken();
+    if (
+      state.status === "authenticated" &&
+      state.revalidation?.status === "checking"
+    )
+      publish({ status: "authenticated", user: state.user });
+  }
+  function recheck() {
+    if (
+      state.status === "authenticated" &&
+      !remoteChange &&
+      !state.revalidation &&
+      Date.now() - verifiedAt < recheckInterval
+    )
+      return Promise.resolve();
+    return check();
+  }
+  async function ensureIdentity() {
+    const accountId = user?.userId;
+    if (uncertain || Date.now() - verifiedAt >= recheckInterval || pendingCheck)
+      await check();
+    if (
+      state.status === "authenticated" &&
+      state.revalidation?.status === "error"
+    )
+      throw state.revalidation.error;
+    if (
+      state.status !== "authenticated" ||
+      uncertain ||
+      (accountId !== undefined && accountId !== state.user.userId)
+    )
+      throw new ApiError({
+        kind: "cancelled",
+        message:
+          "로그인 상태가 변경됐어요. 화면을 확인한 뒤 다시 진행해 주세요.",
+      });
+  }
   function check() {
     if (pendingCheck) return pendingCheck;
     if (state.status === "signing-out") return Promise.resolve();
     const recoveringLogout = logoutPending;
     const currentRevision = ++revision;
+    checkController = new AbortController();
+    const signal = checkController.signal;
     const previousUser =
       state.status === "authenticated" ? state.user : undefined;
-    // Hide protected data until identity is confirmed, without discarding the same account's form state.
+    // Keep the last verified screen mounted. The API gate holds all new protected requests.
     publish(
       previousUser
         ? {
@@ -69,18 +131,22 @@ export function createSessionController(queryClient: QueryClient) {
       await cleanup;
       if (currentRevision !== revision) return;
       try {
-        const profile = await getMe();
+        const profile = await getMe(signal);
         if (currentRevision !== revision) return;
         if (user && user.userId !== profile.userId) {
           await resetSessionState(queryClient);
           if (currentRevision !== revision) return;
         }
         user = profile;
+        verifiedAt = Date.now();
+        uncertain = false;
+        remoteChange = false;
         logoutPending = false;
         queryClient.setQueryData(userKeys.me(), profile);
         publish({ status: "authenticated", user: profile });
       } catch (error) {
         if (currentRevision !== revision) return;
+        uncertain = true;
         if (isUnauthenticated(error)) {
           await clear(
             recoveringLogout ? "signed-out" : user ? "expired" : "required",
@@ -107,16 +173,22 @@ export function createSessionController(queryClient: QueryClient) {
   }
   async function signOut() {
     if (state.status === "signing-out") return;
+    await ensureIdentity();
+    if (logoutPending) return;
     const currentRevision = ++revision;
     pendingCheck = undefined;
     logoutPending = true;
+    publishSessionChange();
     publish({ status: "signing-out" });
     // Cancel account reads before starting the logout request itself.
     await resetSessionState(queryClient);
     if (currentRevision !== revision) return;
     try {
       await logout();
-      if (currentRevision === revision) await clear("signed-out");
+      if (currentRevision === revision) {
+        await clear("signed-out");
+        publishSessionChange();
+      }
     } catch (error) {
       if (currentRevision !== revision) return;
       if (isUnauthenticated(error)) {
@@ -146,6 +218,9 @@ export function createSessionController(queryClient: QueryClient) {
       };
     },
     check,
+    recheck,
+    invalidateIdentity,
+    ensureIdentity,
     expire,
     signOut,
   };
