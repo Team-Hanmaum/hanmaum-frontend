@@ -9,6 +9,13 @@ import { paths, spacePath, newsCreatePath, type SpaceTab } from "../paths";
 import { useConnectedSpace } from "../useConnectedSpace";
 import { useAppNavigate } from "../useAppNavigate";
 import { SpaceBottomNavigation } from "./SpaceBottomNavigation";
+import { useMockCareSpaces } from "@/features/carespace/model/useMockCareSpaces";
+import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
+import { LoadingState, ErrorState } from "@/components/feedback";
+import { ExampleSurface } from "./ExampleSurface";
+import { CareListAction } from "./CareListAction";
+import { SpaceAccessState } from "./SpaceAccessState";
+import { Badge } from "@/components/ui";
 
 export function ConnectedTabLayout() {
   const context = useConnectedSpace();
@@ -20,6 +27,19 @@ export function ConnectedTabLayout() {
     .find((value) => (value.handle as { tab?: SpaceTab } | undefined)?.tab);
   const active =
     (match?.handle as { tab: SpaceTab } | undefined)?.tab ?? "home";
+  const members = useSpaceMembers(space.spaceId, active === "all");
+  const examples = useMockCareSpaces();
+  const example = active === "care" || active === "news";
+  const exampleSpace = examples.spaces.find(
+    (entry) => entry.id === space.spaceId,
+  );
+  if (example && examples.ended[space.spaceId])
+    return (
+      <ExampleSurface>
+        <SpaceAccessState />
+      </ExampleSurface>
+    );
+  const view = example ? exampleSpace : toSpaceView(space, members.data ?? []);
   const items = (spaces.data ?? []).map((value) => ({
     id: value.spaceId,
     subjectLabel: value.subjectLabel,
@@ -27,7 +47,7 @@ export function ConnectedTabLayout() {
     members: [],
     empty: false,
   }));
-  return (
+  const page = (
     <PageLayout
       header={
         <CareSpaceMenu
@@ -44,16 +64,23 @@ export function ConnectedTabLayout() {
       }
       footer={
         <FixedBottomArea position="fixed">
-          {active === "home" && (
+          {(active === "home" || active === "news") && (
             <div className="bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-12">
               <Button
                 className="w-full"
                 onClick={() => void navigate(newsCreatePath(space.spaceId))}
               >
-                소식 남기기
+                소식 남기기{" "}
+                {active === "home" && (
+                  <Badge
+                    label="예시"
+                    tone="neutral"
+                  />
+                )}
               </Button>
             </div>
           )}
+          {active === "care" && <CareListAction spaceId={space.spaceId} />}
           <SpaceBottomNavigation
             spaceId={space.spaceId}
             active={active}
@@ -61,7 +88,21 @@ export function ConnectedTabLayout() {
         </FixedBottomArea>
       }
     >
-      <Outlet context={context} />
+      {active === "all" && !members.data ? (
+        members.isError ? (
+          <ErrorState
+            reason="load-error"
+            onAction={() => void members.refetch()}
+          />
+        ) : (
+          <LoadingState label="공간 정보를 확인하고 있어요" />
+        )
+      ) : example && !view ? (
+        <LoadingState label="예시 화면을 준비하고 있어요" />
+      ) : (
+        <Outlet context={{ ...view, ...context }} />
+      )}
     </PageLayout>
   );
+  return example ? <ExampleSurface>{page}</ExampleSurface> : page;
 }

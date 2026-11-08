@@ -13,12 +13,11 @@ import { ApiError } from "@/lib/api";
 import {
   spacePath,
   spaceInvitePath,
-  newsDetailPath,
-  careItemPath,
   proposalListPath,
-  careHistoryPath,
   paths,
+  careListPath,
 } from "@/routes/paths";
+import { exampleNewsPath, exampleCarePath } from "@/routes/exampleDestinations";
 
 export function ConnectedHomePage() {
   const { space } = useConnectedSpace();
@@ -75,17 +74,27 @@ export function ConnectedHomePage() {
         onFamily={() => void navigate(spacePath(space.spaceId, "family"))}
         onInvite={() => void navigate(spaceInvitePath(space.spaceId))}
         onNews={() => void navigate(spacePath(space.spaceId, "news"))}
-        onOpenNews={(id) => void navigate(newsDetailPath(space.spaceId, id))}
-        onCare={() => void navigate(spacePath(space.spaceId, "care"))}
-        onOpenCare={(id) => void navigate(careItemPath(space.spaceId, id))}
+        onOpenNews={() => void navigate(exampleNewsPath(space.spaceId))}
+        onCare={(filter) => void navigate(careListPath(space.spaceId, filter))}
+        onOpenCare={(id) => {
+          const kind = dashboard.data.remainingTasks.items.some(
+            (item) => item.itemId === id,
+          )
+            ? "task"
+            : dashboard.data.unconfirmedQuestions.items.some(
+                  (item) => item.itemId === id,
+                )
+              ? "question"
+              : "schedule";
+          void navigate(exampleCarePath(space.spaceId, kind));
+        }}
         onPending={() => void navigate(proposalListPath(space.spaceId))}
         onHistory={() =>
-          void navigate(`${spacePath(space.spaceId, "care")}/history`)
+          void navigate(exampleCarePath(space.spaceId, "schedule", true))
         }
-        onChange={(id) => {
-          const [itemId, version] = id.split(":");
-          void navigate(careHistoryPath(space.spaceId, itemId, version));
-        }}
+        onChange={() =>
+          void navigate(exampleCarePath(space.spaceId, "schedule", true))
+        }
         onRetry={retry}
       />
     </>

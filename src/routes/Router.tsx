@@ -1,3 +1,4 @@
+import { ExampleAccountLayout } from "./layouts/ExampleAccountLayout";
 import {
   createBrowserRouter,
   redirect,
@@ -19,16 +20,16 @@ import { SpaceCreatePage } from "@/pages/space/SpaceCreatePage";
 
 // 공간 안의 화면
 import { SpaceInvitePage } from "@/pages/space/SpaceInvitePage";
-import { HomePage } from "@/pages/home/HomePage";
+import { ConnectedHomePage } from "@/pages/home/ConnectedHomePage";
 import { CarePage } from "@/pages/care/CarePage";
 import { NewsPage } from "@/pages/news/NewsPage";
-import { FamilyPage } from "@/pages/family/FamilyPage";
+import { ConnectedFamilyPage } from "@/pages/family/ConnectedFamilyPage";
 import { AllPage } from "@/pages/all/AllPage";
 
 // 공통 오류·레이아웃·경로
 import { NotFoundPage } from "@/pages/error/NotFoundPage";
 import { RouteErrorPage } from "@/pages/error/RouteErrorPage";
-import { TabLayout } from "./layouts/TabLayout";
+import { ConnectedTabLayout } from "./layouts/ConnectedTabLayout";
 import { RecordRouteLayout } from "./layouts/RecordRouteLayout";
 import { ProposalRouteLayout } from "./layouts/ProposalRouteLayout";
 import { FamilyRouteLayout } from "./layouts/FamilyRouteLayout";
@@ -36,8 +37,6 @@ import { SpaceSessionLayout } from "./layouts/SpaceSessionLayout";
 import { recordNavigation, navigationDirection } from "./navigationHistory";
 import { getRouteMotion } from "./routeMotion";
 import { paths, spacePath } from "./paths";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
-import { connectedSpaceRoutes } from "./connectedSpaceRoutes";
 
 // 경로 이동 처리
 function landingLoader({ request }: LoaderFunctionArgs) {
@@ -124,28 +123,33 @@ const entryRoutes: RouteObject[] = [
 // 계정 화면은 선택한 공간이 없어도 접근한다.
 const accountRoutes: RouteObject[] = [
   {
-    path: paths.withdrawal,
-    lazy: async () => ({
-      Component: (await import("@/pages/account/WithdrawalPage"))
-        .WithdrawalPage,
-    }),
-    handle: { title: "회원 탈퇴" },
-  },
-  {
-    path: paths.withdrawalNews,
-    lazy: async () => ({
-      Component: (await import("@/pages/account/WithdrawalNewsPage"))
-        .WithdrawalNewsPage,
-    }),
-    handle: { title: "탈퇴 전 소식 확인" },
-  },
-  {
-    path: paths.withdrawalComplete,
-    lazy: async () => ({
-      Component: (await import("@/pages/account/WithdrawalCompletePage"))
-        .WithdrawalCompletePage,
-    }),
-    handle: { title: "회원 탈퇴 완료" },
+    Component: ExampleAccountLayout,
+    children: [
+      {
+        path: paths.withdrawal,
+        lazy: async () => ({
+          Component: (await import("@/pages/account/WithdrawalPage"))
+            .WithdrawalPage,
+        }),
+        handle: { title: "회원 탈퇴" },
+      },
+      {
+        path: paths.withdrawalNews,
+        lazy: async () => ({
+          Component: (await import("@/pages/account/WithdrawalNewsPage"))
+            .WithdrawalNewsPage,
+        }),
+        handle: { title: "탈퇴 전 소식 확인" },
+      },
+      {
+        path: paths.withdrawalComplete,
+        lazy: async () => ({
+          Component: (await import("@/pages/account/WithdrawalCompletePage"))
+            .WithdrawalCompletePage,
+        }),
+        handle: { title: "회원 탈퇴 완료" },
+      },
+    ],
   },
   {
     path: paths.account,
@@ -167,7 +171,7 @@ const accountRoutes: RouteObject[] = [
 const tabRoutes: RouteObject[] = [
   {
     path: "home",
-    Component: HomePage,
+    Component: ConnectedHomePage,
     handle: { title: "홈", tab: "home" },
   },
   {
@@ -182,7 +186,7 @@ const tabRoutes: RouteObject[] = [
   },
   {
     path: "family",
-    Component: FamilyPage,
+    Component: ConnectedFamilyPage,
     handle: { title: "가족", tab: "family" },
   },
   {
@@ -506,16 +510,11 @@ const notFoundRoute: RouteObject = {
 // 선택한 돌봄 공간의 화면 구성
 const spaceRoutes: RouteObject[] = [
   {
-    path: "invite",
-    Component: SpaceInvitePage,
-    handle: { title: "가족 초대" },
-  },
-  {
     index: true,
     loader: redirectToSpaceHome,
   },
   {
-    Component: TabLayout,
+    Component: ConnectedTabLayout,
     children: tabRoutes,
   },
   {
@@ -528,7 +527,15 @@ const spaceRoutes: RouteObject[] = [
   },
   {
     Component: FamilyRouteLayout,
-    children: [...familyRoutes, ...spaceInfoRoutes],
+    children: [
+      {
+        path: "invite",
+        Component: SpaceInvitePage,
+        handle: { title: "가족 초대" },
+      },
+      ...familyRoutes,
+      ...spaceInfoRoutes,
+    ],
   },
   notFoundRoute,
 ];
@@ -548,7 +555,7 @@ const router = createBrowserRouter([
       {
         path: `${paths.spaces}/:careSpaceId`,
         Component: SpaceSessionLayout,
-        children: isMockPreviewEnabled ? spaceRoutes : connectedSpaceRoutes,
+        children: spaceRoutes,
       },
       ...developmentRoutes,
       notFoundRoute,

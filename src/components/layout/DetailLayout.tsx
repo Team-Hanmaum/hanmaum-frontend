@@ -16,6 +16,7 @@ export function DetailLayout({
 }: DetailLayoutProps) {
   return (
     <PageLayout
+      exampleResult={/완료|결과/.test(title)}
       {...props}
       header={
         <Header

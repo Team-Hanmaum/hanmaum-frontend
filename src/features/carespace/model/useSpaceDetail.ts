@@ -10,11 +10,11 @@ export function useSpaceDetail(spaceId: string) {
     enabled: session.status === "authenticated",
   });
 }
-export function useSpaceMembers(spaceId: string) {
+export function useSpaceMembers(spaceId: string, enabled = true) {
   const session = useSession();
   return useQuery({
     queryKey: ["carespace", session.accountId, spaceId, "members"],
     queryFn: ({ signal }) => getSpaceMembers(spaceId, signal),
-    enabled: session.status === "authenticated",
+    enabled: enabled && session.status === "authenticated",
   });
 }

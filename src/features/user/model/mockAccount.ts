@@ -1,5 +1,8 @@
 import { useSyncExternalStore } from "react";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import {
+  isExamplePreviewEnabled,
+  registerExampleReset,
+} from "@/lib/examplePreview";
 
 type AccountStatus =
   | "active"
@@ -13,13 +16,16 @@ type MockAccount = {
   status: AccountStatus;
 };
 let snapshot: MockAccount = {
-  name: "",
-  provider: null,
-  status: "signed-out",
+  name: "예시 사용자",
+  provider: "google",
+  status: "active",
 };
 const listeners = new Set<() => void>();
+registerExampleReset("account", () =>
+  publish({ name: "예시 사용자", provider: "google", status: "active" }),
+);
 function publish(next: MockAccount) {
-  if (!isMockPreviewEnabled) return;
+  if (!isExamplePreviewEnabled) return;
   snapshot = next;
   listeners.forEach((listener) => listener());
 }

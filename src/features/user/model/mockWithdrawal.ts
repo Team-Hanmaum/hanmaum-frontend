@@ -1,11 +1,11 @@
 import { mockCareSpaces } from "@/features/carespace/model/mockCareSpaces";
 import { mockRecords } from "@/features/record/model/mockRecords";
 import { mockProposals } from "@/features/proposal/model/mockProposals";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import { isExamplePreviewEnabled } from "@/lib/examplePreview";
 import { mockAccount } from "./mockAccount";
 
 export function withdrawMockAccount() {
-  if (!isMockPreviewEnabled)
+  if (!isExamplePreviewEnabled)
     throw new Error("Mock 모드에서만 확인할 수 있어요.");
   const account = mockAccount.getSnapshot();
   if (account.status === "withdrawn") return;

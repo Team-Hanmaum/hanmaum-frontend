@@ -1,11 +1,18 @@
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import {
+  isExamplePreviewEnabled,
+  registerExampleReset,
+} from "@/lib/examplePreview";
 import { getMockRecordData } from "./mockRecordData";
 import type { RecordAnalysisStatus, RecordView } from "./recordViewTypes";
 
 // 공간별 메모리 Mock. 새로고침 시 초기화하며 세션·서버·스토리지에 저장하지 않는다.
 let snapshot: Record<string, readonly RecordView[]> = {};
 const listeners = new Set<() => void>();
+registerExampleReset("records", () => {
+  snapshot = {};
+  listeners.forEach((listener) => listener());
+});
 function publish(spaceId: string, records: readonly RecordView[]) {
   snapshot = { ...snapshot, [spaceId]: records };
   listeners.forEach((listener) => listener());
@@ -14,7 +21,7 @@ function publish(spaceId: string, records: readonly RecordView[]) {
 export const mockRecords = {
   getSnapshot: () => snapshot,
   discardSpace(spaceId: string) {
-    if (isMockPreviewEnabled) publish(spaceId, []);
+    if (isExamplePreviewEnabled) publish(spaceId, []);
   },
   subscribe(listener: () => void) {
     listeners.add(listener);
@@ -23,17 +30,17 @@ export const mockRecords = {
     };
   },
   getForSpace(space: CareSpaceView): readonly RecordView[] {
-    if (!isMockPreviewEnabled) return [];
-    return snapshot[space.id] ?? getMockRecordData();
+    if (!isExamplePreviewEnabled) return [];
+    return snapshot[space.id] ?? getMockRecordData(space);
   },
   retain(space: CareSpaceView) {
     // 참여자 변경으로 합성 원본의 작성자·내용이 다시 생성되지 않게 보존한다.
-    if (isMockPreviewEnabled && !snapshot[space.id])
+    if (isExamplePreviewEnabled && !snapshot[space.id])
       publish(space.id, mockRecords.getForSpace(space));
   },
   create(space: CareSpaceView, body: string) {
     const self = space.members.find((member) => member.self);
-    if (!isMockPreviewEnabled || !self || !body.trim()) return null;
+    if (!isExamplePreviewEnabled || !self || !body.trim()) return null;
     const record: RecordView = {
       id: `mock-record-${crypto.randomUUID()}`,
       spaceId: space.id,
@@ -48,7 +55,7 @@ export const mockRecords = {
     return record;
   },
   remove(space: CareSpaceView, recordId: string) {
-    if (!isMockPreviewEnabled) return false;
+    if (!isExamplePreviewEnabled) return false;
     const records = mockRecords.getForSpace(space);
     const record = records.find((entry) => entry.id === recordId);
     const self = space.members.find(
@@ -71,7 +78,7 @@ export const mockRecords = {
     recordId: string,
     status: RecordAnalysisStatus,
   ) {
-    if (!isMockPreviewEnabled) return;
+    if (!isExamplePreviewEnabled) return;
     const records = mockRecords.getForSpace(space);
     // 입력 내용을 분석하거나 실제 제안을 만들지 않는다.
     const record = records.find((item) => item.id === recordId);

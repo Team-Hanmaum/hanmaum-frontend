@@ -5,10 +5,17 @@ import { ApiError } from "@/lib/api";
 import { useSpaceDetail } from "@/features/carespace/model/useSpaceDetail";
 import { useAppNavigate } from "../useAppNavigate";
 import { paths } from "../paths";
+import { useMemo } from "react";
+import { useExampleSpaces } from "@/features/carespace/model/useExampleSpaces";
 
 export function ConnectedSpaceLayout() {
   const { careSpaceId = "" } = useParams();
   const detail = useSpaceDetail(careSpaceId);
+  const exampleSources = useMemo(
+    () => (detail.data ? [detail.data] : undefined),
+    [detail.data],
+  );
+  useExampleSpaces(exampleSources);
   const navigate = useAppNavigate();
   const denied =
     detail.error instanceof ApiError &&

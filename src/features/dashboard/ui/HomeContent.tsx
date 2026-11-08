@@ -53,7 +53,10 @@ export function HomeContent({
     <section className="flex flex-col gap-hm-12">
       <SectionHeader
         title="최근 가족 소식"
-        action={{ label: "소식 보기", onClick: onNews }}
+        action={{
+          label: connected ? "소식 화면 예시" : "소식 보기",
+          onClick: onNews,
+        }}
       />
       {data.recentNews.map((news) => (
         <NewsCard
@@ -64,7 +67,7 @@ export function HomeContent({
           previewBody
           status={news.status}
           statusMessage={news.statusMessage}
-          actionLabel="소식 자세히 보기"
+          actionLabel={connected ? "상세 화면 예시" : "소식 자세히 보기"}
           onAction={() => onOpenNews(news.id)}
         />
       ))}
@@ -117,6 +120,7 @@ export function HomeContent({
         />
       )}
       <HomeFamilySection
+        exampleInvite={connected}
         members={space.members}
         onFamily={onFamily}
         onInvite={onInvite}
@@ -151,7 +155,7 @@ export function HomeContent({
                 variant="secondary"
                 onClick={() => onCare()}
               >
-                돌봄 목록 보기
+                {connected ? "돌봄 목록 예시" : "돌봄 목록 보기"}
               </Button>
             </div>
           </section>
@@ -159,6 +163,7 @@ export function HomeContent({
       ) : (
         <>
           <MenuRow
+            badge={connected ? "예시" : undefined}
             icon="news-brand"
             title={
               data.pendingCount === undefined
@@ -181,7 +186,7 @@ export function HomeContent({
                 state === "section-error"
                   ? undefined
                   : {
-                      label: "모두 보기",
+                      label: connected ? "목록 화면 예시" : "모두 보기",
                       onClick: () =>
                         onCare({ type: "schedule", status: "upcoming" }),
                     }
@@ -210,13 +215,14 @@ export function HomeContent({
                     body={schedule.body}
                     bodyTone="hint"
                     action={{
-                      label: "일정 자세히 보기",
+                      label: connected ? "상세 화면 예시" : "일정 자세히 보기",
                       onClick: () => onOpenCare(schedule.id),
                     }}
                   />
                 ))}
                 <MenuRow
                   icon="clock"
+                  badge={connected ? "예시 화면" : undefined}
                   title={`지난 일정 ${data.pastScheduleCount}건`}
                   description="날짜가 지났지만 아직 예정으로 남아 있어요."
                   onClick={() => onCare({ type: "schedule", status: "past" })}
@@ -228,7 +234,7 @@ export function HomeContent({
             <SectionHeader
               title={`남은 할 일 ${data.totalCounts.tasks}`}
               action={{
-                label: "모두 보기",
+                label: connected ? "목록 화면 예시" : "모두 보기",
                 onClick: () => onCare({ type: "task", status: "remaining" }),
               }}
             />
@@ -241,6 +247,7 @@ export function HomeContent({
               {data.tasks.map((task) => (
                 <MenuRow
                   key={task.id}
+                  badge={connected ? "예시 화면" : undefined}
                   icon="check-secondary"
                   title={task.title}
                   description={task.description}
@@ -253,7 +260,7 @@ export function HomeContent({
             <SectionHeader
               title={`미확인 질문 ${data.totalCounts.questions}`}
               action={{
-                label: "모두 보기",
+                label: connected ? "목록 화면 예시" : "모두 보기",
                 onClick: () =>
                   onCare({ type: "question", status: "unconfirmed" }),
               }}
@@ -266,6 +273,7 @@ export function HomeContent({
             {data.questions.map((question) => (
               <MenuRow
                 key={question.id}
+                badge={connected ? "예시 화면" : undefined}
                 icon="info-secondary"
                 title={question.title}
                 description={question.description}
@@ -276,7 +284,10 @@ export function HomeContent({
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
               title="최근 확정된 변경"
-              action={{ label: "이력 보기", onClick: onHistory }}
+              action={{
+                label: connected ? "이력 화면 예시" : "이력 보기",
+                onClick: onHistory,
+              }}
             />
             {!data.recentChanges.length && (
               <p className="text-hm-body-default text-hm-text-secondary">
@@ -286,6 +297,7 @@ export function HomeContent({
             {data.recentChanges.map((change) => (
               <MenuRow
                 key={change.id}
+                badge={connected ? "예시 화면" : undefined}
                 icon="check"
                 title={change.title}
                 description={change.description}

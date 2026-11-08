@@ -1,5 +1,6 @@
 import type { ComponentPropsWithRef } from "react";
 import { Icon, type IconName } from "./Icon";
+import { Badge } from "./Badge";
 import "./focus-ring.css";
 export type MenuRowProps = Omit<
   ComponentPropsWithRef<"button">,
@@ -9,10 +10,12 @@ export type MenuRowProps = Omit<
   description?: string;
   icon?: IconName;
   tone?: "default" | "danger" | "brand";
+  badge?: string;
 };
 export function MenuRow({
   title,
   description,
+  badge,
   tone = "default",
   icon = tone === "danger" ? "person-error" : "person-brand",
   className = "",
@@ -31,6 +34,13 @@ export function MenuRow({
           className={`text-hm-body-emphasis ${tone === "danger" ? "text-hm-feedback-error-text" : tone === "brand" ? "text-hm-text-brand" : "text-hm-text-primary"}`}
         >
           {title}
+          {badge && (
+            <Badge
+              label={badge}
+              tone="neutral"
+              className="ml-hm-8"
+            />
+          )}
         </span>
         {description && (
           <span className="text-hm-caption-default text-hm-text-secondary">

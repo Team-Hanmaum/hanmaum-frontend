@@ -1,11 +1,17 @@
 import { ErrorState, LoadingState, Notice } from "@/components/feedback";
-import { Button } from "@/components/ui";
+import { Badge, Button, MenuRow } from "@/components/ui";
 import { FamilyMember } from "@/features/carespace/ui";
 import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
 import { toSpaceView } from "@/features/dashboard/model/homeData";
 import { useConnectedSpace } from "@/routes/useConnectedSpace";
 import { useAppNavigate } from "@/routes/useAppNavigate";
-import { paths, spaceInvitePath } from "@/routes/paths";
+import {
+  paths,
+  spaceInvitePath,
+  familyMembersPath,
+  familyTransferPath,
+  familyLeavePath,
+} from "@/routes/paths";
 import { ApiError } from "@/lib/api";
 
 export function ConnectedFamilyPage() {
@@ -58,11 +64,37 @@ export function ConnectedFamilyPage() {
         />
       ))}
       <Button onClick={() => void navigate(spaceInvitePath(space.spaceId))}>
-        가족 초대하기
+        가족 초대하기{" "}
+        <Badge
+          label="예시"
+          tone="neutral"
+        />
       </Button>
-      <Notice
-        title="가족 관리 기능을 준비하고 있어요"
-        body="현재 참여 중인 가족을 확인할 수 있어요. 초대와 구성원 관리는 연결 후 이용할 수 있어요."
+      <h2 className="text-hm-heading-section">가족 관리</h2>
+      {space.role === "OWNER" && (
+        <>
+          <MenuRow
+            icon="family-brand"
+            title="구성원 관리"
+            badge="예시"
+            description="예시 가족의 참여·담당 해제 흐름 확인"
+            onClick={() => void navigate(familyMembersPath(space.spaceId))}
+          />
+          <MenuRow
+            icon="person"
+            title="소유권 이전"
+            badge="예시"
+            description="예시 가족에게 소유자 역할 넘기기"
+            onClick={() => void navigate(familyTransferPath(space.spaceId))}
+          />
+        </>
+      )}
+      <MenuRow
+        tone="danger"
+        title="공간 나가기"
+        badge="예시"
+        description="실제 공간의 참여 상태는 유지돼요"
+        onClick={() => void navigate(familyLeavePath(space.spaceId))}
       />
     </>
   );

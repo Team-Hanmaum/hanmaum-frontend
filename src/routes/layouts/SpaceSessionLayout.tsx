@@ -1,8 +1,6 @@
-import { Outlet } from "react-router";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { ConnectedSpaceLayout } from "./ConnectedSpaceLayout";
 
-// Until each domain is connected, real sessions cannot enter its Mock data tree.
+// Example subpages still require a real session and access to this space.
 export function SpaceSessionLayout() {
-  return isMockPreviewEnabled ? <Outlet /> : <ConnectedSpaceLayout />;
+  return <ConnectedSpaceLayout />;
 }

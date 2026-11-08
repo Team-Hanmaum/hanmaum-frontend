@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import { isExamplePreviewEnabled } from "@/lib/examplePreview";
 import { getMockRecordData } from "./mockRecordData";
 import { mockRecords } from "./mockRecords";
 
@@ -9,7 +9,7 @@ export function useMockRecords(space: CareSpaceView) {
     mockRecords.subscribe,
     mockRecords.getSnapshot,
   );
-  return isMockPreviewEnabled
-    ? (snapshot[space.id] ?? getMockRecordData())
+  return isExamplePreviewEnabled
+    ? (snapshot[space.id] ?? getMockRecordData(space))
     : [];
 }

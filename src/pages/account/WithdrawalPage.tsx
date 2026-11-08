@@ -10,7 +10,7 @@ import { withdrawMockAccount } from "@/features/user/model/mockWithdrawal";
 import { AccountInfoCard } from "@/features/user/ui/AccountInfoCard";
 import { WithdrawalSpaceList } from "@/features/user/ui/WithdrawalSpaceList";
 import { useMockAction } from "@/lib/useMockAction";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import { isExamplePreviewEnabled } from "@/lib/examplePreview";
 import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
 import {
   familyDeletePath,
@@ -102,7 +102,7 @@ export function WithdrawalPage() {
             <Button
               variant={!owned.length && !unknown ? "destructive" : "primary"}
               loading={pending}
-              disabled={!isMockPreviewEnabled}
+              disabled={!isExamplePreviewEnabled}
               onClick={submit}
             >
               {unknown

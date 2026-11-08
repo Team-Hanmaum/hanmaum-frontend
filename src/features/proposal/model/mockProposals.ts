@@ -1,6 +1,9 @@
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import { mockRecords } from "@/features/record/model/mockRecords";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import {
+  isExamplePreviewEnabled,
+  registerExampleReset,
+} from "@/lib/examplePreview";
 import { getMockProposalData } from "./mockProposalData";
 import {
   careMeta,
@@ -28,6 +31,11 @@ import type {
 let snapshot: Record<string, ProposalSpaceState> = {};
 const seeds = new Map<string, ProposalSpaceState>();
 const listeners = new Set<() => void>();
+registerExampleReset("proposals", () => {
+  seeds.clear();
+  snapshot = {};
+  listeners.forEach((listener) => listener());
+});
 function publish(spaceId: string, state: ProposalSpaceState) {
   snapshot = { ...snapshot, [spaceId]: state };
   listeners.forEach((listener) => listener());
@@ -42,14 +50,14 @@ export function publishMockCareState(
   spaceId: string,
   state: ProposalSpaceState,
 ) {
-  if (isMockPreviewEnabled) publish(spaceId, state);
+  if (isExamplePreviewEnabled) publish(spaceId, state);
 }
 
 // 메모리 기반 화면 검증 전용. 권한·버전·원본·멱등성의 최종 보장은 BE에서 처리한다.
 export const mockProposals = {
   getSnapshot: () => snapshot,
   discardSpace(spaceId: string) {
-    if (!isMockPreviewEnabled) return;
+    if (!isExamplePreviewEnabled) return;
     seeds.delete(spaceId);
     // 빈 스냅샷을 남겨 이전 공간 객체로 합성 데이터가 다시 생성되지 않게 한다.
     publish(spaceId, {
@@ -70,11 +78,11 @@ export const mockProposals = {
   },
   getForSpace(space: CareSpaceView): ProposalSpaceState {
     if (snapshot[space.id]) return snapshot[space.id];
-    if (!seeds.has(space.id)) seeds.set(space.id, getMockProposalData());
+    if (!seeds.has(space.id)) seeds.set(space.id, getMockProposalData(space));
     return seeds.get(space.id)!;
   },
   removeSource(space: CareSpaceView, recordId: string): RecordDeletion | null {
-    if (!isMockPreviewEnabled) return null;
+    if (!isExamplePreviewEnabled) return null;
     const current = mockProposals.getForSpace(space);
     const existing = current.deletions?.find(
       (entry) => entry.recordId === recordId,
@@ -114,7 +122,7 @@ export const mockProposals = {
     const actor = space.members.find(
       (member) => member.self && member.role === "owner",
     );
-    if (!isMockPreviewEnabled || space.role !== "owner" || !actor)
+    if (!isExamplePreviewEnabled || space.role !== "owner" || !actor)
       return failure("permission");
     if (
       item?.deletedAt ||
@@ -180,7 +188,7 @@ export const mockProposals = {
     const current = mockProposals.getForSpace(space);
     const proposal = current.proposals.find((item) => item.id === proposalId);
     if (
-      !isMockPreviewEnabled ||
+      !isExamplePreviewEnabled ||
       !space.members.some((member) => member.self && member.role === space.role)
     )
       return failure("permission");
@@ -251,7 +259,7 @@ export const mockProposals = {
       (member) => member.self && member.role === space.role,
     );
     if (
-      !isMockPreviewEnabled ||
+      !isExamplePreviewEnabled ||
       !actor ||
       (decision === "request"
         ? space.role !== "member"

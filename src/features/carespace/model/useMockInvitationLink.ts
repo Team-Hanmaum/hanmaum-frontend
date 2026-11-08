@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import { isExamplePreviewEnabled } from "@/lib/examplePreview";
 import { useMockAction } from "@/lib/useMockAction";
 import type { InvitationScreenState } from "./invitationScreenStates";
 
@@ -44,7 +44,7 @@ export function useMockInvitationLink({
   const failed = state === "error";
   const expired = state === "expired";
   const loading = pending || state === "loading";
-  const unavailable = failed || expired || loading || !isMockPreviewEnabled;
+  const unavailable = failed || expired || loading || !isExamplePreviewEnabled;
 
   function changeState(value: string) {
     if (!sharing && !pending) {

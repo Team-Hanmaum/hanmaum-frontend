@@ -7,7 +7,7 @@ import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewType
 import { useNewsComposer } from "@/features/record/model/useNewsComposer";
 import { newsCreateStates } from "@/features/record/model/newsScreenStates";
 import { NewsForm } from "@/features/record/ui/NewsForm";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import { isExamplePreviewEnabled } from "@/lib/examplePreview";
 import { newsDetailPath, spacePath } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
@@ -70,7 +70,7 @@ export function NewsCreatePage() {
         onSubmit={() => submit(state === "error" && !failed)}
         error={error}
         failed={failed || state === "error"}
-        disabled={pending || !isMockPreviewEnabled}
+        disabled={pending || !isExamplePreviewEnabled}
       />
       <UnsavedChangesDialog
         open={blocker.state === "blocked"}
