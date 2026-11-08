@@ -1,5 +1,13 @@
 # 라우팅과 페이지 레이아웃
 
+## 실제 인증 연결 (#49)
+
+SessionProvider → SessionBoundary가 로그인 상태를 관리한다. `/`, `/login`, `/auth/callback`, 초대 URL은 공개 진입이며 공간·계정·온보딩은 `/api/users/me` 확인 후 표시한다. `/auth/callback`은 저장된 내부 복귀 경로를 우선하고, 없으면 기존 useCareSpaces로 한 공간은 홈, 0/여러 공간은 `/spaces`로 보낸다. 실패는 재확인하며 빈 목록으로 간주하지 않는다.
+
+실제 모드의 공간 내부는 SpaceSessionLayout → ConnectedSpacePage로 목록 API의 공간 이름·역할·인원만 표시한다. 다른 도메인을 연결하기 전에는 Mock 화면을 보여주지 않는다. 실제 탈퇴·초대 참여는 준비 중이며 초대는 로그인 후 원래 주소 복귀까지만 연결한다. 기존 전체 하위 URL·화면 동작은 Mock 모드에서 유지한다. 아래 도메인별 화면 설명의 Mock 범위를 실제 API 완료로 해석하지 않는다.
+
+BE 성공 복귀 주소와 환경 설정은 [공통 API 규격](../lib/api/README.md)과 [배포 문서](../../docs/deployment.md)를 따른다.
+
 React Router Data 모드 사용. `Router.tsx`에서 URL·페이지·레이아웃을 등록하고 `paths.ts`의 경로 상수와 생성 함수를 사용한다.
 
 ## 공통 화면 전환

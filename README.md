@@ -12,7 +12,8 @@ pnpm dev
 ```
 
 - `/`: 최신 Figma `HM-ON-A01` 랜딩 화면. 시작하기·이미 계정이 있어요 → `/login`.
-- `/login`: 최신 Figma `HM-ON-A02` 로그인 대표 화면. QA 모드의 상단 Mock 안내는 확인용 UI이며 실제 인증·계정 생성은 발생하지 않는다.
+- `/login`: Figma `HM-ON-A02` 로그인 UI 재사용. 실제 모드는 BE OAuth 주소로 이동하며 Mock 모드만 예시 이동을 사용한다.
+- `/auth/callback`: `/api/users/me` 확인 후 저장된 내부 경로 또는 참여 공간으로 이동. 한 곳이면 홈, 0곳 또는 여러 곳이면 목록. 오류는 재시도 제공.
 - `/_dev/components`: 개발 모드 전용 공통 컴포넌트 확인 화면. 기존 `/?preview=components` 주소도 이 화면으로 이동한다.
 - `/spaces`: 참여 공간 선택 화면. 예시 공간과 현재 실행 중 만든 Mock 공간의 목록·역할·인원 표시. Mock 미리보기가 꺼져 있으면 `GET /api/spaces`의 참여 공간 목록을 표시하고, `/spaces/new`는 `POST /api/spaces`로 공간을 만든 뒤 해당 공간으로 이동한다. 생성 요청 ID는 같은 호칭의 재시도 동안 유지한다.
 - `/spaces/:careSpaceId/home`: 일반·빈 홈, 생성·참여 직후, 로딩·오류와 공간 전환 UI. 최근 소식은 소식 목록과 같은 Mock 저장소 사용.
@@ -33,7 +34,9 @@ pnpm dev
 
 React Router의 Data 모드를 사용하며 `src/routes/Router.tsx`에서 URL을 등록한다. 잘못된 주소는 404 화면, 라우트 오류는 공통 오류 화면으로 처리한다. 뒤로가기는 앱 안에서 관측한 방문 이력이 있을 때만 이전 항목으로 이동하고, 직접 진입·새로고침 후에는 지정한 대체 경로를 사용한다. [라우팅·레이아웃 규격](src/routes/README.md) 참조.
 
-현재 `.env.production`의 `VITE_ENABLE_MOCK_PREVIEW=true`로 Vercel Preview·Production에서도 로그인 → 시작 전 안내 → 공간 생성·선택 → 홈·초대 흐름을 확인할 수 있다. 로컬 개발 모드는 별도 설정이 없으면 Mock 미리보기가 켜진다. `src/lib/mockPreview.ts`에서 공통 판별하며, 실제 인증 상태·쿠키·토큰을 만들거나 계정·공간·동의 기록을 저장하지 않는다.
+현재 `.env.production`은 `VITE_API_BASE_URL=https://api.hanmaum.site`, `VITE_ENABLE_MOCK_PREVIEW=false`, `VITE_ENABLE_QA_TOOLS=false`다. 실제 모드는 소셜 로그인 → `/auth/callback` 세션 확인 → 참여 공간 진입으로 연결한다. 공간 목록·생성은 #48의 API 구현을 사용한다. 다른 도메인은 아직 미연동이므로 예시 데이터 대신 준비 중 안내를 표시한다.
+
+전체 Mock UI를 보려면 `VITE_ENABLE_MOCK_PREVIEW=true`로 실행한다. 로컬 `pnpm dev`는 환경 변수가 없으면 기존 Mock 기본값을 유지한다. `.env.example`을 `.env.local`로 복사하면 로컬 BE와 실제 API 모드를 사용하므로 실행 목적에 맞게 설정한다.
 
 실제 인증·업무 데이터 연결 전에는 `VITE_ENABLE_MOCK_PREVIEW=false`로 변경하고 다시 빌드한다. 이 설정은 Mock 로그인 이동·공간 데이터·생성·참여·소식 조회/작성/재시도를 제어하며 실제 인증·접근 권한 검증을 대신하지 않는다. 개발용 컴포넌트 확인 화면의 코드와 경로는 계속 프로덕션 빌드에서 제외한다. [설정 우선순위와 검증 절차](docs/deployment.md) 참조.
 
@@ -68,7 +71,7 @@ React Router의 Data 모드를 사용하며 `src/routes/Router.tsx`에서 URL을
 
 Axios와 TanStack Query 기반을 사용한다. `.env.example`을 `.env.local`로 복사하면 API 서버 주소의 설정 예시를 확인할 수 있다. `VITE_API_BASE_URL`에는 서버 주소만 지정하고 `/api`는 도메인 요청 함수에 포함한다. 기존 Mock 화면은 API 주소 없이도 실행하며 실제 API 요청을 자동으로 시작하지 않는다.
 
-공통 응답은 최신 BE의 `success/code/message/data/errors/timestamp` 규격을 따른다. 도메인 API 함수는 `features/{domain}/api/`, 조회·변경 훅과 캐시 키는 `model/`에 둔다. 내 정보 조회와 로그아웃의 사용 기반은 준비했으며 실제 로그인 화면·세션 가드는 후속 연결 대상이다. [설정·호출 예시·CSRF·오류·캐시 규칙](src/lib/api/README.md) 참조.
+공통 응답은 최신 BE의 `success/code/message/data/errors/timestamp` 규격을 따른다. 도메인 API 함수는 `features/{domain}/api/`, 조회·변경 훅과 캐시 키는 `model/`에 둔다. 내 정보·로그아웃·세션 가드를 연결했으며 로그인 상태는 `useSession`에서 공통 관리한다. 로그인 성공 복귀 URL은 BE에서도 `/auth/callback`으로 설정해야 한다. [설정·호출 예시·CSRF·오류·캐시 규칙](src/lib/api/README.md) 참조.
 
 ## 파일·폴더 이름
 
@@ -119,7 +122,7 @@ CI 설정 도입 전에 분기한 스택 브랜치에서도 검사하려면 해�
 
 ## 배포
 
-[배포 화면 열기](https://hanmaum-frontend.vercel.app/) — 현재는 실제 로그인·API 연결 전의 UI 미리보기.
+[배포 화면 열기](https://hanmaum.site/) — 실제 인증 연결은 BE 성공 복귀 URL과 Vercel 환경 변수 설정을 함께 확인한다.
 
 작업 브랜치는 Vercel Git 연동으로 Preview를 빌드·배포한다. `dev`는 `.github/workflows/deploy.yml`에서 검사와 빌드를 실행한 뒤 Vercel Production으로 배포하며, 빌드·배포 로그는 GitHub Actions에서 확인한다. 이 설정이 `dev`에 반영된 이후부터 적용한다.
 
