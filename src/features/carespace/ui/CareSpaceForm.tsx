@@ -2,6 +2,13 @@ import { useRef } from "react";
 import { Button, Field } from "@/components/ui";
 import { Notice } from "@/components/feedback";
 
+export type CareSpaceFormFailure = { title: string; body: string };
+
+const defaultFailure: CareSpaceFormFailure = {
+  title: "공간을 만들지 못했어요",
+  body: "입력한 내용은 그대로예요.\n연결 상태를 확인한 뒤 다시 시도해 주세요.",
+};
+
 export function CareSpaceForm({
   id,
   value,
@@ -16,10 +23,11 @@ export function CareSpaceForm({
   onChange: (value: string) => void;
   onSubmit: () => void;
   error?: string;
-  failed?: boolean;
+  failed?: boolean | CareSpaceFormFailure;
   disabled?: boolean;
 }) {
   const input = useRef<HTMLInputElement>(null);
+  const failure = failed === true ? defaultFailure : failed || undefined;
   return (
     <form
       id={id}
@@ -42,14 +50,12 @@ export function CareSpaceForm({
           함께 기록해요.
         </p>
       </div>
-      {failed && (
+      {failure && (
         <Notice
           role="alert"
           tone="error"
-          title="공간을 만들지 못했어요"
-          body={
-            "입력한 내용은 그대로예요.\n연결 상태를 확인한 뒤 다시 시도해 주세요."
-          }
+          title={failure.title}
+          body={failure.body}
         />
       )}
       <Field

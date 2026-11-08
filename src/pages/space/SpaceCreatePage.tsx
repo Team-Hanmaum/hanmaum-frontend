@@ -1,10 +1,15 @@
 import { useAppNavigate } from "@/routes/useAppNavigate";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { ActionBar, DetailLayout } from "@/components/layout";
 import { MockStateSelect } from "@/components/feedback/MockStateSelect";
-import { CareSpaceForm } from "@/features/carespace/ui/CareSpaceForm";
+import {
+  CareSpaceForm,
+  type CareSpaceFormFailure,
+} from "@/features/carespace/ui/CareSpaceForm";
 import { mockCareSpaces } from "@/features/carespace/model/mockCareSpaces";
+import { useCreateCareSpace } from "@/features/carespace/model/useCreateCareSpace";
+import type { ApiError } from "@/lib/api";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { useMockAction } from "@/lib/useMockAction";
 import { paths, spacePath } from "@/routes/paths";
@@ -15,27 +20,60 @@ const states = [
   { value: "default", label: "기본" },
   { value: "error", label: "생성 오류" },
 ] as const;
+
+const labelRule = "이름 또는 호칭을 줄바꿈 없이 1~30자로 입력해 주세요.";
+
+// BE subjectLabel 계약: 줄바꿈은 trim 전에 거부하고, 앞뒤 공백 제거 후 1~30 code point.
+function isValidLabel(raw: string, label: string) {
+  return (
+    label.length > 0 &&
+    Array.from(label).length <= 30 &&
+    !/[\r\n\u2028\u2029]/u.test(raw)
+  );
+}
+
+type CreateFailure =
+  | { field: string }
+  | { notice: CareSpaceFormFailure | true; resetAttempt?: boolean };
+
+function describeCreateError(error: ApiError): CreateFailure {
+  if (error.status === 400 && error.code === "INVALID_REQUEST")
+    return { field: labelRule };
+  if (error.code === "SPACE_LABEL_DUPLICATED")
+    return {
+      field:
+        "이미 소유한 공간 중 같은 이름이 있어요. 다른 이름이나 호칭을 입력해 주세요.",
+    };
+  if (error.status === 401 && error.code === "UNAUTHENTICATED")
+    return {
+      notice: {
+        title: "로그인이 필요해요",
+        body: "입력한 내용은 그대로예요.\n다시 로그인한 뒤 공간을 만들어 주세요.",
+      },
+    };
+  // 처리 중·타임아웃·응답 유실은 같은 요청 ID로 다시 시도해야 결과가 중복되지 않는다.
+  return {
+    notice: true,
+    resetAttempt: error.code === "IDEMPOTENCY_KEY_REUSED",
+  };
+}
+
 export function SpaceCreatePage() {
   const navigate = useAppNavigate();
   const onBack = useBackNavigation(paths.onboardingGuide);
   const [value, setValue] = useState("");
   const [error, setError] = useState<string>();
+  const [failure, setFailure] = useState<CareSpaceFormFailure | boolean>(false);
   const [state, setState] = useMockScreenState(states, "default");
-  const { pending, run } = useMockAction();
-  function submit() {
-    if (!isMockPreviewEnabled || pending) return;
-    const label = value.trim();
-    // 현재 공개 명세의 subjectLabel 제약만 사용한다. 실제 생성은 후속 API 연동 대상이다.
-    if (
-      !label ||
-      Array.from(label).length > 30 ||
-      /[\r\n\u2028\u2029]/u.test(label)
-    ) {
-      setError("이름 또는 호칭을 줄바꿈 없이 1~30자로 입력해 주세요.");
-      return;
-    }
-    setError(undefined);
-    run(() => {
+  const mockAction = useMockAction();
+  const create = useCreateCareSpace();
+  // 한 생성 시도의 요청 ID. 호칭이 바뀌면 새 시도로 보고 새 ID를 발급한다.
+  const attempt = useRef<{ label: string; id: string } | null>(null);
+  const pending = isMockPreviewEnabled ? mockAction.pending : create.isPending;
+  const failed = isMockPreviewEnabled ? state === "error" : failure;
+
+  function submitMock(label: string) {
+    mockAction.run(() => {
       const space = mockCareSpaces.create(label);
       if (space)
         void navigate(`${spacePath(space.id)}?mockState=created`, {
@@ -43,28 +81,66 @@ export function SpaceCreatePage() {
         });
     });
   }
+
+  function submitRemote(label: string) {
+    if (attempt.current?.label !== label)
+      attempt.current = { label, id: crypto.randomUUID() };
+    setFailure(false);
+    create.mutate(
+      { subjectLabel: label, clientRequestId: attempt.current.id },
+      {
+        onSuccess: (created) => {
+          attempt.current = null;
+          void navigate(spacePath(created.spaceId), { replace: true });
+        },
+        onError: (createError) => {
+          const result = describeCreateError(createError);
+          if ("field" in result) {
+            setError(result.field);
+            return;
+          }
+          if (result.resetAttempt) attempt.current = null;
+          setFailure(result.notice);
+        },
+      },
+    );
+  }
+
+  function submit() {
+    if (pending) return;
+    const label = value.trim();
+    if (!isValidLabel(value, label)) {
+      setError(labelRule);
+      return;
+    }
+    setError(undefined);
+    if (isMockPreviewEnabled) submitMock(label);
+    else submitRemote(label);
+  }
+
   return (
     <DetailLayout
       title="돌봄 공간 만들기"
       onBack={onBack}
       notice={
-        <MockStateSelect
-          message="화면 확인용 · 실제 생성·동의 기록 없음 · 새로고침 시 초기화"
-          value={state}
-          options={states}
-          onChange={setState}
-        />
+        isMockPreviewEnabled && (
+          <MockStateSelect
+            message="화면 확인용 · 실제 생성·동의 기록 없음 · 새로고침 시 초기화"
+            value={state}
+            options={states}
+            onChange={setState}
+          />
+        )
       }
       footer={
         <ActionBar
           position="fixed"
           primary={{
-            label: state === "error" ? "다시 시도하기" : "돌봄 공간 만들기",
+            label: failed ? "다시 시도하기" : "돌봄 공간 만들기",
             type: "submit",
             form: "care-space-form",
             loading: pending,
             loadingLabel: "공간을 준비하고 있어요",
-            disabled: !isMockPreviewEnabled,
           }}
         />
       }
@@ -78,8 +154,8 @@ export function SpaceCreatePage() {
         }}
         onSubmit={submit}
         error={error}
-        failed={state === "error"}
-        disabled={pending || !isMockPreviewEnabled}
+        failed={failed}
+        disabled={pending}
       />
     </DetailLayout>
   );
