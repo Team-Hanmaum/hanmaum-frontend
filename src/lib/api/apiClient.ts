@@ -6,7 +6,7 @@ import {
   type ApiResult,
   type ApiSuccess,
 } from "./apiTypes";
-import { getCsrfToken } from "./csrf";
+import { getCsrfToken, resetCsrfToken } from "./csrf";
 import { getApiUrl, httpClient } from "./httpClient";
 import { notifyUnauthenticated, trackApiRequest } from "./apiSession";
 
@@ -34,6 +34,8 @@ async function send(path: ApiPath, options: ApiRequestOptions = {}) {
     request.assertCurrent();
     // No redirect or automatic write retry: FORBIDDEN also means no permission.
     const failure = normalizeApiError(error);
+    if (failure.status === 403 && options.method && options.method !== "GET")
+      resetCsrfToken(); // A later explicit retry obtains a new token; never resend here.
     notifyUnauthenticated(failure);
     throw failure;
   } finally {

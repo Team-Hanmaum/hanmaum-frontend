@@ -8,5 +8,10 @@ export function useSession() {
     controller.subscribe,
     controller.getSnapshot,
   );
-  return { ...state, check: controller.check, signOut: controller.signOut };
+  return {
+    ...state,
+    accountId: controller.getAccountId(),
+    check: controller.check,
+    signOut: controller.signOut,
+  };
 }

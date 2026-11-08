@@ -6,6 +6,7 @@ import {
 export const paths = {
   landing: "/",
   login: "/login",
+  authCallback: "/auth/callback",
   account: "/account",
   logout: "/account/logout",
   withdrawal: "/account/withdraw",

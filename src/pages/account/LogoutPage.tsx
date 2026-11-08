@@ -10,6 +10,7 @@ import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
 import { paths } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useMockScreenState } from "@/routes/useMockScreenState";
+import { ConnectedLogoutPage } from "./ConnectedLogoutPage";
 
 const states = [
   { value: "default", label: "로그아웃 확인" },
@@ -18,6 +19,9 @@ const states = [
   { value: "expired", label: "인증 만료" },
 ] as const;
 export function LogoutPage() {
+  return isMockPreviewEnabled ? <MockLogoutPage /> : <ConnectedLogoutPage />;
+}
+function MockLogoutPage() {
   const navigate = useAppNavigate();
   const onBack = useBackNavigation(paths.account);
   const account = useMockAccount();

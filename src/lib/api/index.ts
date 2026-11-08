@@ -1,5 +1,5 @@
 export { apiClient } from "./apiClient";
-export { ApiError } from "./apiError";
+export { ApiError, normalizeApiError } from "./apiError";
 export type { ApiErrorKind } from "./apiError";
 export { getCsrfToken, resetCsrfToken } from "./csrf";
 export {

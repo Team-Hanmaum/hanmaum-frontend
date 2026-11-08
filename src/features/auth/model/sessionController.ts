@@ -1,6 +1,10 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { ApiError, isUnauthenticated, resetCsrfToken } from "@/lib/api";
-import { normalizeApiError } from "@/lib/api/apiError";
+import {
+  ApiError,
+  isUnauthenticated,
+  resetCsrfToken,
+  normalizeApiError,
+} from "@/lib/api";
 import { getMe } from "@/features/user/api/userApi";
 import type { MyProfile } from "@/features/user/api/userTypes";
 import { userKeys } from "@/features/user/model/userKeys";
@@ -113,6 +117,7 @@ export function createSessionController(queryClient: QueryClient) {
   }
   return {
     getSnapshot: () => state,
+    getAccountId: () => user?.userId,
     subscribe(listener: () => void) {
       listeners.add(listener);
       return () => {
