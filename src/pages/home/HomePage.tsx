@@ -36,7 +36,8 @@ export function HomePage() {
     space,
     now,
   );
-  data.pendingCount += pendingSpaceInfoCount(spaceChanges, space);
+  data.pendingCount =
+    (data.pendingCount ?? 0) + pendingSpaceInfoCount(spaceChanges, space);
   const defaultState =
     space.empty &&
     !records.length &&

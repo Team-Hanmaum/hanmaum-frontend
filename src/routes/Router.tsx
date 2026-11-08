@@ -36,6 +36,8 @@ import { SpaceSessionLayout } from "./layouts/SpaceSessionLayout";
 import { recordNavigation, navigationDirection } from "./navigationHistory";
 import { getRouteMotion } from "./routeMotion";
 import { paths, spacePath } from "./paths";
+import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import { connectedSpaceRoutes } from "./connectedSpaceRoutes";
 
 // 경로 이동 처리
 function landingLoader({ request }: LoaderFunctionArgs) {
@@ -546,7 +548,7 @@ const router = createBrowserRouter([
       {
         path: `${paths.spaces}/:careSpaceId`,
         Component: SpaceSessionLayout,
-        children: spaceRoutes,
+        children: isMockPreviewEnabled ? spaceRoutes : connectedSpaceRoutes,
       },
       ...developmentRoutes,
       notFoundRoute,

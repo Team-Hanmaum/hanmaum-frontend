@@ -31,6 +31,7 @@ export function HomeContent({
   onHistory,
   onChange,
   onRetry,
+  connected = false,
 }: {
   space: CareSpaceView;
   data: HomeView;
@@ -45,6 +46,7 @@ export function HomeContent({
   onHistory: () => void;
   onChange: (id: string) => void;
   onRetry: () => void;
+  connected?: boolean;
 }) {
   const empty = state === "empty" || state === "created";
   const newsSection = (
@@ -59,12 +61,19 @@ export function HomeContent({
           title={news.title}
           author={news.author}
           body={news.body}
+          previewBody
           status={news.status}
           statusMessage={news.statusMessage}
           actionLabel="소식 자세히 보기"
           onAction={() => onOpenNews(news.id)}
         />
       ))}
+      {!data.recentNews.length && (
+        <EmptyState
+          title="아직 남긴 소식이 없어요"
+          body="가족의 소식이 등록되면 여기에서 확인할 수 있어요."
+        />
+      )}
     </section>
   );
   if (state === "loading")
@@ -119,7 +128,11 @@ export function HomeContent({
           ) : (
             <EmptyState
               title="아직 남긴 소식이 없어요"
-              body={"병원에서 들은 이야기나\n오늘의 작은 변화를 남겨보세요."}
+              body={
+                connected
+                  ? "가족의 소식이 등록되면 여기에서 확인할 수 있어요."
+                  : "병원에서 들은 이야기나\n오늘의 작은 변화를 남겨보세요."
+              }
               className="rounded-hm-16"
             />
           )}
@@ -130,7 +143,9 @@ export function HomeContent({
                 아직 등록된 일정이 없어요.
               </p>
               <p className="text-hm-body-small text-hm-text-secondary">
-                돌봄 탭에서 일정·할 일·질문을 추가해 보세요.
+                {connected
+                  ? "등록된 돌봄 정보가 있으면 여기에서 확인할 수 있어요."
+                  : "돌봄 탭에서 일정·할 일·질문을 추가해 보세요."}
               </p>
               <Button
                 variant="secondary"
@@ -145,7 +160,11 @@ export function HomeContent({
         <>
           <MenuRow
             icon="news-brand"
-            title={`확인할 내용 ${data.pendingCount}건`}
+            title={
+              data.pendingCount === undefined
+                ? "제안·요청 확인"
+                : `확인할 내용 ${data.pendingCount}건`
+            }
             description={
               space.role === "owner"
                 ? "제안과 가족의 요청을 확인해요."

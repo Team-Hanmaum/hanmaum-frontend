@@ -5,6 +5,21 @@ import type { NewsStatus } from "./NewsCard";
 import { RecordOriginalCard } from "./RecordOriginalCard";
 
 const presentations = {
+  recorded: {
+    badge: "소식 저장",
+    title: "소식을 저장했어요",
+    description: "가족이 남긴 소식을 확인해 보세요.",
+  },
+  "analysis-completed": {
+    badge: "분석 완료",
+    title: "소식 분석을 마쳤어요",
+    description: "제안의 검토와 반영 여부는 제안 화면에서 확인해 주세요.",
+  },
+  "analysis-discarded": {
+    badge: "분석 종료",
+    title: "이 소식의 분석이 종료됐어요",
+    description: "저장된 소식은 아래에서 확인할 수 있어요.",
+  },
   analyzing: {
     badge: "소식 저장 완료",
     title: "소식을 저장했어요",
