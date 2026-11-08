@@ -1,5 +1,5 @@
 import { useLocation, useSearchParams } from "react-router";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import { isExamplePreviewEnabled } from "@/lib/examplePreview";
 import { useQaMode } from "@/lib/useQaMode";
 
 export function useMockScreenState<T extends string>(
@@ -12,12 +12,12 @@ export function useMockScreenState<T extends string>(
   // QA에서 고른 상태만 종료 시 무시한다. 생성·참여·공유 등 Mock 흐름은 유지한다.
   const requested =
     (qaEnabled ? params.get("qaState") : null) ?? params.get("mockState");
-  const state = isMockPreviewEnabled
+  const state = isExamplePreviewEnabled
     ? (options.find((option) => option.value === requested)?.value ?? fallback)
     : fallback;
   function setState(value: string) {
     if (
-      !isMockPreviewEnabled ||
+      !isExamplePreviewEnabled ||
       !options.some((option) => option.value === value)
     )
       return;

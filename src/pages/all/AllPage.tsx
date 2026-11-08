@@ -20,7 +20,7 @@ export function AllPage() {
   const space = useOutletContext<CareSpaceView>();
   const navigate = useAppNavigate();
   const { installed, showInstall } = usePwaInstall();
-  const self = space.members.find((member) => member.self)!;
+  const self = space.members.find((member) => member.self);
   const go = (path: string) => () => void navigate(path);
   return (
     <>
@@ -28,12 +28,13 @@ export function AllPage() {
       <Badge
         tone={space.role === "owner" ? "brand" : "neutral"}
         className="self-start"
-        label={`${self.name} · ${space.role === "owner" ? "소유자" : "구성원"}`}
+        label={`${self?.name ?? "나"} · ${space.role === "owner" ? "소유자" : "구성원"}`}
       />
       <h2 className="text-hm-heading-section">돌봄 공간</h2>
       <MenuRow
         icon="person"
         title="돌봄 대상·공간 정보"
+        badge="예시"
         description={`${space.subjectLabel}의 돌봄`}
         onClick={go(spaceInfoPath(space.id))}
       />
@@ -46,6 +47,7 @@ export function AllPage() {
       <MenuRow
         icon="plus"
         title="가족 초대"
+        badge="예시"
         description="초대 링크로 함께 돌봐요"
         onClick={go(spaceInvitePath(space.id))}
       />
@@ -59,18 +61,21 @@ export function AllPage() {
       <MenuRow
         icon="care-brand"
         title="돌봄 항목"
+        badge="예시"
         description="일정 · 할 일 · 질문 · 관찰 · 안내"
         onClick={go(spacePath(space.id, "care"))}
       />
       <MenuRow
         icon="news-brand"
         title="가족 소식"
+        badge="예시"
         description="함께 남긴 소식"
         onClick={go(spacePath(space.id, "news"))}
       />
       <MenuRow
         icon="check"
         title="확인할 내용"
+        badge="예시"
         description={
           space.role === "owner"
             ? "제안과 승인 요청 확인"
@@ -84,12 +89,14 @@ export function AllPage() {
           <MenuRow
             icon="family-brand"
             title="구성원 관리"
+            badge="예시"
             description="함께하는 가족의 참여 관리"
             onClick={go(familyMembersPath(space.id))}
           />
           <MenuRow
             icon="person"
             title="소유권 이전"
+            badge="예시"
             description="가족에게 소유자 역할을 넘겨요"
             onClick={go(familyTransferPath(space.id))}
           />
@@ -99,6 +106,7 @@ export function AllPage() {
         tone="danger"
         icon="chevron-right-error"
         title="공간 나가기"
+        badge="예시"
         description={
           space.role === "owner"
             ? "소유권 이전 또는 공간 삭제 후 가능"
@@ -111,6 +119,7 @@ export function AllPage() {
           tone="danger"
           icon="chevron-right-error"
           title="공간 삭제"
+          badge="예시"
           description="소유자만 가능 · 삭제 후 복구 불가"
           onClick={go(familyDeletePath(space.id))}
         />
@@ -134,6 +143,7 @@ export function AllPage() {
         tone="danger"
         icon="chevron-right-error"
         title="회원 탈퇴"
+        badge="예시"
         description="모든 참여 공간의 접근 종료"
         onClick={go(paths.withdrawal)}
       />

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import { isExamplePreviewEnabled } from "@/lib/examplePreview";
 import { useMockAction } from "@/lib/useMockAction";
 import { useUnsavedChanges } from "@/lib/useUnsavedChanges";
 import { mockRecords } from "./mockRecords";
@@ -18,7 +18,7 @@ export function useNewsComposer({
   const { pending, run } = useMockAction();
   const { blocker, allowNavigation } = useUnsavedChanges(Boolean(body));
   function submit(simulateFailure = false) {
-    if (!isMockPreviewEnabled || pending) return;
+    if (!isExamplePreviewEnabled || pending) return;
     if (!body.trim()) {
       setError("소식 내용을 입력해 주세요.");
       return;
@@ -56,7 +56,7 @@ export function useNewsComposer({
     },
     blocker,
     pending,
-    canSubmit: isMockPreviewEnabled && Boolean(body.trim()),
+    canSubmit: isExamplePreviewEnabled && Boolean(body.trim()),
     submit,
   };
 }

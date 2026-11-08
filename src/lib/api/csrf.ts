@@ -1,5 +1,6 @@
 import { ApiError, normalizeApiError } from "./apiError";
 import type { CsrfToken } from "./apiTypes";
+import { isCsrfToken } from "./apiValidators";
 import { getApiUrl, httpClient } from "./httpClient";
 
 let cachedToken: CsrfToken | undefined;
@@ -16,17 +17,7 @@ async function fetchCsrfToken(signal: AbortSignal): Promise<CsrfToken> {
       },
     );
     const value = response.data;
-    if (
-      response.status !== 200 ||
-      typeof value !== "object" ||
-      value === null ||
-      !("headerName" in value) ||
-      typeof value.headerName !== "string" ||
-      !/^[!#$%&'*+.^_`|~\da-z-]+$/i.test(value.headerName) ||
-      !("token" in value) ||
-      typeof value.token !== "string" ||
-      !value.token
-    ) {
+    if (response.status !== 200 || !isCsrfToken(value)) {
       throw new ApiError({
         kind: "invalid-response",
         status: response.status,

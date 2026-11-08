@@ -1,29 +1,8 @@
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import {
+  isExamplePreviewEnabled,
+  registerExampleReset,
+} from "@/lib/examplePreview";
 import type { CareSpaceView } from "./careSpaceViewTypes";
-
-const examples: CareSpaceView[] = [
-  {
-    id: "mock-space-1",
-    subjectLabel: "엄마",
-    role: "owner",
-    empty: false,
-    members: [
-      { id: "self", name: "수진", role: "owner", self: true },
-      { id: "member-1", name: "민수", role: "member" },
-      { id: "member-2", name: "지연", role: "member" },
-    ],
-  },
-  {
-    id: "mock-space-2",
-    subjectLabel: "아빠",
-    role: "member",
-    empty: false,
-    members: [
-      { id: "member-2", name: "지연", role: "owner" },
-      { id: "self", name: "수진", role: "member", self: true },
-    ],
-  },
-];
 
 // 새로고침하면 초기화되는 UI 예시. 쿠키·스토리지·서버 상태와 분리한다.
 type ExitNotice = {
@@ -38,7 +17,7 @@ let snapshot: {
   currentId: string;
   ended: Record<string, "left" | "deleted">;
   lastExit?: ExitNotice;
-} = { spaces: isMockPreviewEnabled ? examples : [], currentId: "", ended: {} };
+} = { spaces: [], currentId: "", ended: {} };
 const listeners = new Set<() => void>();
 function publish(next: typeof snapshot) {
   snapshot = next;
@@ -46,8 +25,36 @@ function publish(next: typeof snapshot) {
 }
 export const mockCareSpaces = {
   getSnapshot: () => snapshot,
+  ensureExampleSpace(
+    space: Pick<CareSpaceView, "id" | "subjectLabel" | "role">,
+  ) {
+    if (
+      snapshot.spaces.some((entry) => entry.id === space.id) ||
+      snapshot.ended[space.id]
+    )
+      return;
+    publish({
+      ...snapshot,
+      spaces: [
+        ...snapshot.spaces,
+        {
+          ...space,
+          empty: false,
+          members: [
+            { id: "self", name: "수진", role: space.role, self: true },
+            {
+              id: "member-1",
+              name: "민수",
+              role: space.role === "owner" ? "member" : "owner",
+            },
+            { id: "member-2", name: "지연", role: "member" },
+          ],
+        },
+      ],
+    });
+  },
   endAccountParticipation() {
-    if (!isMockPreviewEnabled) return;
+    if (!isExamplePreviewEnabled) return;
     if (snapshot.spaces.some((space) => space.role === "owner"))
       throw new Error("소유 중인 공간을 먼저 정리해 주세요.");
     departedSpaces.clear();
@@ -70,7 +77,7 @@ export const mockCareSpaces = {
   },
   select(id: string) {
     if (
-      !isMockPreviewEnabled ||
+      !isExamplePreviewEnabled ||
       !snapshot.spaces.some((space) => space.id === id)
     )
       return;
@@ -84,7 +91,7 @@ export const mockCareSpaces = {
   ) {
     const space = snapshot.spaces.find((entry) => entry.id === id);
     if (
-      !isMockPreviewEnabled ||
+      !isExamplePreviewEnabled ||
       !space ||
       !(mockOwnerId
         ? space.members.some(
@@ -109,7 +116,7 @@ export const mockCareSpaces = {
   updateMembers(id: string, members: CareSpaceView["members"]) {
     const self = members.find((member) => member.self);
     if (
-      !isMockPreviewEnabled ||
+      !isExamplePreviewEnabled ||
       !self ||
       members.filter((member) => member.role === "owner").length !== 1
     )
@@ -124,7 +131,7 @@ export const mockCareSpaces = {
   // 알림 생성 등 실패할 수 있는 준비를 연관 데이터 변경 전에 끝낸다.
   prepareEndParticipation(id: string, reason: "left" | "deleted") {
     const space = snapshot.spaces.find((entry) => entry.id === id);
-    if (!isMockPreviewEnabled || !space) return undefined;
+    if (!isExamplePreviewEnabled || !space) return undefined;
     const notice: ExitNotice = {
       id: crypto.randomUUID(),
       spaceId: id,
@@ -146,7 +153,7 @@ export const mockCareSpaces = {
     };
   },
   create(subjectLabel: string) {
-    if (!isMockPreviewEnabled) return null;
+    if (!isExamplePreviewEnabled) return null;
     const space: CareSpaceView = {
       id: `mock-created-${crypto.randomUUID()}`,
       subjectLabel,
@@ -162,7 +169,7 @@ export const mockCareSpaces = {
     return space;
   },
   joinInvitation(token: string) {
-    if (!isMockPreviewEnabled) return null;
+    if (!isExamplePreviewEnabled) return null;
     const targetId =
       token === "mock-family"
         ? "mock-invited-space"
@@ -197,23 +204,10 @@ export const mockCareSpaces = {
       });
       return { space: departed, alreadyMember: false };
     }
-    if (token !== "mock-family") return null;
-    const space: CareSpaceView = {
-      id: "mock-invited-space",
-      subjectLabel: "어머니",
-      role: "member",
-      empty: false,
-      members: [
-        { id: "member-1", name: "민수", role: "owner" },
-        { id: "member-2", name: "지연", role: "member" },
-        { id: "self", name: "수진", role: "member", self: true },
-      ],
-    };
-    publish({
-      ...snapshot,
-      spaces: [...snapshot.spaces, space],
-      currentId: space.id,
-    });
-    return { space, alreadyMember: false };
+    return null;
   },
 };
+registerExampleReset("spaces", () => {
+  departedSpaces.clear();
+  publish({ spaces: [], currentId: "", ended: {} });
+});

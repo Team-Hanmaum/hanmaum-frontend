@@ -1,6 +1,5 @@
 export { apiClient } from "./apiClient";
 export { ApiError, normalizeApiError } from "./apiError";
-export type { ApiErrorKind } from "./apiError";
 export { getCsrfToken, resetCsrfToken } from "./csrf";
 export {
   cancelApiRequests,
@@ -8,6 +7,7 @@ export {
   onUnauthenticated,
 } from "./apiSession";
 export type {
+  ApiErrorKind,
   ApiFailure,
   ApiFieldError,
   ApiMethod,

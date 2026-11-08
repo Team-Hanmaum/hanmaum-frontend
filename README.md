@@ -13,50 +13,28 @@ pnpm dev
 
 **배포 BE와 로컬에서 연동할 팀원은 최초 1회 [로컬 HTTPS 설정](docs/local-development.md)을 진행한다.** mkcert 설치 후 `pnpm setup:local`을 실행하면 hosts·인증서·개발 환경 파일을 준비한다. 이후 기존 `pnpm dev`로 실행하고 `https://local.hanmaum.site:5173`에 접속한다. BE의 개발 Origin CORS와 로그인 복귀 분기 반영도 필요하다.
 
-- `/`: 최신 Figma `HM-ON-A01` 랜딩 화면. 시작하기·이미 계정이 있어요 → `/login`.
-- `/login`: Figma `HM-ON-A02` 로그인 UI 재사용. 실제 모드는 BE OAuth 주소로 이동하며 Mock 모드만 예시 이동을 사용한다.
-- `/auth/callback`: `/api/users/me` 확인 후 저장된 내부 경로 또는 참여 공간으로 이동. 한 곳이면 홈, 0곳 또는 여러 곳이면 목록. 오류는 재시도 제공.
-- `/_dev/components`: 개발 모드 전용 공통 컴포넌트 확인 화면. 기존 `/?preview=components` 주소도 이 화면으로 이동한다.
-- `/spaces`: 참여 공간 선택 화면. 예시 공간과 현재 실행 중 만든 Mock 공간의 목록·역할·인원 표시. Mock 미리보기가 꺼져 있으면 `GET /api/spaces`의 참여 공간 목록을 표시하고, `/spaces/new`는 `POST /api/spaces`로 공간을 만든 뒤 해당 공간으로 이동한다. 생성 요청 ID는 같은 호칭의 재시도 동안 유지한다.
-- `/spaces/:careSpaceId/home`: 일반·빈 홈, 생성·참여 직후, 로딩·오류와 공간 전환 UI. 최근 소식은 소식 목록과 같은 Mock 저장소 사용.
-- `/spaces/:careSpaceId/news`: 날짜별 소식 목록과 빈 상태·로딩·전체/추가 조회 오류.
-- `/spaces/:careSpaceId/news/new`: 소식 작성·공백 입력 방지·등록 중·등록 실패 예시. 등록 후 해당 소식의 상세 화면으로 이동.
-- `/spaces/:careSpaceId/news/:recordId`: 원문·분석 상태와 제안 처리 상태 표시. 제안 검토·요청 상태·처리 결과로 연결하며 원본 삭제의 영향 확인·완료 화면으로 연결.
-- `/spaces/:careSpaceId/proposals`: 검토 대기·승인 요청·반영·미적용 목록. 홈과 소식 목록에서 진입.
-- 소식의 `/proposals` 하위 경로에서 제안 개별 선택. 구성원은 반영 요청, 소유자는 반영 전 확인 후 반영·미적용 처리. 실제 API 호출 없이 공간별 메모리 Mock으로 홈 건수·일정·할 일·소식 상태 공유.
-- 제안 유형별 수정·날짜/시간/담당자 선택·연결 대상 비교·근거 비교와 연결을 지원. 소식에서 현재 돌봄 상세·근거·변경 이력으로 이동. 원본 삭제 후 파생 내용 제거, 독립 근거 유지 또는 소유자의 새 입력 재확인까지 Mock으로 연결. 상단 상태 선택에서 오류 확인. 새로고침 시 수정·요청·반영·삭제·재확인 모두 초기화.
-- `/spaces/:careSpaceId/family`: 가족 목록·역할·미완료 담당 할 일과 초대 진입. 소유자는 구성원 내보내기·소유권 이전·공간 삭제, 구성원은 공간 나가기까지 Mock으로 확인 가능. 소유자는 이전을 마친 뒤 나가기 가능. 내 계정·로그아웃·탈퇴는 전체 탭의 후속 작업 대상.
-- `/onboarding/guide`: 기록 전 정보 안내 → `/spaces/new`의 Mock 공간 생성 폼. 실제 동의 기록 없음.
-- Mock 미리보기가 켜져 있으면 카카오·Google 버튼 클릭 시 1초 동안 로딩 상태를 표시한 후 안내 화면으로 이동한다. 중복 클릭과 다른 제공사 버튼은 대기 중 차단하며, 화면 이탈 시 타이머를 취소한다.
+- `/`: 랜딩 → 로그인. `/login`은 BE OAuth로 이동한다.
+- `/auth/callback`: 내 정보 확인 → 저장된 내부 주소 또는 참여 공간. 공간 한 곳이면 홈, 0곳/여러 곳이면 목록으로 이동한다.
+- `/spaces`, `/spaces/new`: 실제 참여 공간 조회·생성. 생성 후 해당 홈으로 이동한다.
+- `/spaces/:careSpaceId/home`: 실제 공간 상세·가족·현황판·최근 소식을 조합한다. 없는 데이터는 빈 상태, 실패한 조회는 오류/재시도로 표시한다.
+- `/spaces/:careSpaceId/family`: 실제 구성원 목록과 역할을 조회한다. 가족 관리 버튼은 예시 표시와 함께 기존 하위 화면으로 연결한다.
+- `/spaces/:careSpaceId/all`: 기존 메뉴를 유지한다. 실제 내 계정·참여 공간 선택과 미연동 예시 메뉴를 구분한다.
+- 돌봄·소식·제안·가족 관리·공간 정보·탈퇴·초대 참여는 기존 UI와 예시 데이터를 제공한다. `예시 데이터 / API 미연동` 안내와 실제 저장 없음 표시를 사용한다. 실제 공간 접근 확인을 통과한 뒤 별도의 메모리 모델로 동작하며, 실제 홈/가족/서버 데이터는 바뀌지 않는다.
+- `/_dev/components`: 개발 전용 공통 컴포넌트 전시 화면. 제품 흐름과 별도로 공통 UI 상태를 확인한다.
 
-- `/invitations/:invitationToken`: 초대 안내·Mock 참여·만료·사용 불가. `/invitations/mock-family`로 새 참여 예시 확인.
-- `/spaces/:careSpaceId/invite`: Mock 초대 링크 표시·복사·공유·만료·오류.
-- 상단 **화면 상태 확인**에서 상태 선택. 직접 생성·참여한 Mock 공간은 메모리에서만 유지하며 새로고침 시 초기화.
-- 소식도 공간별 메모리 Mock이며 새로고침 시 초기화. 등록 오류 예시로 전환해도 입력은 유지되고 재등록은 정상 Mock 흐름으로 진행. 분석 재시도는 원문을 재등록하지 않고 기존 소식을 분석 중 표시로 변경. 분석 완료는 자동 발생하지 않으며 상단 상태 선택으로 UI만 확인. 직접 작성한 내용으로 제안을 생성하지 않음.
+로컬과 배포 모두 로그인과 연동된 화면은 실제 API를 사용한다. 미연동 예시는 `isExamplePreviewEnabled`로 별도 관리하며 인증을 우회하지 않는다. 새로고침, `예시 초기화`, 실제 로그아웃/계정 전환 시 예시 입력을 정리한다. `VITE_ENABLE_MOCK_PREVIEW`는 더 이상 Mock 화면을 활성화하지 않는다. `pnpm setup:local` 또는 로컬 BE용 `.env.example`을 참고해 API 주소를 설정한다. 개발 환경 파일은 Production 빌드에 적용되지 않는다.
 
-React Router의 Data 모드를 사용하며 `src/routes/Router.tsx`에서 URL을 등록한다. 잘못된 주소는 404 화면, 라우트 오류는 공통 오류 화면으로 처리한다. 뒤로가기는 앱 안에서 관측한 방문 이력이 있을 때만 이전 항목으로 이동하고, 직접 진입·새로고침 후에는 지정한 대체 경로를 사용한다. [라우팅·레이아웃 규격](src/routes/README.md) 참조.
+탭 복귀는 기존 화면과 입력을 유지한다. 60초 이내의 단순 복귀 확인은 생략하며, 미확인 상태의 보호 API 요청은 먼저 계정을 재검증한다. 다른 계정이면 이전 요청·캐시·화면 상태를 정리한다. 일시적 통신 실패는 작은 재시도 안내로 표시한다. 401 만료 시에는 로그인으로 이동하며 저장하지 않은 입력은 다시 입력해야 한다.
 
-현재 `.env.production`은 `VITE_API_BASE_URL=https://api.hanmaum.site`, `VITE_ENABLE_MOCK_PREVIEW=false`, `VITE_ENABLE_QA_TOOLS=false`다. 실제 모드는 소셜 로그인 → `/auth/callback` 세션 확인 → 참여 공간 진입으로 연결한다. 공간 목록·생성은 #48의 API 구현을 사용한다. 다른 도메인은 아직 미연동이므로 예시 데이터 대신 준비 중 안내를 표시한다.
-
-전체 Mock UI를 보려면 `VITE_ENABLE_MOCK_PREVIEW=true`로 실행한다. 로컬 `pnpm dev`는 환경 변수가 없으면 기존 Mock 기본값을 유지한다. 배포 BE 연동은 `pnpm setup:local`, 로컬 BE 연동은 `.env.example`을 `.env.development.local`로 복사해 설정한다. 개발 전용 파일은 Production 빌드에 적용되지 않는다.
-
-실제 인증·업무 데이터 연결 전에는 `VITE_ENABLE_MOCK_PREVIEW=false`로 변경하고 다시 빌드한다. 이 설정은 Mock 로그인 이동·공간 데이터·생성·참여·소식 조회/작성/재시도를 제어하며 실제 인증·접근 권한 검증을 대신하지 않는다. 개발용 컴포넌트 확인 화면의 코드와 경로는 계속 프로덕션 빌드에서 제외한다. [설정 우선순위와 검증 절차](docs/deployment.md) 참조.
+React Router의 Data 모드를 사용한다. [라우팅·레이아웃 규격](src/routes/README.md), [API·세션 규격](src/lib/api/README.md), [배포 설정](docs/deployment.md) 참조.
 
 ### QA 도구 표시
 
-로컬과 배포 환경 모두 상단 Mock 안내와 확인 도구는 기본으로 숨긴다. QA 모드에서만 표시하며, 기존 Mock 데이터와 화면 이동은 유지한다.
-
-- `/login?qa=1`처럼 어느 화면에서든 `qa=1`을 붙이면 QA 종료 버튼과 해당 화면의 확인 도구가 표시된다. 기존 쿼리가 있으면 `&qa=1`을 사용한다.
-- QA 모드는 `sessionStorage`로 같은 탭의 화면 이동·새로고침 동안 유지한다. 브라우저가 저장소를 차단하면 새로고침 전까지만 유지한다.
-- **QA 종료**는 현재 화면과 입력·Mock 데이터를 유지하면서 도구와 QA 선택 상태를 해제한다. `?qa=0`으로도 도구를 끌 수 있다.
-- QA에서 고른 상태는 `qaState`로 관리하며 QA가 꺼져 있으면 무시한다. 기존 생성·참여·공유 흐름의 `mockState`와 구분한다.
-- `컴포넌트 보기` 링크는 로컬 QA에서만 표시한다. `/_dev/components` 경로는 계속 로컬 개발 전용이다.
-- `VITE_ENABLE_QA_TOOLS`는 QA 사용 허용 여부이며, `true`여도 자동으로 도구가 표시되지는 않는다. 미설정 시 로컬 개발에서만 허용한다. 현재 Production 기본값은 `false`, 로컬 설정 스크립트의 개발 값은 `true`이다.
-- 실제 운영 시 `VITE_ENABLE_QA_TOOLS=false`로 다시 빌드한다. 저장된 QA 설정과 `qa=1`은 무시하며, 404로 보내지 않고 원래 화면을 표시한다. Mock 동작은 별도 설정인 `VITE_ENABLE_MOCK_PREVIEW`로 제어한다.
+`VITE_ENABLE_QA_TOOLS=true`인 환경에서 `?qa=1`로 도구를 켜고 같은 탭에서 유지한다. QA 종료 또는 `?qa=0`으로 종료한다. Production은 false가 기본이며 `qa=1`도 무시한다. QA 도구는 실제 데이터를 예시 데이터로 바꾸거나 인증을 우회하지 않는다. 기존 Mock 상태 선택 UI는 실제 연동 화면에는 표시하지 않는다.
 
 ## 홈 화면 설치 (PWA)
 
-`public/manifest.webmanifest`와 `index.html`의 매니페스트·Apple 메타 정보를 사용한다. 설치 앱 이름은 **한마음**, 시작 주소와 범위는 `/`, 표시 모드는 `standalone`이다. 온라인 사용을 전제로 하며 서비스 워커·오프라인 데이터 캐시·푸시 알림은 포함하지 않는다. 설치해도 기존 Mock 데이터는 재실행·새로고침 시 초기화된다.
+`public/manifest.webmanifest`와 `index.html`의 매니페스트·Apple 메타 정보를 사용한다. 설치 앱 이름은 **한마음**, 시작 주소와 범위는 `/`, 표시 모드는 `standalone`이다. 온라인 사용을 전제로 하며 서비스 워커·오프라인 데이터 캐시·푸시 알림은 포함하지 않는다. 사용자 데이터는 BE에서 조회하며 오프라인 저장을 제공하지 않는다.
 
 - 모바일의 랜딩·로그인·공간 선택·기본 탭에서 설치 안내를 자동으로 표시한다. 입력 요소에 포커스가 있거나 다른 모달이 열려 있으면 안내를 미룬다. 작성·승인·탈퇴 하위 화면에서는 자동으로 열지 않는다.
 - 설치 이벤트를 제공하는 브라우저에서는 **한마음 설치하기**를 누른 뒤 브라우저 설치 창에서 확인한다. 이벤트가 없으면 기기별 브라우저 메뉴 안내를 표시한다. iOS는 Safari의 공유 → 홈 화면에 추가 절차이며, 사이트가 OS 설치 창을 자동으로 띄우는 기능이 아니다.
@@ -71,9 +49,11 @@ React Router의 Data 모드를 사용하며 `src/routes/Router.tsx`에서 URL을
 
 ## 공통 API와 서버 상태
 
-Axios와 TanStack Query 기반을 사용한다. `.env.example`은 로컬 BE 연결 예시이며 `.env.development.local`로 복사한다. 배포 BE 연결은 [로컬 HTTPS 설정](docs/local-development.md)을 따른다. `VITE_API_BASE_URL`에는 서버 주소만 지정하고 `/api`는 도메인 요청 함수에 포함한다. 기존 Mock 화면은 API 주소 없이도 실행하며 실제 API 요청을 자동으로 시작하지 않는다.
+Axios와 TanStack Query 기반을 사용한다. `.env.example`은 로컬 BE 연결 예시이며 `.env.development.local`로 복사한다. 배포 BE 연결은 [로컬 HTTPS 설정](docs/local-development.md)을 따른다. `VITE_API_BASE_URL`에는 서버 주소만 지정하고 `/api`는 도메인 요청 함수에 포함한다. 앱 실행 시 실제 세션을 확인하므로 API 주소 설정이 필요하다.
 
 공통 응답은 최신 BE의 `success/code/message/data/errors/timestamp` 규격을 따른다. 도메인 API 함수는 `features/{domain}/api/`, 조회·변경 훅과 캐시 키는 `model/`에 둔다. 내 정보·로그아웃·세션 가드를 연결했으며 로그인 상태는 `useSession`에서 공통 관리한다. 로그인 성공 복귀 URL은 BE에서도 `/auth/callback`으로 설정해야 한다. [설정·호출 예시·CSRF·오류·캐시 규칙](src/lib/api/README.md) 참조.
+
+도메인 `api/` 안에서는 같은 기능 접두사의 `*Types.ts`(DTO), `*Validators.ts`(응답 검증), `*Api.ts`(요청 함수)로 분리한다. Query 훅·키·화면용 변환은 `model/`에서 관리한다. 신규 연동 시 [API 파일 규칙](AGENTS.md#api-파일-규칙)을 따른다.
 
 ## 파일·폴더 이름
 

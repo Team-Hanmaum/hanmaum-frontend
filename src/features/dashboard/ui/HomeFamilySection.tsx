@@ -1,5 +1,5 @@
 import { SectionHeader } from "@/components/layout";
-import { Button } from "@/components/ui";
+import { Badge, Button } from "@/components/ui";
 import { FamilyAvatar, FamilyMember } from "@/features/carespace/ui";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import { homePreviewLimits } from "../model/homePreviewLimits";
@@ -8,10 +8,12 @@ export function HomeFamilySection({
   members,
   onFamily,
   onInvite,
+  exampleInvite = false,
 }: {
   members: CareSpaceView["members"];
   onFamily: () => void;
   onInvite: () => void;
+  exampleInvite?: boolean;
 }) {
   return (
     <section className="flex flex-col gap-hm-12">
@@ -27,7 +29,13 @@ export function HomeFamilySection({
             className="w-full"
             onClick={onInvite}
           >
-            가족 초대하기
+            가족 초대하기{" "}
+            {exampleInvite && (
+              <Badge
+                label="예시"
+                tone="neutral"
+              />
+            )}
           </Button>
         </div>
       ) : (

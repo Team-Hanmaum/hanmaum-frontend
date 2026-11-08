@@ -33,6 +33,8 @@ export type ApiMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 type QueryValue = string | number | boolean | null | undefined;
 
 export interface ApiRequestOptions {
+  /** Only identity probes, logout and explicitly public endpoints bypass the session gate. */
+  session?: "independent";
   method?: ApiMethod;
   params?: Record<string, QueryValue | QueryValue[]>;
   body?: unknown;
@@ -45,26 +47,20 @@ export interface CsrfToken {
   token: string;
 }
 
-export function isApiResponse(value: unknown): value is ApiResponse<unknown> {
-  if (typeof value !== "object" || value === null) return false;
+export type ApiErrorKind =
+  | "http"
+  | "network"
+  | "timeout"
+  | "cancelled"
+  | "invalid-response"
+  | "configuration"
+  | "unknown";
 
-  const response = value as Record<string, unknown>;
-  return (
-    typeof response.success === "boolean" &&
-    typeof response.code === "string" &&
-    typeof response.message === "string" &&
-    Object.hasOwn(response, "data") &&
-    (response.success || response.data === null) &&
-    typeof response.timestamp === "string" &&
-    Array.isArray(response.errors) &&
-    response.errors.every(
-      (error: unknown) =>
-        typeof error === "object" &&
-        error !== null &&
-        "field" in error &&
-        typeof error.field === "string" &&
-        "reason" in error &&
-        typeof error.reason === "string",
-    )
-  );
+export interface ApiErrorOptions {
+  kind: ApiErrorKind;
+  message: string;
+  status?: number;
+  code?: string;
+  errors?: ApiFieldError[];
+  timestamp?: string;
 }

@@ -30,6 +30,18 @@
 - 폴더는 소문자 kebab-case, 페이지 파일은 PascalCase와 Page 접미사를 사용한다. UI·훅·상태 파일이 필요해지는 시점에 해당 폴더를 만들고 빈 폴더를 미리 늘리지 않는다.
 - 폴더 경로와 URL은 별개다. URL은 routes에서 명시적으로 등록하며 폴더 이동만으로 기존 URL이나 화면 동작을 바꾸지 않는다.
 
+### API 파일 규칙
+
+- 도메인 API는 `features/{domain}/api/`에 두고 같은 기능 접두사로 `*Types.ts`, `*Validators.ts`, `*Api.ts`를 구분한다. 예: `careSpaceTypes.ts`, `careSpaceValidators.ts`, `careSpaceApi.ts`. 한 도메인이 커지면 `spaceDetail*`, `recordRead*`처럼 기능 단위로 나누며 전역 api 폴더로 모으지 않는다.
+- `*Types.ts`에는 요청·응답 DTO의 type/interface만 둔다. HTTP 호출, 런타임 검증, 화면 상태·표시용 타입을 섞지 않는다. 타입은 해당 Types 파일에서 `import type`으로 가져오며 Api 파일에서 다시 export하지 않는다.
+- `*Validators.ts`에는 서버 응답을 `unknown`으로 받아 구조·필드·허용 값·nullable 여부 등을 검사하는 순수 함수를 둔다. 네트워크·캐시·화면 이동에 의존하지 않으며 값을 보정하거나 예시 데이터로 대체하지 않는다. 같은 도메인의 검증 함수는 재사용하고 범용 검증은 `lib/api/responseValidators.ts`를 사용한다.
+- `*Api.ts`에는 URL·HTTP 메서드·요청 인자·AbortSignal 및 반환 타입을 명시한 요청 함수를 둔다. 공통 API 계층을 통해 응답을 받고 Validators를 호출한 뒤 반환한다. 요청한 공간 ID와 응답 공간 ID의 일치 검사처럼 요청 맥락에 따른 검사도 유지한다.
+- `apiClient.request<unknown>`은 공통 응답 구조만 검증하므로 `body.data`는 도메인 Validators로 검사한다. 일반 data 반환에는 `readApiData`를 재사용할 수 있고, HTTP 상태·메타데이터가 필요한 요청은 `apiClient.request`의 결과를 유지한다. 타입 단언이나 제네릭만으로 검증을 대체하지 않으며 검증 실패는 `ApiError`의 `invalid-response`로 처리한다.
+- 공통 계약은 `lib/api/apiTypes.ts`, 공통 응답·CSRF 검증은 `apiValidators.ts`, HTTP·세션·CSRF·오류 처리는 기존 공통 모듈이 담당한다. 도메인에서 Axios/fetch를 직접 호출해 이 처리를 우회하지 않는다. 본문 없는 204는 `requestEmpty`, 공통 응답으로 감싸지지 않는 CSRF 발급은 기존 전용 처리를 유지한다.
+- Query 키·조회/변경 훅·캐시 무효화·화면용 데이터 변환은 `features/{domain}/model/`에 둔다. 페이지와 UI에서 DTO 검증이나 API 요청 구현을 중복하지 않는다.
+- 신규 연동이나 BE 계약 변경 시 Types·Validators·Api 및 소비 코드를 함께 확인한다. 파일을 분리할 때 기존 검증 조건·오류 문구·세션 동작을 임의로 바꾸지 않는다. 로그아웃처럼 DTO·검증 함수가 필요 없는 경우 빈 Types/Validators 파일을 만들지 않는다.
+- 호출 예시와 세션·오류 세부 규칙은 `src/lib/api/README.md`를 따른다.
+
 ## UI와 제품 기준
 
 - 최신 Figma 상세 UI를 기준으로 구현한다.
@@ -37,10 +49,10 @@
 - 휴대폰 중심으로 구현하고 화면 너비를 Figma의 390px에 고정하지 않는다.
 - 비활성, 로딩, 오류 등 필요한 상태와 키보드 접근성을 확인한다.
 - API 미연동 동작은 Mock임을 명확히 표시한다.
-- BE 연동 전 화면 검증 단계에서는 사용자 요청에 따라 배포 환경에서도 명시적인 Mock 화면 이동을 허용한다. `src/lib/mockPreview.ts`의 공통 설정을 사용하고 실제 세션·쿠키·토큰·계정 생성이나 업무 API 요청을 만들지 않는다.
-- `.env.production`은 실제 API(`https://api.hanmaum.site`)와 Mock/QA false를 기본으로 한다. Mock 전체 화면은 명시적인 별도 설정으로 확인한다. 실제 세션 화면에 Mock 사용자·업무 데이터를 섞지 않는다. 미연동 도메인은 준비 중 안내를 유지하며 `/_dev/components`는 로컬 개발 전용이다.
+- 로그인·세션·공간 조회/생성·홈·가족 목록은 실제 API를 유지한다. 미연동 도메인은 기존 UI와 메모리 예시를 제공하되 화면에는 예시 데이터/API 미연동, 변경 동작에는 실제 저장 없음, 완료에는 예시 결과를 표시한다. 실제 응답을 예시로 대체하거나 예시를 홈의 실제 데이터에 합산하지 않는다.
+- `.env.production`은 실제 API(`https://api.hanmaum.site`)와 Mock/QA false를 기본으로 한다. 기존 VITE_ENABLE_MOCK_PREVIEW 값으로 Mock 화면을 다시 활성화하지 않는다. 미연동 UI는 별도의 isExamplePreviewEnabled와 ExampleSurface로 구분한다. 예시 생성·변경·삭제는 메모리에서만 실행하고 새로고침·초기화·실제 세션 종료/계정 전환 시 정리한다. 실제 API 연결을 완료한 화면부터 예시 경로와 표시를 제거하며 `/_dev/components`는 로컬 개발 전용이다.
 - 로그인 상태는 `useSession`과 `SessionBoundary`에서 관리한다. 401 UNAUTHENTICATED는 세션 정리, 403은 권한/CSRF 실패로 구분하며 변경 요청을 자동 재전송하지 않는다. OAuth 복귀는 `/auth/callback`에서 `/me`를 확인하고 저장된 내부 경로 또는 기존 공간 조회 훅으로 이동한다.
-- QA 도구와 상단 Mock 안내는 로컬·배포 모두 기본 숨김이며 `qa=1`로 켜고 같은 탭에서 유지한다. `VITE_ENABLE_QA_TOOLS`는 도구 허용 설정이며 Mock 활성화와 구분한다. 실제 운영 빌드에서는 `false`로 비활성화하고, QA 선택 상태 때문에 일반 Mock 흐름이 막히지 않게 한다.
+- QA 도구와 상단 Mock 안내는 로컬·배포 모두 기본 숨김이며 `qa=1`로 켜고 같은 탭에서 유지한다. `VITE_ENABLE_QA_TOOLS`는 도구 허용 설정이며 Mock 활성화와 구분한다. 실제 운영 빌드에서는 `false`로 비활성화하고, QA 선택 상태로 실제 응답이나 권한을 바꾸지 않는다.
 - 구성원의 요청과 소유자의 최종 반영을 구분한다.
 - 인증은 BE의 세션 쿠키·CSRF 계약을 따르며 임의의 JWT 방식을 도입하지 않는다.
 

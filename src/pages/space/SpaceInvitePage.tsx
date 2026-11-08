@@ -19,7 +19,7 @@ import {
 import { useMockCareSpaces } from "@/features/carespace/model/useMockCareSpaces";
 import { useMockInvitationLink } from "@/features/carespace/model/useMockInvitationLink";
 import { invitationScreenStates } from "@/features/carespace/model/invitationScreenStates";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import { isExamplePreviewEnabled } from "@/lib/examplePreview";
 import { invitationPath, paths, spacePath } from "@/routes/paths";
 import { SpaceBottomNavigation } from "@/routes/layouts/SpaceBottomNavigation";
 import { useBackNavigation } from "@/routes/useBackNavigation";
@@ -108,7 +108,7 @@ function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
             <div className="flex flex-col gap-hm-12 bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-24">
               <Button
                 className="w-full"
-                disabled={!isMockPreviewEnabled || state === "loading"}
+                disabled={!isExamplePreviewEnabled || state === "loading"}
                 loading={loading || sharing}
                 onClick={failed || expired ? reissue : () => void copy()}
               >
@@ -123,7 +123,7 @@ function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
               {!expired && (
                 <TextAction
                   className="w-full"
-                  disabled={!isMockPreviewEnabled || loading || sharing}
+                  disabled={!isExamplePreviewEnabled || loading || sharing}
                   onClick={
                     failed
                       ? () => void navigate(spacePath(space.id, "family"))

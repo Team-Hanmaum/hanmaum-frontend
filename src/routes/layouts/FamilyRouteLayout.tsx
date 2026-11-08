@@ -1,6 +1,7 @@
+import { ExampleSurface } from "./ExampleSurface";
 import { Outlet, useLocation, useParams } from "react-router";
 import { useMockCareSpaces } from "@/features/carespace/model/useMockCareSpaces";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import { isExamplePreviewEnabled } from "@/lib/examplePreview";
 import { SpaceAccessState } from "./SpaceAccessState";
 export function FamilyRouteLayout() {
   const { careSpaceId } = useParams();
@@ -8,15 +9,21 @@ export function FamilyRouteLayout() {
   const location = useLocation();
   const space = spaces.find((entry) => entry.id === careSpaceId);
   if (
-    !isMockPreviewEnabled ||
+    !isExamplePreviewEnabled ||
     !space ||
     !space.members.some((member) => member.self)
   )
-    return <SpaceAccessState />;
+    return (
+      <ExampleSurface>
+        <SpaceAccessState />
+      </ExampleSurface>
+    );
   return (
-    <Outlet
-      key={location.pathname}
-      context={space}
-    />
+    <ExampleSurface>
+      <Outlet
+        key={location.pathname}
+        context={space}
+      />
+    </ExampleSurface>
   );
 }

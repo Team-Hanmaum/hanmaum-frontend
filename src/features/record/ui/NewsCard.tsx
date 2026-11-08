@@ -1,5 +1,8 @@
 import { Badge, Button, type BadgeProps } from "@/components/ui";
 export type NewsStatus =
+  | "recorded"
+  | "analysis-completed"
+  | "analysis-discarded"
   | "analyzing"
   | "review"
   | "pending"
@@ -11,6 +14,21 @@ const statuses: Record<
   NewsStatus,
   { label: string; tone: BadgeProps["tone"]; message: string }
 > = {
+  recorded: {
+    label: "소식 저장",
+    tone: "neutral",
+    message: "가족이 남긴 소식이에요.",
+  },
+  "analysis-completed": {
+    label: "분석 완료",
+    tone: "neutral",
+    message: "소식 분석이 완료됐어요. 제안의 반영 여부는 별도로 확인해 주세요.",
+  },
+  "analysis-discarded": {
+    label: "분석 종료",
+    tone: "neutral",
+    message: "이 소식의 분석이 종료됐어요.",
+  },
   analyzing: {
     label: "분석 중",
     tone: "neutral",

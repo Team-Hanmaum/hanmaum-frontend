@@ -2,13 +2,9 @@ import { useAppNavigate } from "@/routes/useAppNavigate";
 import { AppLink } from "@/routes/AppLink";
 import { useLocation } from "react-router";
 import { Header, PageLayout } from "@/components/layout";
-import {
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  Notice,
-} from "@/components/feedback";
+import { EmptyState, ErrorState, LoadingState } from "@/components/feedback";
 import { MockStateSelect } from "@/components/feedback/MockStateSelect";
+import { ExampleResultNotice } from "@/components/feedback/ExampleResultNotice";
 import { MenuRow } from "@/components/ui";
 import type { CareSpaceSummary } from "@/features/carespace/api/careSpaceTypes";
 import {
@@ -123,14 +119,13 @@ export function SpaceSelectionPage() {
         }
       >
         {exit && (
-          <Notice
-            role="status"
+          <ExampleResultNotice
             title={
               exit.reason === "left"
                 ? `${exit.name}에서 나왔어요`
                 : `${exit.name}을 삭제했어요`
             }
-            body="이제 다른 참여 공간을 선택할 수 있어요."
+            body="예시 나가기·삭제 흐름을 확인했어요."
           />
         )}
         <h1 className="text-hm-title-page">

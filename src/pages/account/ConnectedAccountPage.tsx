@@ -1,6 +1,5 @@
 import { DetailLayout } from "@/components/layout";
 import { MenuRow } from "@/components/ui";
-import { Notice } from "@/components/feedback";
 import { useSession } from "@/features/auth/model/useSession";
 import { AccountInfoCard } from "@/features/user/ui/AccountInfoCard";
 import { paths } from "@/routes/paths";
@@ -52,10 +51,12 @@ export function ConnectedAccountPage() {
         description="계정과 돌봄 기록은 유지돼요"
         onClick={() => void navigate(paths.logout)}
       />
-      <Notice
-        tone="neutral"
-        title="회원 탈퇴는 준비 중이에요"
-        body="탈퇴 기능 연결 후 이용할 수 있어요."
+      <MenuRow
+        tone="danger"
+        title="회원 탈퇴"
+        badge="예시"
+        description="탈퇴 절차 확인 · 실제 계정은 삭제되지 않아요"
+        onClick={() => void navigate(paths.withdrawal)}
       />
     </DetailLayout>
   );

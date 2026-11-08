@@ -6,7 +6,7 @@ import { SessionStatus } from "@/features/auth/ui/SessionStatus";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { MockAccountBoundary } from "./MockAccountBoundary";
 import { paths } from "../paths";
-import { IntegrationPendingPage } from "@/pages/error/IntegrationPendingPage";
+import { SessionRevalidationNotice } from "@/features/auth/ui/SessionRevalidationNotice";
 
 function LoginRedirect({ reason }: { reason: string }) {
   const { pathname, search, hash } = useLocation();
@@ -39,15 +39,11 @@ export function SessionBoundary({ children }: { children: ReactNode }) {
   if (session.status === "anonymous")
     return <LoginRedirect reason={session.reason} />;
   if (session.status !== "authenticated") return <SessionStatus />;
-  if (pathname.startsWith(paths.withdrawal))
-    return <IntegrationPendingPage title="회원 탈퇴" />;
   // A different account must never inherit mounted form/domain state.
   return (
     <Fragment key={session.user.userId}>
-      <Activity mode={session.revalidation ? "hidden" : "visible"}>
-        {children}
-      </Activity>
-      {session.revalidation && <SessionStatus />}
+      {children}
+      <SessionRevalidationNotice />
     </Fragment>
   );
 }

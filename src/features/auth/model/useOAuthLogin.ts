@@ -5,6 +5,7 @@ import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { resetSessionState } from "./resetSessionState";
 import { saveLoginReturn } from "./loginReturn";
 import { getOAuthLoginUrl } from "./getOAuthLoginUrl";
+import { publishSessionChange } from "./sessionChanges";
 
 export function useOAuthLogin() {
   const queryClient = useQueryClient();
@@ -28,6 +29,7 @@ export function useOAuthLogin() {
       const url = getOAuthLoginUrl(next, window.location.origin);
       if (returnTo) saveLoginReturn(returnTo);
       await resetSessionState(queryClient);
+      publishSessionChange();
       // Session cookies and provider redirects are handled by the browser and BE.
       window.location.assign(url);
     } catch {

@@ -1,10 +1,11 @@
+import { ExampleSurface } from "./ExampleSurface";
 import { useAppNavigate } from "@/routes/useAppNavigate";
 import { Outlet, useParams } from "react-router";
 import { DetailLayout } from "@/components/layout";
 import { ErrorState } from "@/components/feedback";
 import { MockNotice } from "@/components/feedback/MockNotice";
 import { useMockCareSpaces } from "@/features/carespace/model/useMockCareSpaces";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import { isExamplePreviewEnabled } from "@/lib/examplePreview";
 import { paths } from "../paths";
 import { SpaceAccessState } from "./SpaceAccessState";
 
@@ -14,8 +15,13 @@ export function RecordRouteLayout() {
   const { spaces, ended } = useMockCareSpaces();
   const navigate = useAppNavigate();
   const space = spaces.find((item) => item.id === careSpaceId);
-  if (careSpaceId && ended[careSpaceId]) return <SpaceAccessState />;
-  if (!isMockPreviewEnabled || !space)
+  if (careSpaceId && ended[careSpaceId])
+    return (
+      <ExampleSurface>
+        <SpaceAccessState />
+      </ExampleSurface>
+    );
+  if (!isExamplePreviewEnabled || !space)
     return (
       <DetailLayout
         title="소식"
@@ -33,9 +39,11 @@ export function RecordRouteLayout() {
       </DetailLayout>
     );
   return (
-    <Outlet
-      key={`${space.id}:${recordId ?? "new"}`}
-      context={space}
-    />
+    <ExampleSurface>
+      <Outlet
+        key={`${space.id}:${recordId ?? "new"}`}
+        context={space}
+      />
+    </ExampleSurface>
   );
 }

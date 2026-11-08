@@ -8,10 +8,10 @@ type HomeSummaryItem = {
 
 // 홈 표시용 데이터. BE DTO와 분리하며 스타일과 클릭 동작은 UI에서 결정한다.
 export type HomeView = {
-  pendingCount: number;
+  pendingCount?: number;
   // 미리보기로 자르기 전 전체 건수. 표시 배열의 length로 대체하지 않는다.
   totalCounts: {
-    recentNews: number;
+    recentNews: number | undefined;
     upcomingSchedules: number;
     tasks: number;
     questions: number;

@@ -1,4 +1,3 @@
-export const isMockPreviewEnabled =
-  import.meta.env.VITE_ENABLE_MOCK_PREVIEW === "true" ||
-  (import.meta.env.DEV &&
-    import.meta.env.VITE_ENABLE_MOCK_PREVIEW === undefined);
+// Actual session/API flows are the only entry point. Legacy screen components
+// remain available for domain integration, without default sample data.
+export const isMockPreviewEnabled = false;

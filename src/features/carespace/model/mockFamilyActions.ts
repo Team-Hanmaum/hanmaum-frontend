@@ -3,7 +3,7 @@ import {
   publishMockCareState,
 } from "@/features/proposal/model/mockProposals";
 import { mockRecords } from "@/features/record/model/mockRecords";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import { isExamplePreviewEnabled } from "@/lib/examplePreview";
 import { mockCareSpaces } from "./mockCareSpaces";
 import { mockSpaceInfoChanges } from "./mockSpaceInfoChanges";
 import { unfinishedMemberTasks } from "./familySelectors";
@@ -52,7 +52,7 @@ export type FamilyActionResult =
   | { ok: false; message: string; reason: "permission" | "missing" | "owner" };
 
 export function currentFamilySpace(spaceId: string) {
-  if (!isMockPreviewEnabled) return undefined;
+  if (!isExamplePreviewEnabled) return undefined;
   return mockCareSpaces
     .getSnapshot()
     .spaces.find(

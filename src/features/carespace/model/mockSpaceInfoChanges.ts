@@ -1,5 +1,8 @@
 import { useSyncExternalStore } from "react";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import {
+  isExamplePreviewEnabled,
+  registerExampleReset,
+} from "@/lib/examplePreview";
 import { mockRecords } from "@/features/record/model/mockRecords";
 import { mockProposals } from "@/features/proposal/model/mockProposals";
 import { mockCareSpaces } from "./mockCareSpaces";
@@ -37,23 +40,13 @@ function failure(
 ): SpaceInfoChangeFailure {
   return { ok: false, reason, message };
 }
-// 소유자가 다른 가족의 요청을 검토할 수 있는 UI 예시.
-let snapshot: SpaceInfoChange[] = isMockPreviewEnabled
-  ? [
-      {
-        id: "mock-space-info-request",
-        spaceId: "mock-space-1",
-        before: "엄마",
-        after: "어머니",
-        version: 0,
-        authorId: "member-1",
-        author: "민수",
-        createdAt: Date.now(),
-        status: "requested",
-      },
-    ]
-  : [];
+let snapshot: SpaceInfoChange[] = [];
+const seededSpaces = new Set<string>();
 const listeners = new Set<() => void>();
+registerExampleReset("space-info", () => {
+  seededSpaces.clear();
+  publish([]);
+});
 function publish(next: SpaceInfoChange[]) {
   snapshot = next;
   listeners.forEach((listener) => listener());
@@ -64,7 +57,7 @@ function currentSpace(
   const space = mockCareSpaces
     .getSnapshot()
     .spaces.find((entry) => entry.id === id);
-  if (!isMockPreviewEnabled)
+  if (!isExamplePreviewEnabled)
     return failure("permission", "Mock 화면에서만 변경할 수 있어요.");
   if (!space) return failure("missing", "공간을 찾을 수 없어요.");
   if (
@@ -94,6 +87,26 @@ function applyLabel(
 }
 export const mockSpaceInfoChanges = {
   getSnapshot: () => snapshot,
+  ensureExample(space: CareSpaceView) {
+    if (seededSpaces.has(space.id)) return;
+    seededSpaces.add(space.id);
+    const author = space.members.find((member) => member.role === "member");
+    if (!author) return;
+    publish([
+      ...snapshot,
+      {
+        id: `mock-space-info-${space.id}`,
+        spaceId: space.id,
+        before: space.subjectLabel,
+        after: space.subjectLabel === "어머니" ? "부모님" : "어머니",
+        version: space.infoVersion ?? 0,
+        authorId: author.id,
+        author: author.name,
+        createdAt: Date.now(),
+        status: "requested",
+      },
+    ]);
+  },
   subscribe(listener: () => void) {
     listeners.add(listener);
     return () => {
@@ -101,7 +114,7 @@ export const mockSpaceInfoChanges = {
     };
   },
   discardSpace(spaceId: string) {
-    if (!isMockPreviewEnabled) return;
+    if (!isExamplePreviewEnabled) return;
     publish(snapshot.filter((change) => change.spaceId !== spaceId));
   },
   submit(

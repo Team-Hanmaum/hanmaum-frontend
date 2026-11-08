@@ -4,7 +4,9 @@ import { ApiError } from "@/lib/api";
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 0,
+      staleTime: 30_000,
+      // SessionProvider owns focus revalidation; avoid a parallel account-data refetch.
+      refetchOnWindowFocus: false,
       retry: (failureCount, error) => {
         if (failureCount >= 1 || !(error instanceof ApiError)) return false;
         return (

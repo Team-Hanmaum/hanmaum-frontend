@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { QaToolbar } from "@/components/feedback/QaToolbar";
 import { PwaInstalledBanner } from "@/components/pwa/PwaInstalledBanner";
+import { ExampleDisclosure } from "@/components/feedback/ExampleDisclosure";
 
 export type PageLayoutProps = {
   children: ReactNode;
@@ -9,6 +10,7 @@ export type PageLayoutProps = {
   footer?: ReactNode;
   surface?: "page" | "surface";
   mainClassName?: string;
+  exampleResult?: boolean;
 };
 
 export function PageLayout({
@@ -18,6 +20,7 @@ export function PageLayout({
   footer,
   surface = "page",
   mainClassName = "flex flex-col gap-hm-24 p-hm-20",
+  exampleResult = false,
 }: PageLayoutProps) {
   const top = useRef<HTMLDivElement>(null);
 
@@ -56,6 +59,7 @@ export function PageLayout({
         tabIndex={-1}
         className={`min-w-0 flex-1 outline-none ${mainClassName}`}
       >
+        <ExampleDisclosure result={exampleResult} />
         {children}
       </main>
       <div className="shrink-0">

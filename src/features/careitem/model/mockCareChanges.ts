@@ -3,7 +3,7 @@ import {
   mockProposals,
   publishMockCareState,
 } from "@/features/proposal/model/mockProposals";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
+import { isExamplePreviewEnabled } from "@/lib/examplePreview";
 import { careMeta, careValue } from "./careItemFields";
 import {
   canApplyCareChange,
@@ -76,7 +76,7 @@ function applyChange(
 }
 export const mockCareChanges = {
   submit(space: CareSpaceView, draft: CareChangeDraft): CareChangeOutcome {
-    if (!isMockPreviewEnabled)
+    if (!isExamplePreviewEnabled)
       return { ok: false, message: "Mock 화면 확인이 꺼져 있어요." };
     const state = mockProposals.getForSpace(space);
     const existing = state.careChanges?.find(
@@ -120,7 +120,7 @@ export const mockCareChanges = {
     const actor = space.members.find(
       (member) => member.self && member.role === "owner",
     );
-    if (!isMockPreviewEnabled || space.role !== "owner" || !actor)
+    if (!isExamplePreviewEnabled || space.role !== "owner" || !actor)
       return { ok: false, message: "소유자만 최종 반영할 수 있어요." };
     const state = mockProposals.getForSpace(space);
     const change = state.careChanges?.find((entry) => entry.id === changeId);
