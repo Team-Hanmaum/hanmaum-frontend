@@ -13,7 +13,12 @@ import { resetSessionState } from "./resetSessionState";
 
 export type SessionState =
   | { status: "checking" | "signing-out" }
-  | { status: "authenticated"; user: MyProfile }
+  | {
+      status: "authenticated";
+      user: MyProfile;
+      revalidation?:
+        { status: "checking" } | { status: "error"; error: ApiError };
+    }
   | { status: "anonymous"; reason: "required" | "expired" | "signed-out" }
   | { status: "error" | "logout-unknown"; error: ApiError };
 
@@ -48,8 +53,18 @@ export function createSessionController(queryClient: QueryClient) {
     if (state.status === "signing-out") return Promise.resolve();
     const recoveringLogout = logoutPending;
     const currentRevision = ++revision;
-    // Background revalidation must not unmount a form merely because the tab regained focus.
-    if (state.status !== "authenticated") publish({ status: "checking" });
+    const previousUser =
+      state.status === "authenticated" ? state.user : undefined;
+    // Hide protected data until identity is confirmed, without discarding the same account's form state.
+    publish(
+      previousUser
+        ? {
+            status: "authenticated",
+            user: previousUser,
+            revalidation: { status: "checking" },
+          }
+        : { status: "checking" },
+    );
     const task = (async () => {
       await cleanup;
       if (currentRevision !== revision) return;
@@ -70,6 +85,12 @@ export function createSessionController(queryClient: QueryClient) {
           await clear(
             recoveringLogout ? "signed-out" : user ? "expired" : "required",
           );
+        } else if (previousUser) {
+          publish({
+            status: "authenticated",
+            user: previousUser,
+            revalidation: { status: "error", error: normalizeApiError(error) },
+          });
         } else {
           publish({
             status: recoveringLogout ? "logout-unknown" : "error",

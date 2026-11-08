@@ -1,4 +1,4 @@
-import { Fragment, useEffect, type ReactNode } from "react";
+import { Activity, Fragment, useEffect, type ReactNode } from "react";
 import { Navigate, useLocation } from "react-router";
 import { useSession } from "@/features/auth/model/useSession";
 import { saveLoginReturn } from "@/features/auth/model/loginReturn";
@@ -29,7 +29,9 @@ export function SessionBoundary({ children }: { children: ReactNode }) {
   const publicPath = !/^\/(spaces|account|onboarding)(\/|$)/.test(pathname);
   if (session.status === "signing-out" || session.status === "logout-unknown")
     return pathname === paths.logout ? (
-      <Fragment key={session.accountId}>{children}</Fragment>
+      <Fragment key={session.accountId}>
+        <Activity mode="visible">{children}</Activity>
+      </Fragment>
     ) : (
       <SessionStatus />
     );
@@ -40,5 +42,12 @@ export function SessionBoundary({ children }: { children: ReactNode }) {
   if (pathname.startsWith(paths.withdrawal))
     return <IntegrationPendingPage title="회원 탈퇴" />;
   // A different account must never inherit mounted form/domain state.
-  return <Fragment key={session.user.userId}>{children}</Fragment>;
+  return (
+    <Fragment key={session.user.userId}>
+      <Activity mode={session.revalidation ? "hidden" : "visible"}>
+        {children}
+      </Activity>
+      {session.revalidation && <SessionStatus />}
+    </Fragment>
+  );
 }

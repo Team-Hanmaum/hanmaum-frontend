@@ -30,8 +30,9 @@ function AuthCallback() {
   const navigate = useAppNavigate();
   const [ready, setReady] = useState(false);
   const [returnTo] = useState(readLoginReturn);
+  const verified = session.status === "authenticated" && !session.revalidation;
   const spaces = useCareSpaces({
-    enabled: ready && session.status === "authenticated" && !returnTo,
+    enabled: ready && verified && !returnTo,
   });
   const { check } = session;
   useEffect(() => {
@@ -45,7 +46,7 @@ function AuthCallback() {
     };
   }, [check]);
   const destination =
-    ready && session.status === "authenticated"
+    ready && verified
       ? (returnTo ??
         (spaces.isSuccess
           ? spaces.data.length === 1
@@ -71,7 +72,7 @@ function AuthCallback() {
         />
       </PageLayout>
     );
-  if (session.status !== "authenticated") return <SessionStatus />;
+  if (!verified) return <SessionStatus />;
   return (
     <PageLayout>
       {spaces.isError && !returnTo ? (

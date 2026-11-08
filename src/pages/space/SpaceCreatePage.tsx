@@ -48,7 +48,7 @@ function describeCreateError(error: ApiError): CreateFailure {
     return {
       notice: {
         title: "로그인이 필요해요",
-        body: "입력한 내용은 그대로예요.\n다시 로그인한 뒤 공간을 만들어 주세요.",
+        body: "다시 로그인한 뒤 이름 또는 호칭을 다시 입력해 주세요.",
       },
     };
   // 처리 중·타임아웃·응답 유실은 같은 요청 ID로 다시 시도해야 결과가 중복되지 않는다.
