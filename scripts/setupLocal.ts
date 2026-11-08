@@ -10,6 +10,7 @@ import {
   mkdirSync,
   openSync,
   readFileSync,
+  readdirSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -30,6 +31,7 @@ const hostsPath = windows
 const envPath = join(root, ".env.development.local");
 const certDirectory = join(root, ".certs");
 const checkOnly = process.argv.includes("--check");
+let mkcertCommand = "mkcert";
 const installation = windows
   ? "winget install --id FiloSottile.mkcert --exact --source winget"
   : process.platform === "darwin"
@@ -53,14 +55,30 @@ function run(command: string, args: string[]) {
 }
 
 function checkMkcert() {
-  const result = spawnSync("mkcert", ["-version"], {
-    encoding: "utf8",
-    windowsHide: true,
-  });
-  if (result.error || result.status !== 0)
-    throw new Error(
-      `mkcert를 먼저 설치하고 터미널을 다시 열어 주세요: ${installation}`,
-    );
+  const candidates = ["mkcert"];
+  // Existing elevated terminals may not have received WinGet's new PATH yet.
+  if (windows && process.env.LOCALAPPDATA) {
+    const winget = join(process.env.LOCALAPPDATA, "Microsoft", "WinGet");
+    candidates.push(join(winget, "Links", "mkcert.exe"));
+    const packages = join(winget, "Packages");
+    if (existsSync(packages))
+      for (const name of readdirSync(packages))
+        if (name.startsWith("FiloSottile.mkcert_"))
+          candidates.push(join(packages, name, "mkcert.exe"));
+  }
+  for (const candidate of candidates) {
+    const result = spawnSync(candidate, ["-version"], {
+      encoding: "utf8",
+      windowsHide: true,
+    });
+    if (!result.error && result.status === 0) {
+      mkcertCommand = candidate;
+      return;
+    }
+  }
+  throw new Error(
+    `mkcert를 먼저 설치하고 터미널을 다시 열어 주세요: ${installation}`,
+  );
 }
 
 function readEnv() {
@@ -127,8 +145,19 @@ async function main() {
     try {
       closeSync(openSync(hostsPath, "r+"));
     } catch {
+      const administrator = spawnSync(
+        "powershell.exe",
+        [
+          "-NoProfile",
+          "-Command",
+          "([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)",
+        ],
+        { encoding: "utf8", windowsHide: true },
+      ).stdout?.trim();
       throw new Error(
-        "hosts 쓰기 권한이 필요합니다. 같은 계정의 관리자 PowerShell에서 pnpm setup:local을 실행하세요.",
+        administrator === "False"
+          ? "현재 터미널은 관리자 권한이 아닙니다. Windows 시작 메뉴에서 PowerShell을 찾아 '관리자 권한으로 실행'한 새 창에서 프로젝트 폴더로 이동 후 pnpm setup:local을 실행하세요."
+          : "관리자 권한에서도 hosts 쓰기가 차단되었습니다. 파일의 읽기 전용 속성·보안 정책을 확인하거나 README의 수동 hosts 설정을 사용하세요.",
       );
     }
   }
@@ -136,10 +165,10 @@ async function main() {
     "이 PC에 mkcert 개발 CA를 신뢰하도록 설치하고, 로컬 도메인과 개발 전용 환경 파일을 설정합니다.",
   );
   console.log(".certs의 개인 키 및 mkcert의 rootCA-key.pem은 공유하지 마세요.");
-  run("mkcert", ["-install"]);
+  run(mkcertCommand, ["-install"]);
   mkdirSync(certDirectory, { recursive: true, mode: 0o700 });
 
-  const caRoot = spawnSync("mkcert", ["-CAROOT"], {
+  const caRoot = spawnSync(mkcertCommand, ["-CAROOT"], {
     encoding: "utf8",
     windowsHide: true,
   });
@@ -155,7 +184,7 @@ async function main() {
     /* Missing, invalid, or expiring certificates are regenerated. */
   }
   if (renew) {
-    run("mkcert", [
+    run(mkcertCommand, [
       "-cert-file",
       join(certDirectory, "local.hanmaum.site.pem"),
       "-key-file",
