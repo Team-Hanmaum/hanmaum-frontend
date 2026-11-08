@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { SocialProvider } from "@/components/ui";
-import { getApiBaseUrl } from "@/lib/env";
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { resetSessionState } from "./resetSessionState";
 import { saveLoginReturn } from "./loginReturn";
+import { getOAuthLoginUrl } from "./getOAuthLoginUrl";
 
 export function useOAuthLogin() {
   const queryClient = useQueryClient();
@@ -25,11 +25,11 @@ export function useOAuthLogin() {
     setProvider(next);
     setError("");
     try {
-      const url = new URL(`/oauth2/authorization/${next}`, getApiBaseUrl());
+      const url = getOAuthLoginUrl(next, window.location.origin);
       if (returnTo) saveLoginReturn(returnTo);
       await resetSessionState(queryClient);
       // Session cookies and provider redirects are handled by the browser and BE.
-      window.location.assign(url.href);
+      window.location.assign(url);
     } catch {
       pending.current = false;
       setProvider(null);

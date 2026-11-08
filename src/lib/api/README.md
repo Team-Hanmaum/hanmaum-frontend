@@ -4,7 +4,7 @@ Axios는 HTTP, TanStack Query는 서버 상태와 메모리 캐시를 담당한�
 
 ## 실행 설정
 
-`.env.example`을 `.env.local`로 복사해 로컬 BE 주소를 지정한다. FE와 BE의 호스트를 localhost로 통일하고 FE Origin을 BE CORS에 등록한다.
+`.env.example`을 `.env.development.local`로 복사해 로컬 BE 주소를 지정한다. FE와 BE의 호스트를 localhost로 통일하고 FE Origin을 BE CORS에 등록한다. 배포 BE에 연결하려면 `pnpm setup:local`을 사용한다.
 
 ```dotenv
 VITE_API_BASE_URL=http://localhost:8080
@@ -15,7 +15,7 @@ VITE_ENABLE_MOCK_PREVIEW=false
 - `VITE_*`는 공개 빌드 설정이다. OAuth 비밀키·세션·CSRF 토큰을 넣지 않는다.
 - 실제 모드는 앱 시작 시 `/api/users/me`로 세션을 확인한다. Mock 모드에서는 실제 인증·공간 요청을 보내지 않는다.
 - `.env.production`은 `https://api.hanmaum.site`, Mock/QA false다. Vercel에 같은 이름의 변수가 있으면 그 값이 우선한다.
-- 운영 BE의 허용 Origin은 `https://hanmaum.site`다. localhost·Vercel 임시 주소와의 조합은 현재 허용되지 않는다. CORS 외에도 Secure/SameSite 쿠키 조건을 맞춰야 한다.
+- 운영 BE의 기존 허용 Origin은 `https://hanmaum.site`다. 로컬 배포 API 연동은 [개발 환경 설정](../../../docs/local-development.md)을 따르며 BE의 개발 Origin·OAuth 복귀 지원이 필요하다. localhost·Vercel 임시 주소를 임의로 허용하지 않는다. CORS 외에도 Secure/SameSite 쿠키 조건을 맞춰야 한다.
 
 ## 책임과 사용 위치
 
