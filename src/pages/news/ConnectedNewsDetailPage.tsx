@@ -164,6 +164,18 @@ export function ConnectedNewsDetailPage() {
               body={retryNotice.body}
             />
           )}
+          {analysis.isError && latest && latest.status !== "COMPLETED" && (
+            <Notice
+              tone="error"
+              role="alert"
+              title="분석 상태를 확인하지 못했어요"
+              body="남긴 소식은 그대로 있어요. 잠시 후 다시 확인해 주세요."
+              action={{
+                label: "다시 확인하기",
+                onClick: () => void analysis.refetch(),
+              }}
+            />
+          )}
           <NewsDetail
             record={view}
             status={view.analysisStatus}

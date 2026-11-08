@@ -1,4 +1,4 @@
-import { ErrorState } from "@/components/feedback";
+import { ErrorState, Notice } from "@/components/feedback";
 import { useRecordList } from "@/features/record/model/useRecords";
 import { toRecordView } from "@/features/record/model/recordView";
 import type { NewsListState } from "@/features/record/model/newsScreenStates";
@@ -45,20 +45,33 @@ export function ConnectedNewsPage() {
           ? "default"
           : "empty";
   return (
-    <NewsList
-      records={records}
-      state={state}
-      visibleCount={records.length}
-      paging={{
-        hasNext: list.hasNextPage,
-        loading: list.isFetchingNextPage,
-      }}
-      onMore={() => void list.fetchNextPage()}
-      pendingCount={0}
-      onCreate={() => void navigate(newsCreatePath(space.spaceId))}
-      onOpen={(id) => void navigate(newsDetailPath(space.spaceId, id))}
-      onReview={() => void navigate(proposalListPath(space.spaceId))}
-      onRetry={() => void list.refetch()}
-    />
+    <>
+      {list.isRefetchError && (
+        <Notice
+          tone="error"
+          title="최신 소식을 불러오지 못했어요"
+          body="마지막으로 확인한 소식을 표시하고 있어요."
+          action={{
+            label: "다시 불러오기",
+            onClick: () => void list.refetch(),
+          }}
+        />
+      )}
+      <NewsList
+        records={records}
+        state={state}
+        visibleCount={records.length}
+        paging={{
+          hasNext: list.hasNextPage,
+          loading: list.isFetchingNextPage,
+        }}
+        onMore={() => void list.fetchNextPage()}
+        pendingCount={0}
+        onCreate={() => void navigate(newsCreatePath(space.spaceId))}
+        onOpen={(id) => void navigate(newsDetailPath(space.spaceId, id))}
+        onReview={() => void navigate(proposalListPath(space.spaceId))}
+        onRetry={() => void list.refetch()}
+      />
+    </>
   );
 }

@@ -76,7 +76,9 @@ export function useRecordAnalysis(
       session.status === "authenticated" &&
       Boolean(analysisId) &&
       latest?.status !== "DISCARDED",
+    // 조회가 실패하면 자동 재조회를 멈추고 화면의 다시 확인 동작으로만 재시도한다.
     refetchInterval: (current) =>
+      current.state.status !== "error" &&
       isAnalysisInProgress(current.state.data?.status ?? latest?.status)
         ? analysisPollInterval
         : false,
