@@ -47,7 +47,6 @@ export function AllPage() {
       <MenuRow
         icon="plus"
         title="가족 초대"
-        badge="예시"
         description="초대 링크로 함께 돌봐요"
         onClick={go(spaceInvitePath(space.id))}
       />

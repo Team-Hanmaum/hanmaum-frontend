@@ -120,7 +120,6 @@ export function HomeContent({
         />
       )}
       <HomeFamilySection
-        exampleInvite={connected}
         members={space.members}
         onFamily={onFamily}
         onInvite={onInvite}

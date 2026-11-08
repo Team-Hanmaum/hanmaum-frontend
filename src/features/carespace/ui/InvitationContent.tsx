@@ -1,10 +1,23 @@
 import { Notice } from "@/components/feedback";
 import { Icon } from "@/components/ui";
 
+const expiryFormat = new Intl.DateTimeFormat("ko-KR", {
+  month: "long",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZone: "Asia/Seoul",
+});
+
 export function InvitationContent({
   state,
+  ready = false,
+  expiresAt,
 }: {
   state: "default" | "expired" | "unavailable" | "error";
+  // 로그인 후 초대를 확인한 상태. 참여 안내 문구와 참여 가능 기한을 표시한다.
+  ready?: boolean;
+  expiresAt?: string;
 }) {
   if (state === "expired" || state === "unavailable")
     return (
@@ -65,10 +78,25 @@ export function InvitationContent({
           초대했어요
         </h1>
         <p className="text-hm-body-default text-hm-text-secondary">
-          로그인하면 초대를 확인하고
-          <br />
-          가족의 돌봄 공간에 참여할 수 있어요.
+          {ready ? (
+            <>
+              초대를 확인했어요. 참여하면
+              <br />
+              가족의 돌봄 공간을 함께 볼 수 있어요.
+            </>
+          ) : (
+            <>
+              로그인하면 초대를 확인하고
+              <br />
+              가족의 돌봄 공간에 참여할 수 있어요.
+            </>
+          )}
         </p>
+        {expiresAt && (
+          <p className="text-hm-body-small text-hm-text-secondary">
+            {expiryFormat.format(Date.parse(expiresAt))}까지 참여할 수 있어요.
+          </p>
+        )}
       </div>
       {state === "error" && (
         <Notice

@@ -19,7 +19,7 @@ import { SpaceSelectionPage } from "@/pages/space/SpaceSelectionPage";
 import { SpaceCreatePage } from "@/pages/space/SpaceCreatePage";
 
 // 공간 안의 화면
-import { SpaceInvitePage } from "@/pages/space/SpaceInvitePage";
+import { ConnectedSpaceInvitePage } from "@/pages/space/ConnectedSpaceInvitePage";
 import { ConnectedHomePage } from "@/pages/home/ConnectedHomePage";
 import { CarePage } from "@/pages/care/CarePage";
 import { NewsPage } from "@/pages/news/NewsPage";
@@ -525,17 +525,15 @@ const spaceRoutes: RouteObject[] = [
     Component: ProposalRouteLayout,
     children: [...recordDeletionRoutes, ...careItemRoutes, ...proposalRoutes],
   },
+  // 가족 초대 링크 발급은 실제 API에 연결된 공간을 사용한다.
+  {
+    path: "invite",
+    Component: ConnectedSpaceInvitePage,
+    handle: { title: "가족 초대" },
+  },
   {
     Component: FamilyRouteLayout,
-    children: [
-      {
-        path: "invite",
-        Component: SpaceInvitePage,
-        handle: { title: "가족 초대" },
-      },
-      ...familyRoutes,
-      ...spaceInfoRoutes,
-    ],
+    children: [...familyRoutes, ...spaceInfoRoutes],
   },
   notFoundRoute,
 ];

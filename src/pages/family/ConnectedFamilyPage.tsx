@@ -1,5 +1,5 @@
 import { ErrorState, LoadingState, Notice } from "@/components/feedback";
-import { Badge, Button, MenuRow } from "@/components/ui";
+import { Button, MenuRow } from "@/components/ui";
 import { FamilyMember } from "@/features/carespace/ui";
 import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
 import { toSpaceView } from "@/features/dashboard/model/homeData";
@@ -92,11 +92,7 @@ export function ConnectedFamilyPage() {
         />
       ))}
       <Button onClick={() => void navigate(spaceInvitePath(space.spaceId))}>
-        가족 초대하기{" "}
-        <Badge
-          label="예시"
-          tone="neutral"
-        />
+        가족 초대하기
       </Button>
       <h2 className="text-hm-heading-section">가족 관리</h2>
       {space.role === "OWNER" && (
