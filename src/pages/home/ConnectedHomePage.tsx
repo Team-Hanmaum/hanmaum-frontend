@@ -9,6 +9,7 @@ import { useHomeData } from "@/features/dashboard/model/useHomeData";
 import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
 import { useConnectedSpace } from "@/routes/useConnectedSpace";
 import { useAppNavigate } from "@/routes/useAppNavigate";
+import { ApiError } from "@/lib/api";
 import {
   spacePath,
   spaceInvitePath,
@@ -16,6 +17,7 @@ import {
   careItemPath,
   proposalListPath,
   careHistoryPath,
+  paths,
 } from "@/routes/paths";
 
 export function ConnectedHomePage() {
@@ -29,6 +31,19 @@ export function ConnectedHomePage() {
     void members.refetch();
   };
   const failed = dashboard.isError || news.isError || members.isError;
+  const denied = [dashboard.error, news.error, members.error].some(
+    (error) =>
+      error instanceof ApiError && [403, 404].includes(error.status ?? 0),
+  );
+  if (denied)
+    return (
+      <ErrorState
+        reason="no-permission"
+        title="이 공간에 접근할 수 없어요"
+        actionLabel="참여 공간 선택"
+        onAction={() => void navigate(paths.spaces)}
+      />
+    );
   if (!dashboard.data || !news.data || !members.data)
     return failed ? (
       <ErrorState

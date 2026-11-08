@@ -1,4 +1,4 @@
-import type { QueryClient } from "@tanstack/react-query";
+import type { Query, QueryClient } from "@tanstack/react-query";
 import {
   ApiError,
   isUnauthenticated,
@@ -37,6 +37,7 @@ export function createSessionController(queryClient: QueryClient) {
   let verifiedAt = 0;
   let uncertain = true;
   let remoteChange = false;
+  const interruptedQueries = new Set<Query>();
   let cleanup: Promise<void> = Promise.resolve();
   const listeners = new Set<() => void>();
   const publish = (next: SessionState) => {
@@ -49,6 +50,7 @@ export function createSessionController(queryClient: QueryClient) {
     checkController?.abort();
     uncertain = true;
     verifiedAt = 0;
+    interruptedQueries.clear();
     user = undefined;
     logoutPending = false;
     publish({ status: "anonymous", reason });
@@ -67,6 +69,10 @@ export function createSessionController(queryClient: QueryClient) {
     checkController?.abort();
     pendingCheck = undefined;
     cancelProtectedRequests();
+    for (const query of queryClient.getQueryCache().getAll()) {
+      if (query.isActive() && query.state.fetchStatus === "fetching")
+        interruptedQueries.add(query);
+    }
     // Revert interrupted reads to their last verified data instead of showing errors.
     cleanup = Promise.all([cleanup, queryClient.cancelQueries()]).then(
       () => undefined,
@@ -82,6 +88,7 @@ export function createSessionController(queryClient: QueryClient) {
     if (
       state.status === "authenticated" &&
       !remoteChange &&
+      interruptedQueries.size === 0 &&
       !state.revalidation &&
       Date.now() - verifiedAt < recheckInterval
     )
@@ -167,7 +174,20 @@ export function createSessionController(queryClient: QueryClient) {
     })();
     pendingCheck = task;
     void task.finally(() => {
-      if (pendingCheck === task) pendingCheck = undefined;
+      if (pendingCheck !== task) return;
+      pendingCheck = undefined;
+      if (!uncertain && state.status === "authenticated") {
+        const interrupted = new Set(interruptedQueries);
+        interruptedQueries.clear();
+        // Resume only still-mounted reads interrupted by focus loss. Account reset
+        // removes old Query instances, so they cannot be resumed for another user.
+        void queryClient.refetchQueries(
+          {
+            predicate: (query) => interrupted.has(query) && query.isActive(),
+          },
+          { cancelRefetch: false },
+        );
+      }
     });
     return task;
   }

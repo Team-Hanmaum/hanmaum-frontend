@@ -73,7 +73,11 @@ export function toHomeView(
       .map((item) => ({
         id: item.itemId,
         title: title(item),
-        statusLabel: item.needsConflictReview ? "내용 확인 필요" : "예정",
+        statusLabel: item.needsReconfirmation
+          ? "재확인 필요"
+          : item.needsConflictReview
+            ? "내용 확인 필요"
+            : "예정",
         meta: `${textField(item, "scheduledDate", "날짜 미정")} · ${textField(item, "scheduledTime", "시간 미정")}`,
         body: textField(item, "location", "장소 미정"),
       })),
