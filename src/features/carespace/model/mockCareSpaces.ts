@@ -1,30 +1,6 @@
 import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import type { CareSpaceView } from "./careSpaceViewTypes";
 
-const examples: CareSpaceView[] = [
-  {
-    id: "mock-space-1",
-    subjectLabel: "엄마",
-    role: "owner",
-    empty: false,
-    members: [
-      { id: "self", name: "수진", role: "owner", self: true },
-      { id: "member-1", name: "민수", role: "member" },
-      { id: "member-2", name: "지연", role: "member" },
-    ],
-  },
-  {
-    id: "mock-space-2",
-    subjectLabel: "아빠",
-    role: "member",
-    empty: false,
-    members: [
-      { id: "member-2", name: "지연", role: "owner" },
-      { id: "self", name: "수진", role: "member", self: true },
-    ],
-  },
-];
-
 // 새로고침하면 초기화되는 UI 예시. 쿠키·스토리지·서버 상태와 분리한다.
 type ExitNotice = {
   id: string;
@@ -38,7 +14,7 @@ let snapshot: {
   currentId: string;
   ended: Record<string, "left" | "deleted">;
   lastExit?: ExitNotice;
-} = { spaces: isMockPreviewEnabled ? examples : [], currentId: "", ended: {} };
+} = { spaces: [], currentId: "", ended: {} };
 const listeners = new Set<() => void>();
 function publish(next: typeof snapshot) {
   snapshot = next;
@@ -197,23 +173,6 @@ export const mockCareSpaces = {
       });
       return { space: departed, alreadyMember: false };
     }
-    if (token !== "mock-family") return null;
-    const space: CareSpaceView = {
-      id: "mock-invited-space",
-      subjectLabel: "어머니",
-      role: "member",
-      empty: false,
-      members: [
-        { id: "member-1", name: "민수", role: "owner" },
-        { id: "member-2", name: "지연", role: "member" },
-        { id: "self", name: "수진", role: "member", self: true },
-      ],
-    };
-    publish({
-      ...snapshot,
-      spaces: [...snapshot.spaces, space],
-      currentId: space.id,
-    });
-    return { space, alreadyMember: false };
+    return null;
   },
 };

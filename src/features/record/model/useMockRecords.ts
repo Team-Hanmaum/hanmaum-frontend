@@ -10,6 +10,6 @@ export function useMockRecords(space: CareSpaceView) {
     mockRecords.getSnapshot,
   );
   return isMockPreviewEnabled
-    ? (snapshot[space.id] ?? getMockRecordData(space))
+    ? (snapshot[space.id] ?? getMockRecordData())
     : [];
 }

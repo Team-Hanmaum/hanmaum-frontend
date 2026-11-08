@@ -70,7 +70,7 @@ export const mockProposals = {
   },
   getForSpace(space: CareSpaceView): ProposalSpaceState {
     if (snapshot[space.id]) return snapshot[space.id];
-    if (!seeds.has(space.id)) seeds.set(space.id, getMockProposalData(space));
+    if (!seeds.has(space.id)) seeds.set(space.id, getMockProposalData());
     return seeds.get(space.id)!;
   },
   removeSource(space: CareSpaceView, recordId: string): RecordDeletion | null {

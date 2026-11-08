@@ -37,22 +37,7 @@ function failure(
 ): SpaceInfoChangeFailure {
   return { ok: false, reason, message };
 }
-// 소유자가 다른 가족의 요청을 검토할 수 있는 UI 예시.
-let snapshot: SpaceInfoChange[] = isMockPreviewEnabled
-  ? [
-      {
-        id: "mock-space-info-request",
-        spaceId: "mock-space-1",
-        before: "엄마",
-        after: "어머니",
-        version: 0,
-        authorId: "member-1",
-        author: "민수",
-        createdAt: Date.now(),
-        status: "requested",
-      },
-    ]
-  : [];
+let snapshot: SpaceInfoChange[] = [];
 const listeners = new Set<() => void>();
 function publish(next: SpaceInfoChange[]) {
   snapshot = next;

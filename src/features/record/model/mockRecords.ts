@@ -24,7 +24,7 @@ export const mockRecords = {
   },
   getForSpace(space: CareSpaceView): readonly RecordView[] {
     if (!isMockPreviewEnabled) return [];
-    return snapshot[space.id] ?? getMockRecordData(space);
+    return snapshot[space.id] ?? getMockRecordData();
   },
   retain(space: CareSpaceView) {
     // 참여자 변경으로 합성 원본의 작성자·내용이 다시 생성되지 않게 보존한다.

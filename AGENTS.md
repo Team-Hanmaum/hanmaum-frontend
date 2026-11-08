@@ -37,10 +37,10 @@
 - 휴대폰 중심으로 구현하고 화면 너비를 Figma의 390px에 고정하지 않는다.
 - 비활성, 로딩, 오류 등 필요한 상태와 키보드 접근성을 확인한다.
 - API 미연동 동작은 Mock임을 명확히 표시한다.
-- BE 연동 전 화면 검증 단계에서는 사용자 요청에 따라 배포 환경에서도 명시적인 Mock 화면 이동을 허용한다. `src/lib/mockPreview.ts`의 공통 설정을 사용하고 실제 세션·쿠키·토큰·계정 생성이나 업무 API 요청을 만들지 않는다.
-- `.env.production`은 실제 API(`https://api.hanmaum.site`)와 Mock/QA false를 기본으로 한다. Mock 전체 화면은 명시적인 별도 설정으로 확인한다. 실제 세션 화면에 Mock 사용자·업무 데이터를 섞지 않는다. 미연동 도메인은 준비 중 안내를 유지하며 `/_dev/components`는 로컬 개발 전용이다.
+- 현재 제품 흐름은 실제 세션·API만 사용한다. 기본 예시 계정·공간·업무 데이터를 다시 추가하지 않는다. 기존 미연동 UI는 후속 API 연결을 위해 보존하되 준비 중 화면에서 분리한다.
+- `.env.production`은 실제 API(`https://api.hanmaum.site`)와 Mock/QA false를 기본으로 한다. 기존 VITE_ENABLE_MOCK_PREVIEW 값으로 Mock 화면을 다시 활성화하지 않는다. 실제 세션 화면에 Mock 사용자·업무 데이터를 섞지 않는다. 미연동 도메인은 준비 중 안내를 유지하며 `/_dev/components`는 로컬 개발 전용이다.
 - 로그인 상태는 `useSession`과 `SessionBoundary`에서 관리한다. 401 UNAUTHENTICATED는 세션 정리, 403은 권한/CSRF 실패로 구분하며 변경 요청을 자동 재전송하지 않는다. OAuth 복귀는 `/auth/callback`에서 `/me`를 확인하고 저장된 내부 경로 또는 기존 공간 조회 훅으로 이동한다.
-- QA 도구와 상단 Mock 안내는 로컬·배포 모두 기본 숨김이며 `qa=1`로 켜고 같은 탭에서 유지한다. `VITE_ENABLE_QA_TOOLS`는 도구 허용 설정이며 Mock 활성화와 구분한다. 실제 운영 빌드에서는 `false`로 비활성화하고, QA 선택 상태 때문에 일반 Mock 흐름이 막히지 않게 한다.
+- QA 도구와 상단 Mock 안내는 로컬·배포 모두 기본 숨김이며 `qa=1`로 켜고 같은 탭에서 유지한다. `VITE_ENABLE_QA_TOOLS`는 도구 허용 설정이며 Mock 활성화와 구분한다. 실제 운영 빌드에서는 `false`로 비활성화하고, QA 선택 상태로 실제 응답이나 권한을 바꾸지 않는다.
 - 구성원의 요청과 소유자의 최종 반영을 구분한다.
 - 인증은 BE의 세션 쿠키·CSRF 계약을 따르며 임의의 JWT 방식을 도입하지 않는다.
 

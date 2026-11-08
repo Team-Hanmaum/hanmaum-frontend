@@ -51,17 +51,13 @@ Vercel의 Git 연결과 Production Branch `dev`는 유지한다. `vercel.json`�
 
 Discord 알림은 기존 GitHub 저장소 웹훅의 `check_run`·`check_suite` 이벤트 연동을 사용한다. 워크플로우에서 Discord로 직접 메시지를 전송하지 않으며 별도 알림용 Secret은 필요 없다. 실제 메시지 수신은 첫 Actions 실행 후 확인한다.
 
-## 실제 API와 Mock 화면 설정
+## 실제 API 실행 설정
 
-| 실행 환경                                    | 설정                                                | 동작                                 |
-| -------------------------------------------- | --------------------------------------------------- | ------------------------------------ |
-| 로컬 pnpm dev, 환경 변수 없음                | 개발 기본값                                         | 전체 Mock UI, 실제 API 요청 없음     |
-| pnpm setup:local 후 pnpm dev                 | HTTPS local.hanmaum.site:5173, 배포 API, Mock false | BE 개발 Origin·콜백 지원 후 실제 API |
-| .env.example을 .env.development.local로 복사 | HTTP localhost, Mock false, localhost:8080          | 로컬 BE의 실제 세션·공간 API         |
-| Production 빌드                              | API api.hanmaum.site, Mock/QA false                 | 실제 로그인·세션·공간 목록/생성      |
-| 별도 UI Preview                              | Mock true, 필요 시 QA true                          | 기존 전체 Mock 화면 확인             |
-
-Preview에서 전체 UI를 검증하려면 Vercel Preview 환경에 `VITE_ENABLE_MOCK_PREVIEW=true`를 명시한다. 해당 모드에서는 실제 계정·공간 요청을 하지 않는다. 운영 API와 Preview 임시 도메인을 임의로 연결하지 않는다. VITE 변수에는 공개 설정만 저장한다. `/_dev/components`는 로컬 개발 전용이다.
+- 로컬 배포 BE: `pnpm setup:local` 후 `pnpm dev`. 정확한 개발 Origin과 OAuth 복귀를 BE에서 허용해야 한다.
+- 로컬 BE: `.env.example`을 `.env.development.local`로 복사하고 로컬 BE의 CORS·세션 설정을 사용한다.
+- Production: API `https://api.hanmaum.site`, QA false. 실제 로그인·공간·홈·구성원 조회를 사용한다.
+- 기본 예시 데이터와 Mock 활성화는 제거했다. 기존 `VITE_ENABLE_MOCK_PREVIEW=true`가 남아 있어도 실제 API 흐름을 사용하므로 Preview 임시 주소에서 운영 API에 접근할 수 있다고 가정하지 않는다.
+- 미연동 업무 화면은 준비 중이며 `/_dev/components`는 로컬 개발 전용이다.
 
 ## 최초 배포 기록
 
@@ -126,7 +122,7 @@ SPA rewrite는 브라우저가 직접 요청한 페이지 경로에도 `index.ht
 
 ### 운영 환경의 QA 도구
 
-현재 `.env.production`의 `VITE_ENABLE_QA_TOOLS=false`는 QA 도구 활성화를 차단한다. 별도 Mock Preview에서만 필요에 따라 true로 지정한다. 이전 빌드의 동작은 환경 변수만 변경해서 바뀌지 않으므로 다시 빌드·배포한다.
+현재 `.env.production`의 `VITE_ENABLE_QA_TOOLS=false`는 QA 도구 활성화를 차단한다. 개발 QA가 필요한 환경에서만 true로 지정하며 인증·업무 데이터는 실제 API 흐름을 유지한다. 이전 빌드의 동작은 환경 변수만 변경해서 바뀌지 않으므로 다시 빌드·배포한다.
 
 비활성화된 빌드는 저장된 QA 모드와 `qa=1`을 무시하고 원래 화면을 표시한다. URL 쿼리만으로 404로 이동시키지 않는다. QA 도구와 Mock 동작은 별개이므로 실제 API 전환 시 `VITE_ENABLE_MOCK_PREVIEW=false` 및 실제 세션·권한 연결도 별도로 필요하다.
 

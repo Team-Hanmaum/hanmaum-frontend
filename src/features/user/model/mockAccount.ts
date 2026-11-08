@@ -13,9 +13,9 @@ type MockAccount = {
   status: AccountStatus;
 };
 let snapshot: MockAccount = {
-  name: "수진",
-  provider: "google",
-  status: "active",
+  name: "",
+  provider: null,
+  status: "signed-out",
 };
 const listeners = new Set<() => void>();
 function publish(next: MockAccount) {
