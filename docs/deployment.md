@@ -1,6 +1,6 @@
 # Vercel 배포
 
-실제 인증 API 기본 주소는 `https://api.hanmaum.site`, FE 정식 Origin은 `https://hanmaum.site`다. `.env.production`은 실제 인증·공간 API 모드이며 Mock/QA는 false다. 아직 연결하지 않은 도메인은 준비 중 안내를 표시한다.
+실제 인증 API 기본 주소는 `https://api.hanmaum.site`, FE 정식 Origin은 `https://hanmaum.site`다. `.env.production`은 실제 인증·공간 API 모드이며 Mock/QA는 false다. 아직 연결하지 않은 도메인은 기존 UI와 메모리 예시를 제공하고 API 미연동/실제 저장 없음 표시로 구분한다.
 
 ## 인증 전환 시 함께 설정할 항목 (#49)
 
@@ -56,8 +56,8 @@ Discord 알림은 기존 GitHub 저장소 웹훅의 `check_run`·`check_suite` �
 - 로컬 배포 BE: `pnpm setup:local` 후 `pnpm dev`. 정확한 개발 Origin과 OAuth 복귀를 BE에서 허용해야 한다.
 - 로컬 BE: `.env.example`을 `.env.development.local`로 복사하고 로컬 BE의 CORS·세션 설정을 사용한다.
 - Production: API `https://api.hanmaum.site`, QA false. 실제 로그인·공간·홈·구성원 조회를 사용한다.
-- 기본 예시 데이터와 Mock 활성화는 제거했다. 기존 `VITE_ENABLE_MOCK_PREVIEW=true`가 남아 있어도 실제 API 흐름을 사용하므로 Preview 임시 주소에서 운영 API에 접근할 수 있다고 가정하지 않는다.
-- 미연동 업무 화면은 준비 중이며 `/_dev/components`는 로컬 개발 전용이다.
+- 로그인 Mock 활성화는 제거했다. 미연동 도메인의 예시 데이터는 별도 메모리 모델로 제공한다. 기존 `VITE_ENABLE_MOCK_PREVIEW=true`가 남아 있어도 실제 API 흐름을 사용하므로 Preview 임시 주소에서 운영 API에 접근할 수 있다고 가정하지 않는다.
+- 미연동 업무 화면의 작성·수정·삭제는 예시 전용이며 실제 API를 호출하지 않는다. `/_dev/components`는 로컬 개발 전용이다.
 
 ## 최초 배포 기록
 
@@ -113,8 +113,8 @@ pnpm build
 - `/_dev/components` 접근 시 앱의 404 화면 표시
 - 실제 모드: 두 OAuth 진입 → `/auth/callback` → 참여 공간 0/1/여러 개 분기
 - 실제 모드: 401 만료, 403 실패, 조회 재시도, 로그아웃 204와 응답 유실 후 재확인
-- 별도 Mock 빌드: 안내 → 공간 생성/선택 → 다섯 탭, 실제 OAuth/API 요청 미발생
-- 운영 빌드: Mock 데이터·QA 도구 비노출
+- 실제 로그인 → 공간 생성/선택 → 홈·가족 조회 확인. 예시 화면 변경 후 실제 홈/서버 데이터 불변 확인
+- 운영 빌드: 실제 응답에 예시 데이터 미혼합, 미연동 화면의 예시 표시, QA 도구 비노출
 
 SPA rewrite는 브라우저가 직접 요청한 페이지 경로에도 `index.html`을 제공한다. 실제 화면과 알 수 없는 경로의 404 표시는 React Router에서 처리하므로 앱의 404 화면과 HTTP 404 상태 코드는 구분한다.
 

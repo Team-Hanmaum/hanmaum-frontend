@@ -13,11 +13,29 @@ import {
   familyLeavePath,
 } from "@/routes/paths";
 import { ApiError } from "@/lib/api";
+import { useLocation } from "react-router";
+import { useMockCareSpaces } from "@/features/carespace/model/useMockCareSpaces";
+import { ExampleResultNotice } from "@/components/feedback/ExampleResultNotice";
 
 export function ConnectedFamilyPage() {
   const { space } = useConnectedSpace();
   const members = useSpaceMembers(space.spaceId);
   const navigate = useAppNavigate();
+  const examples = useMockCareSpaces();
+  const { state } = useLocation();
+  const removal = (
+    state as {
+      familyRemoval?: {
+        name: string;
+        released: number;
+        spaceId: string;
+        memberId: string;
+      };
+    } | null
+  )?.familyRemoval;
+  const exampleSpace = examples.spaces.find(
+    (entry) => entry.id === space.spaceId,
+  );
   if (
     members.error instanceof ApiError &&
     [403, 404].includes(members.error.status ?? 0)
@@ -41,6 +59,16 @@ export function ConnectedFamilyPage() {
     );
   return (
     <>
+      {removal?.spaceId === space.spaceId &&
+        exampleSpace &&
+        !exampleSpace.members.some(
+          (member) => member.id === removal.memberId,
+        ) && (
+          <ExampleResultNotice
+            title={`${removal.name}님의 참여가 종료됐어요`}
+            body={`예시 미완료 할 일 ${removal.released}개의 담당자를 해제했어요.`}
+          />
+        )}
       {members.isError && (
         <Notice
           tone="error"

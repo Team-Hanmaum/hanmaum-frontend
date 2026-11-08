@@ -117,7 +117,7 @@ pnpm setup:local --check
 - `.env.development.local`은 개발 모드에서만 읽는다. 기존 `.env.local`은 모든 모드에 영향을 주므로 개발 전용 값을 그 파일에 추가하지 않는다. 셸에 미리 설정한 환경 변수는 파일보다 우선하므로 예상과 다르면 확인한다.
 - `.env.production`과 Vercel Production의 API·Mock/QA 설정은 그대로 유지한다. Production에서는 로컬 OAuth 복귀 표시도 추가하지 않는다.
 - 기존 HTTP localhost + 로컬 BE 방식은 `.env.development.local`의 `HANMAUM_LOCAL_HTTPS=false`, `VITE_API_BASE_URL=http://localhost:8080`, `VITE_ENABLE_MOCK_PREVIEW=false`로 변경하고 Vite를 다시 실행한다.
-- 현재는 기본 Mock 시드와 활성화 옵션을 제거했다. VITE_ENABLE_MOCK_PREVIEW=true로 변경해도 실제 API 흐름을 사용한다. 공통 UI만 확인하려면 로컬 /_dev/components를 사용한다.
+- VITE_ENABLE_MOCK_PREVIEW=true로 변경해도 실제 인증/API 흐름을 사용한다. 미연동 화면은 별도 메모리 예시로 제공하며, 예시 표시와 초기화 버튼으로 구분한다. 실제 홈과 서버 데이터는 바뀌지 않는다. 공통 UI만 확인하려면 로컬 /_dev/components를 사용한다.
 
 ## BE 전달 사항
 

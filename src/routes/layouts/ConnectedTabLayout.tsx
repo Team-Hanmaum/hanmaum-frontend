@@ -16,6 +16,7 @@ import { ExampleSurface } from "./ExampleSurface";
 import { CareListAction } from "./CareListAction";
 import { SpaceAccessState } from "./SpaceAccessState";
 import { Badge } from "@/components/ui";
+import { ApiError } from "@/lib/api";
 
 export function ConnectedTabLayout() {
   const context = useConnectedSpace();
@@ -30,6 +31,9 @@ export function ConnectedTabLayout() {
   const members = useSpaceMembers(space.spaceId, active === "all");
   const examples = useMockCareSpaces();
   const example = active === "care" || active === "news";
+  const membersDenied =
+    members.error instanceof ApiError &&
+    [403, 404].includes(members.error.status ?? 0);
   const exampleSpace = examples.spaces.find(
     (entry) => entry.id === space.spaceId,
   );
@@ -88,7 +92,14 @@ export function ConnectedTabLayout() {
         </FixedBottomArea>
       }
     >
-      {active === "all" && !members.data ? (
+      {active === "all" && membersDenied ? (
+        <ErrorState
+          reason="no-permission"
+          title="이 공간에 접근할 수 없어요"
+          actionLabel="참여 공간 선택"
+          onAction={() => void navigate(paths.spaces)}
+        />
+      ) : active === "all" && !members.data ? (
         members.isError ? (
           <ErrorState
             reason="load-error"

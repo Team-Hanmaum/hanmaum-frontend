@@ -37,8 +37,8 @@
 - 휴대폰 중심으로 구현하고 화면 너비를 Figma의 390px에 고정하지 않는다.
 - 비활성, 로딩, 오류 등 필요한 상태와 키보드 접근성을 확인한다.
 - API 미연동 동작은 Mock임을 명확히 표시한다.
-- 현재 제품 흐름은 실제 세션·API만 사용한다. 기본 예시 계정·공간·업무 데이터를 다시 추가하지 않는다. 기존 미연동 UI는 후속 API 연결을 위해 보존하되 준비 중 화면에서 분리한다.
-- `.env.production`은 실제 API(`https://api.hanmaum.site`)와 Mock/QA false를 기본으로 한다. 기존 VITE_ENABLE_MOCK_PREVIEW 값으로 Mock 화면을 다시 활성화하지 않는다. 실제 세션 화면에 Mock 사용자·업무 데이터를 섞지 않는다. 미연동 도메인은 준비 중 안내를 유지하며 `/_dev/components`는 로컬 개발 전용이다.
+- 로그인·세션·공간 조회/생성·홈·가족 목록은 실제 API를 유지한다. 미연동 도메인은 기존 UI와 메모리 예시를 제공하되 화면에는 예시 데이터/API 미연동, 변경 동작에는 실제 저장 없음, 완료에는 예시 결과를 표시한다. 실제 응답을 예시로 대체하거나 예시를 홈의 실제 데이터에 합산하지 않는다.
+- `.env.production`은 실제 API(`https://api.hanmaum.site`)와 Mock/QA false를 기본으로 한다. 기존 VITE_ENABLE_MOCK_PREVIEW 값으로 Mock 화면을 다시 활성화하지 않는다. 미연동 UI는 별도의 isExamplePreviewEnabled와 ExampleSurface로 구분한다. 예시 생성·변경·삭제는 메모리에서만 실행하고 새로고침·초기화·실제 세션 종료/계정 전환 시 정리한다. 실제 API 연결을 완료한 화면부터 예시 경로와 표시를 제거하며 `/_dev/components`는 로컬 개발 전용이다.
 - 로그인 상태는 `useSession`과 `SessionBoundary`에서 관리한다. 401 UNAUTHENTICATED는 세션 정리, 403은 권한/CSRF 실패로 구분하며 변경 요청을 자동 재전송하지 않는다. OAuth 복귀는 `/auth/callback`에서 `/me`를 확인하고 저장된 내부 경로 또는 기존 공간 조회 훅으로 이동한다.
 - QA 도구와 상단 Mock 안내는 로컬·배포 모두 기본 숨김이며 `qa=1`로 켜고 같은 탭에서 유지한다. `VITE_ENABLE_QA_TOOLS`는 도구 허용 설정이며 Mock 활성화와 구분한다. 실제 운영 빌드에서는 `false`로 비활성화하고, QA 선택 상태로 실제 응답이나 권한을 바꾸지 않는다.
 - 구성원의 요청과 소유자의 최종 반영을 구분한다.
