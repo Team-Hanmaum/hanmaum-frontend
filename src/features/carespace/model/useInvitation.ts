@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/features/auth/model/useSession";
-import type { ApiError } from "@/lib/api";
+import { ApiError } from "@/lib/api";
 import { getInvitationPreview, joinInvitation } from "../api/invitationApi";
 import type {
   InvitationPreview,
@@ -19,12 +19,22 @@ export function useInvitationPreview(token: string) {
   });
 }
 
-export function useJoinInvitation(token: string) {
+// 참여 응답의 공간은 초대 확인에서 받은 공간과 같아야 한다.
+export function useJoinInvitation(token: string, expectedSpaceId?: string) {
   const session = useSession();
   const queryClient = useQueryClient();
   return useMutation<JoinInvitationResult, ApiError, InvitationRequest>({
     mutationKey: ["invitation", "join", token],
-    mutationFn: (request) => joinInvitation(token, request),
+    mutationFn: (request) => {
+      if (!expectedSpaceId)
+        return Promise.reject(
+          new ApiError({
+            kind: "invalid-response",
+            message: "초대 확인 전에는 참여할 수 없습니다.",
+          }),
+        );
+      return joinInvitation(token, expectedSpaceId, request);
+    },
     onSuccess: ({ joined }) =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: careSpaceKeys.list() }),

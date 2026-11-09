@@ -17,11 +17,17 @@ import { useAppNavigate } from "@/routes/useAppNavigate";
 
 type InvalidReason = "expired" | "unavailable";
 
-// 410 INVITATION_EXPIRED는 만료, 404(INVITATION_UNAVAILABLE 등)·403은 사용할 수 없는 초대로 안내한다.
-function invalidReason(error: unknown): InvalidReason | undefined {
+// 410 INVITATION_EXPIRED는 만료, 404 INVITATION_UNAVAILABLE은 사용할 수 없는 초대로 안내한다.
+// 초대 확인(GET)의 403은 사용할 수 없는 초대로 본다. 참여(POST)의 403은 CSRF 실패일 수 있으므로
+// 다시 시도할 수 있게 둔다. API 클라이언트가 CSRF 토큰을 비워 다음 시도에서 새로 받는다.
+function invalidReason(
+  error: unknown,
+  forbiddenIsInvalid: boolean,
+): InvalidReason | undefined {
   if (!(error instanceof ApiError)) return undefined;
   if (error.status === 410) return "expired";
-  if (error.status === 404 || error.status === 403) return "unavailable";
+  if (error.status === 404) return "unavailable";
+  if (error.status === 403 && forbiddenIsInvalid) return "unavailable";
   return undefined;
 }
 
@@ -32,13 +38,13 @@ export function ConnectedInvitationPage() {
   const location = useLocation();
   const navigate = useAppNavigate();
   const preview = useInvitationPreview(invitationToken);
-  const join = useJoinInvitation(invitationToken);
+  const join = useJoinInvitation(invitationToken, preview.data?.spaceId);
   const [joinFailed, setJoinFailed] = useState(false);
   const [joinInvalid, setJoinInvalid] = useState<InvalidReason>();
   // 한 참여 시도의 요청 ID. 처리 중·통신 실패 재시도에는 같은 값을 다시 보낸다.
   const attempt = useRef<string | null>(null);
   const authenticated = session.status === "authenticated";
-  const invalid = joinInvalid ?? invalidReason(preview.error);
+  const invalid = joinInvalid ?? invalidReason(preview.error, true);
   const loadFailed =
     authenticated && preview.isError && !invalid && !preview.data;
   const member = authenticated && preview.data?.isMember;
@@ -57,7 +63,7 @@ export function ConnectedInvitationPage() {
           void navigate(spacePath(joined.spaceId), { replace: true });
         },
         onError: (error) => {
-          const reason = invalidReason(error);
+          const reason = invalidReason(error, false);
           if (reason) setJoinInvalid(reason);
           else {
             if (error.code === "IDEMPOTENCY_KEY_REUSED") attempt.current = null;

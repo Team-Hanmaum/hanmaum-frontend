@@ -9,8 +9,9 @@ import type {
 
 const minute = 60 * 1000;
 
-// 화면 진입 시 초대 링크를 한 번 발급한다. 발급 실패 재시도에는 같은 요청 ID를 유지하고,
-// 만료된 링크를 새로 만들 때만 새 요청 ID를 사용한다. 공간이 바뀌면 호출 화면을 재마운트한다.
+// 화면 진입 시 초대 링크를 한 번 발급한다. 요청 ID는 발급이 성공할 때까지 유지해
+// 첫 발급·새 링크 발급 모두 실패 후 재시도에는 같은 ID를 보내고, 성공 뒤의 새 발급만 새 ID를 쓴다.
+// 공간이 바뀌면 호출 화면을 재마운트한다.
 export function useInvitationLink(spaceId: string) {
   const create = useMutation<CreatedInvitation, ApiError, InvitationRequest>({
     mutationKey: ["carespace", "invitation", spaceId],
@@ -27,17 +28,21 @@ export function useInvitationLink(spaceId: string) {
   const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  function issue(fresh: boolean) {
-    if (fresh || !attempt.current) attempt.current = crypto.randomUUID();
+  function issue() {
+    if (!attempt.current) attempt.current = crypto.randomUUID();
     setFeedback("");
     setCopied(false);
     mutate(
       { clientRequestId: attempt.current },
       {
         onSuccess: (created) => {
+          attempt.current = null;
           if (!active.current) return;
           setLink(created);
           setNow(Date.now());
+        },
+        onError: (error) => {
+          if (error.code === "IDEMPOTENCY_KEY_REUSED") attempt.current = null;
         },
       },
     );
@@ -47,7 +52,7 @@ export function useInvitationLink(spaceId: string) {
     active.current = true;
     if (!started.current) {
       started.current = true;
-      issue(false);
+      issue();
     }
     const timer = window.setInterval(() => setNow(Date.now()), minute);
     return () => {
@@ -60,7 +65,8 @@ export function useInvitationLink(spaceId: string) {
 
   const expired = Boolean(link && Date.parse(link.expiresAt) <= now);
   const loading = create.isPending;
-  const failed = !link && create.isError;
+  // 만료 링크를 새로 만들다 실패한 경우도 실패로 보여 같은 요청 ID로 다시 시도하게 한다.
+  const failed = create.isError && !loading;
   const unavailable = !link || expired || loading;
 
   async function copy() {
@@ -121,8 +127,8 @@ export function useInvitationLink(spaceId: string) {
     fallbackOpen,
     setFallbackOpen,
     feedback,
-    retry: () => issue(false),
-    reissue: () => issue(true),
+    retry: issue,
+    reissue: issue,
     copy,
     share,
   };

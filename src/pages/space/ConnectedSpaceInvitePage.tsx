@@ -50,9 +50,9 @@ function SpaceInviteContent({
     setFallbackOpen,
     feedback,
   } = invitation;
+  // 404는 발급할 수 없는 공간이다. 403은 CSRF 실패일 수 있어 다시 시도할 수 있게 둔다.
   const denied =
-    invitation.error instanceof ApiError &&
-    [403, 404].includes(invitation.error.status ?? 0);
+    invitation.error instanceof ApiError && invitation.error.status === 404;
   const field = useRef<HTMLInputElement>(null);
   return (
     <>
