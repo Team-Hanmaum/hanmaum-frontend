@@ -16,6 +16,7 @@ import type {
 } from "../api/recordDeletionTypes";
 import { recordKeys } from "./recordKeys";
 import { resetDeletedRecordData } from "./resetDeletedRecordData";
+import { canRetryReview } from "@/features/proposal/model/reviewFailure";
 
 const resultKey = (
   account: string | undefined,
@@ -41,6 +42,11 @@ export function useDeleteRecord(space: string, record: string) {
   return useMutation<DeletedRecord, ApiError, DeleteRecordBody>({
     mutationFn: (body) => deleteRecord(space, record, body),
     retry: false,
+    onError: async (error) => {
+      // 응답 유실도 삭제 완료 가능성이 있다. 원문과 파생 값을 그대로 재노출하지 않는다.
+      if (canRetryReview(error) || error.status === 403 || error.status === 404)
+        await resetDeletedRecordData(client, session.accountId, space);
+    },
     onSuccess: async (result) => {
       await resetDeletedRecordData(client, session.accountId, space);
       // 삭제 결과에는 원문이나 제목을 넣지 않는다. 새로고침/세션 종료 시 소멸한다.

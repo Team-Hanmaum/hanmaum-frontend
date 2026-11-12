@@ -14,7 +14,12 @@ import type { RecordDetail } from "@/features/record/api/recordReadTypes";
 import { NewsDetail } from "@/features/record/ui/NewsDetail";
 import { ApiError } from "@/lib/api";
 import { SpaceBottomNavigation } from "@/routes/layouts/SpaceBottomNavigation";
-import { paths, spacePath, proposalReviewPath } from "@/routes/paths";
+import {
+  paths,
+  spacePath,
+  proposalReviewPath,
+  newsDeletePath,
+} from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useConnectedSpace } from "@/routes/useConnectedSpace";
@@ -190,6 +195,14 @@ export function ConnectedNewsDetailPage() {
             record={view}
             status={view.analysisStatus}
             owner={space.role === "OWNER"}
+            onDelete={
+              record?.canDelete
+                ? () =>
+                    void navigate(
+                      withReturn(newsDeletePath(space.spaceId, recordId)),
+                    )
+                : undefined
+            }
           />
           {view.proposalSummary && (
             <Notice
