@@ -105,9 +105,13 @@ export function ConnectedProposalRequestPage() {
         );
         return;
       }
-      if (chosen.some((e) => e.sourceType !== "AI_PROPOSAL")) {
+      if (
+        chosen.some(
+          (e) => e.sourceType !== "AI_PROPOSAL" && e.action !== "CREATE_ITEM",
+        )
+      ) {
         setMessage(
-          "직접 입력 요청의 반영은 다음 연동에서 지원해요. 지금은 AI 제안 요청만 선택해 주세요.",
+          "아직 연결되지 않은 변경 요청이 포함되어 있어요. 다른 요청을 선택해 주세요.",
         );
         return;
       }

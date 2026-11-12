@@ -260,7 +260,10 @@ const careItemRoutes: RouteObject[] = [
   },
   {
     path: "care/new/:kind",
-    lazy: loadCareChangePage,
+    lazy: async () => ({
+      Component: (await import("@/pages/care/change/CareWriteRoutes"))
+        .CareCreateRoute,
+    }),
     handle: { title: "돌봄 추가", operation: "create" },
   },
   {
@@ -336,6 +339,7 @@ const careItemRoutes: RouteObject[] = [
 
 // 제안 검토·요청·결과
 const careReadPaths = [
+  "care/new/:kind",
   "care/items/:itemId",
   "care/items/:itemId/sources",
   "care/items/:itemId/history/:historyId?",

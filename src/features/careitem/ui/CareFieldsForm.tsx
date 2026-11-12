@@ -30,6 +30,7 @@ export function CareFieldsForm({
   original,
   direct = false,
   preserveTitle = false,
+  apiMode = false,
 }: {
   kind: CareItemKind;
   fields: CareItemFields;
@@ -41,6 +42,7 @@ export function CareFieldsForm({
   original?: string;
   direct?: boolean;
   preserveTitle?: boolean;
+  apiMode?: boolean;
 }) {
   const [picker, setPicker] = useState<Picker | null>(null);
   const [selection, setSelection] = useState("");
@@ -53,10 +55,19 @@ export function CareFieldsForm({
   const pickerTitle = picker === "assigneeId" ? "담당자 선택" : "날짜 선택";
   return (
     <>
-      {kind === "schedule" ? (
+      {kind === "schedule" || apiMode ? (
         <Field
-          label="일정 이름"
+          label={
+            kind === "schedule"
+              ? "일정 이름"
+              : kind === "question"
+                ? "질문"
+                : kind === "task"
+                  ? "할 일 이름"
+                  : "제목"
+          }
           value={fields.title}
+          maxLength={10000}
           helper={original ? `AI 제안 · ${original}` : undefined}
           error={errors.title}
           disabled={disabled}
@@ -114,7 +125,8 @@ export function CareFieldsForm({
             title={
               key === "assigneeId"
                 ? (members.find((member) => member.id === fields.assigneeId)
-                    ?.name ?? "미지정")
+                    ?.name ??
+                  (fields.assigneeId ? "담당자 확인 필요" : "미지정"))
                 : key === "time"
                   ? fields.time
                     ? formatCareTime(fields.time)
@@ -146,11 +158,18 @@ export function CareFieldsForm({
           disabled={disabled}
         />
       )}
-      {direct && (kind === "task" || kind === "question") && (
+      {direct && (apiMode || kind === "task" || kind === "question") && (
         <Field
-          label={kind === "task" ? "메모 (선택)" : "추가 설명 (선택)"}
+          label={
+            apiMode
+              ? "내용·메모 (선택)"
+              : kind === "task"
+                ? "메모 (선택)"
+                : "추가 설명 (선택)"
+          }
           multiline
           rows={5}
+          maxLength={10000}
           value={fields.note}
           onChange={(event) => update("note", event.target.value)}
           disabled={disabled}
