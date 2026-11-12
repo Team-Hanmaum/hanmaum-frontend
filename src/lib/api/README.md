@@ -91,6 +91,7 @@ export async function getCareSpaces(
 - 204는 `requestEmpty`로 처리한다. 로그아웃은 `POST /api/auth/logout`의 본문 없는 204다.
 - CSRF는 예외적으로 `GET /api/auth/csrf`의 원시 `{headerName, token}`을 읽는다.
 - OAuth는 브라우저 전체 이동 `/oauth2/authorization/google|kakao`다. Axios 요청이 아니다.
+- 로그인 버튼을 누르면 먼저 같은 Origin의 Web Lock 안에서 `GET /api/auth/csrf`를 새로 요청해 세션 쿠키 준비를 기다린 뒤 OAuth 주소로 이동한다. 이 준비 토큰은 메모리 캐시에도 보관하지 않으며 로그인 후 첫 변경 요청에서 다시 발급한다. 준비 실패 시 OAuth 이동을 진행하지 않는다.
 - ID는 문자열, 공개 버전은 십진 문자열, 시각은 UTC ISO 8601로 유지한다. 202 접수를 업무 완료로 처리하지 않는다.
 - `ApiError`는 kind/status/code/message/errors/timestamp를 유지한다. HTTP·network·timeout·cancelled·invalid-response·configuration·unknown을 구분하고 원문·쿠키·토큰·Axios 설정을 오류에 넣지 않는다.
 - 401 `UNAUTHENTICATED`만 세션 만료로 연결한다. 403 `FORBIDDEN`은 CSRF와 권한 오류에 공통 사용되므로 로그아웃하거나 변경 요청을 자동 재전송하지 않는다.
@@ -109,6 +110,8 @@ BE의 HttpOnly `HANMAUM_SESSION`을 브라우저가 credentials 요청에 포함
 - Query의 기본 `staleTime`은 30초이며 포커스 자동 조회는 비활성화한다. 세션 재확인과 업무 조회가 동시에 실행되는 경쟁을 방지한다. 변경 성공 후 invalidate는 기존대로 적용한다.
 - 탭 이탈로 취소된 활성 조회가 있으면 복귀 시 신원을 먼저 확인하고 해당 조회만 재개한다. 실패 후 재시도도 같은 규칙이며, 계정 전환으로 제거된 Query 객체는 재사용하지 않는다.
 - 로그인 시작·복귀·로그아웃은 같은 Origin의 다른 탭에 BroadcastChannel과 storage 이벤트로 변경 신호만 전달한다. 계정·쿠키·토큰은 전달하거나 저장하지 않는다. 다른 탭은 신원을 무효화하고 다시 확인한다. 계정 변경 시 캐시와 화면 상태를 초기화한다.
+- 최초 로그인 준비는 `prepareOAuthSession`의 Web Locks로 직렬화한다. 다른 탭의 준비 요청이 끝나 세션 쿠키가 저장된 후 다음 탭이 준비·이동하며, 서버의 OAuth state별 복귀 처리와 함께 사용한다. 화면 이탈·컴포넌트 해제 시 대기/요청을 취소하고 20초 내 준비되지 않으면 명시적 재시도를 안내한다. 탭 종료 시 브라우저가 잠금을 해제하므로 영구 잠금이나 localStorage 완료 플래그를 남기지 않는다.
+- Web Locks를 지원하지 않거나 사용할 수 없는 브라우저에서는 조율 없이 로그인을 진행하지 않고 오류를 표시한다. HTTPS의 최신 Chrome·Safari·Edge를 사용한다. 잠금은 같은 Origin 범위이므로 운영 FE와 로컬 FE를 서로 다른 탭에서 동시에 **최초** 로그인하는 경우까지 조율하지 않는다. 이 경우 한 주소에서 먼저 로그인한 뒤 다른 주소를 사용하며, Origin 간 조율이 필요하면 BE와 별도 계약을 추가한다.
 - `/me`의 네트워크·서버 오류를 비로그인으로 오인하지 않는다. 기존 화면과 입력은 유지하고 작은 재시도 안내를 표시한다. 새 보호 요청은 신원 확인이 성공하기 전까지 전달하지 않는다. 서버에서 이미 처리한 변경을 취소·롤백했다는 뜻은 아니다.
 - 로그아웃 403은 실패로 표시하고 세션을 유지한다. 응답 유실은 결과 미확인으로 표시하며 보호 데이터를 가린다. 이후 `/me`로 확인해 401일 때만 로그아웃 완료로 간주한다.
 - 계정 데이터를 localStorage나 Query initialData/placeholderData에 보관하지 않는다. 공간별 Query 키에는 spaceId를 포함한다.
