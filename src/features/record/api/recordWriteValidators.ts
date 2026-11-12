@@ -8,8 +8,9 @@ export function isCreatedRecord(value: unknown): value is CreatedRecord {
     typeof value.recordId === "string" &&
     isRecordVersion(value.version) &&
     isTimestamp(value.recordedAt) &&
-    isObject(value.analysis) &&
-    typeof value.analysis.analysisId === "string" &&
-    isRecordAnalysisState(value.analysis.status)
+    (value.analysis === null ||
+      (isObject(value.analysis) &&
+        typeof value.analysis.analysisId === "string" &&
+        isRecordAnalysisState(value.analysis.status)))
   );
 }

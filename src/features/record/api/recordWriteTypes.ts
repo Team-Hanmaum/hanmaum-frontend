@@ -9,5 +9,5 @@ export interface CreatedRecord {
   recordId: string;
   version: string;
   recordedAt: string;
-  analysis: RecordLatestAnalysis;
+  analysis: RecordLatestAnalysis | null;
 }
