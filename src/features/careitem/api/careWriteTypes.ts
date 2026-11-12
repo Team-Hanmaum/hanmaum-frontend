@@ -14,3 +14,15 @@ export type CreatedCareItem = {
   version: string;
   createdAt: string;
 };
+export type ItemWriteIdentity = {
+  clientRequestId: string;
+  expectedItemVersion: string;
+  leaseToken: string;
+};
+export type UpdateCareItemBody = ItemWriteIdentity & { values: CareValues };
+export type ChangeItemStatusBody = ItemWriteIdentity & { status: string };
+export type UpdatedCareItem = {
+  itemId: string;
+  version: string;
+  updatedAt: string;
+};

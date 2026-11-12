@@ -26,6 +26,7 @@ export function useReviewLeases(
   });
   const queue = useRef<Promise<unknown>>(Promise.resolve());
   const expireCurrent = useRef<(() => void) | null>(null);
+  const releaseCurrent = useRef<(() => Promise<void>) | null>(null);
   useEffect(() => {
     if (!enabled) return;
     let active = true;
@@ -135,6 +136,13 @@ export function useReviewLeases(
       }
     })();
     queue.current = start;
+    const releaseBeforeRestart = async () => {
+      invalidated = true;
+      if (timer) clearTimeout(timer);
+      await start;
+      await release();
+    };
+    releaseCurrent.current = releaseBeforeRestart;
     const visible = () => {
       if (
         document.visibilityState === "visible" &&
@@ -147,12 +155,15 @@ export function useReviewLeases(
     return () => {
       active = false;
       if (expireCurrent.current === expire) expireCurrent.current = null;
+      if (releaseCurrent.current === releaseBeforeRestart)
+        releaseCurrent.current = null;
       if (timer) clearTimeout(timer);
       document.removeEventListener("visibilitychange", visible);
       queue.current = start.then(release);
     };
   }, [space, key, enabled]);
   return {
+    release: () => releaseCurrent.current?.() ?? Promise.resolve(),
     ready: !targets.length || (state.key === key && state.ready),
     ensureCurrent: () => {
       if (!targets.length) return true;

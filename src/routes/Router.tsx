@@ -82,6 +82,12 @@ function RouteLoadingFallback() {
     </p>
   );
 }
+async function loadCareEditPage() {
+  return {
+    Component: (await import("@/pages/care/change/CareWriteRoutes"))
+      .CareEditRoute,
+  };
+}
 
 // 공간 진입 전 화면
 const entryRoutes: RouteObject[] = [
@@ -268,17 +274,17 @@ const careItemRoutes: RouteObject[] = [
   },
   {
     path: "care/items/:itemId/edit",
-    lazy: loadCareChangePage,
+    lazy: loadCareEditPage,
     handle: { title: "내용 수정", operation: "edit" },
   },
   {
     path: "care/items/:itemId/assignee",
-    lazy: loadCareChangePage,
+    lazy: loadCareEditPage,
     handle: { title: "담당자 변경", operation: "assignee" },
   },
   {
     path: "care/items/:itemId/status",
-    lazy: loadCareChangePage,
+    lazy: loadCareEditPage,
     handle: { title: "상태 변경", operation: "status" },
   },
   {
@@ -302,7 +308,8 @@ const careItemRoutes: RouteObject[] = [
   {
     path: "care/items/:itemId/manage",
     lazy: async () => ({
-      Component: (await import("@/pages/care/CareManagePage")).CareManagePage,
+      Component: (await import("@/pages/care/change/CareWriteRoutes"))
+        .CareManageRoute,
     }),
     handle: { title: "항목 관리" },
   },
@@ -339,6 +346,10 @@ const careItemRoutes: RouteObject[] = [
 
 // 제안 검토·요청·결과
 const careReadPaths = [
+  "care/items/:itemId/edit",
+  "care/items/:itemId/assignee",
+  "care/items/:itemId/status",
+  "care/items/:itemId/manage",
   "care/new/:kind",
   "care/items/:itemId",
   "care/items/:itemId/sources",

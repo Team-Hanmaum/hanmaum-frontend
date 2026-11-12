@@ -107,7 +107,9 @@ export function ConnectedProposalRequestPage() {
       }
       if (
         chosen.some(
-          (e) => e.sourceType !== "AI_PROPOSAL" && e.action !== "CREATE_ITEM",
+          (e) =>
+            e.sourceType !== "AI_PROPOSAL" &&
+            !["CREATE_ITEM", "UPDATE_ITEM"].includes(e.action),
         )
       ) {
         setMessage(
