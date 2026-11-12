@@ -88,6 +88,17 @@ export async function getCareSpaces(
 
 `readApiData(path, validator, options)`는 위 요청·data 검증을 재사용하는 공통 헬퍼다. 검증 실패 시 일반 응답 오류 문구를 사용한다. 도메인별 오류 문구나 HTTP 상태·메타데이터가 필요하면 위 예시처럼 `apiClient.request<unknown>`과 검증 함수를 직접 조합한다. 타입·검증·요청의 파일 분리 규칙은 두 방식 모두 동일하다.
 
+성공 HTTP 상태도 공통 클라이언트에서 검사한다. `expectedStatus`의 기본값은 200이며 도메인 요청에서 계약상 다른 상태를 명시한다. 허용되지 않은 2xx는 `invalid-response`로 처리해 데이터 형태가 같아도 성공 이동·캐시 갱신을 하지 않는다. 4xx/5xx의 기존 `status/code/errors` 처리와 변경 요청 자동 재시도 금지는 유지한다.
+
+| 요청                                     | 허용 성공 상태                                |
+| ---------------------------------------- | --------------------------------------------- |
+| 내 정보·공간·가족·홈·소식·분석·초대 조회 | 200 (기본값)                                  |
+| 공간·소식·초대 생성                      | `expectedStatus: 201`                         |
+| 분석 재시도 접수                         | `expectedStatus: 202` (완료 아님)             |
+| 초대 참여                                | `expectedStatus: [200, 201]` (기존/신규 참여) |
+| 로그아웃                                 | `requestEmpty`의 204                          |
+| 로그인 준비·CSRF 발급                    | 별도 CSRF 응답 검증의 200                     |
+
 - 204는 `requestEmpty`로 처리한다. 로그아웃은 `POST /api/auth/logout`의 본문 없는 204다.
 - CSRF는 예외적으로 `GET /api/auth/csrf`의 원시 `{headerName, token}`을 읽는다.
 - OAuth는 브라우저 전체 이동 `/oauth2/authorization/google|kakao`다. Axios 요청이 아니다.

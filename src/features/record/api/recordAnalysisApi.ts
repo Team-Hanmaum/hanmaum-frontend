@@ -39,6 +39,6 @@ export function retryRecordAnalysis(
     analysesPath(spaceId, recordId),
     (value): value is RetriedAnalysis =>
       isRetriedAnalysis(value) && value.recordId === recordId,
-    { method: "POST", body: request, signal },
+    { method: "POST", expectedStatus: 202, body: request, signal },
   );
 }
