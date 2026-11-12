@@ -8,6 +8,7 @@ export const itemLabels: Record<ItemType, string> = {
   GUIDANCE: "안내",
 };
 export const fieldLabels: Record<string, string> = {
+  itemType: "항목 종류",
   title: "제목",
   description: "내용",
   scheduledDate: "날짜",
@@ -65,5 +66,7 @@ export function displayCareValue(
       : "미지정";
   if (value === null || value === undefined || value === "") return "미정";
   if (typeof value !== "string") return "표시할 수 없는 값";
+  if (key === "itemType" && Object.hasOwn(itemLabels, value))
+    return itemLabels[value as ItemType];
   return key === "status" ? (statuses[value] ?? value) : value;
 }

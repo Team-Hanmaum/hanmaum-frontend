@@ -23,6 +23,7 @@ import {
   writeFieldError,
 } from "../model/careWriteDraft";
 import { itemLabels } from "../model/careReadView";
+import { validateCareFields } from "../model/careItemFields";
 import type { CareItemKind } from "../model/careItemViewTypes";
 import { CareFieldsForm } from "./CareFieldsForm";
 import { CareValuesView } from "./CareValuesView";
@@ -51,6 +52,9 @@ export function CareCreateForm({
   const [fields, setFields] = useState(emptyWriteFields);
   const [review, setReview] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<
+    ReturnType<typeof validateCareFields>
+  >({});
   const attempt = useRef<Attempt | null>(null);
   const members = useSpaceMembers(space.spaceId);
   const navigate = useAppNavigate();
@@ -76,9 +80,13 @@ export function CareCreateForm({
       motion: "back",
     });
   function confirm() {
+    const next =
+      type === "SCHEDULE" ? validateCareFields("schedule", fields) : {};
     const message = writeFieldError(fields);
-    setError(message);
-    if (!message) setReview(true);
+    if (message) next.title = message;
+    setFieldErrors(next);
+    setError(message || Object.values(next)[0] || "");
+    if (!Object.keys(next).length) setReview(true);
   }
   function submit() {
     if (mutation.isPending) return;
@@ -251,7 +259,7 @@ export function CareCreateForm({
             role: m.role.toLowerCase(),
           }))}
           disabled={frozen}
-          errors={error ? { title: error } : undefined}
+          errors={fieldErrors}
         />
       )}
       <Notice

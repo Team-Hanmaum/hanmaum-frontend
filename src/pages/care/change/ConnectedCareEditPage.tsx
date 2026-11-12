@@ -63,11 +63,16 @@ function CareEditEntry({
   onBack,
   ...props
 }: ComponentProps<typeof CareEditForm> & { onBack: () => void }) {
-  // 저장 후 무효화·재조회가 완료 화면 이동 전에 폼을 해제하지 않도록 진입 시만 검사한다.
-  const [unavailable] = useState(() =>
+  // 차단 중에는 최신 상태를 확인하되, 한 번 열린 폼은 재조회로 해제하지 않는다.
+  const [unavailable, setUnavailable] = useState(() =>
     careWriteUnavailable(props.item, props.operation),
   );
-  return unavailable ? (
+  const currentUnavailable =
+    unavailable && props.operation !== "delete"
+      ? careWriteUnavailable(props.item, props.operation)
+      : unavailable;
+  if (unavailable && !currentUnavailable) setUnavailable("");
+  return currentUnavailable ? (
     <ProposalPageLayout
       connected
       title="돌봄 변경"
@@ -77,7 +82,7 @@ function CareEditEntry({
     >
       <EmptyState
         title="지금은 변경할 수 없어요"
-        body={unavailable}
+        body={currentUnavailable}
       />
     </ProposalPageLayout>
   ) : (

@@ -177,10 +177,10 @@ export function CareEditForm({
         <Notice
           role="status"
           title={
-            form.changed
-              ? "검토 중 현재 정보가 바뀌었어요"
-              : form.leases.error
-                ? reviewFailure(form.leases.error)
+            form.leases.error
+              ? reviewFailure(form.leases.error)
+              : form.changed
+                ? "검토 중 현재 정보가 바뀌었어요"
                 : queryError
                   ? "최신 내용을 불러오지 못했어요"
                   : members.isError
@@ -195,7 +195,13 @@ export function CareEditForm({
           form.needsRefresh ||
           !!form.leases.error ||
           !!queryError) && (
-          <TextAction onClick={() => void form.leases.release().then(reload)}>
+          <TextAction
+            onClick={() =>
+              void form.leases.release().then(reload, () => {
+                // 해제 오류는 leases.error로 표시하고 현재 입력 화면을 유지한다.
+              })
+            }
+          >
             입력을 버리고 최신 내용으로 다시 시작
           </TextAction>
         )}

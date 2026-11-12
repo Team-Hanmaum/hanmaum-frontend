@@ -6,7 +6,9 @@ import { useConnectedSpace } from "@/routes/useConnectedSpace";
 export function ConnectedCareCreatePage() {
   const { space } = useConnectedSpace();
   const { kind = "" } = useParams();
-  const type = createItemTypes[kind];
+  const type = Object.hasOwn(createItemTypes, kind)
+    ? createItemTypes[kind]
+    : undefined;
   return type ? (
     <CareCreateForm
       key={`${space.spaceId}:${type}`}
