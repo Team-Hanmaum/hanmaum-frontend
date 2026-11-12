@@ -3,19 +3,26 @@ import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog
 import { toSpaceView } from "@/features/dashboard/model/homeData";
 import { useRecordComposer } from "@/features/record/model/useRecordComposer";
 import { NewsForm } from "@/features/record/ui/NewsForm";
+import { TextAction } from "@/components/ui";
 import { newsDetailPath, spacePath } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useConnectedSpace } from "@/routes/useConnectedSpace";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 export function ConnectedNewsCreatePage() {
+  const { withdrawing, withReturn, returnToWithdrawal } = useWithdrawalReturn();
   const { space } = useConnectedSpace();
   const navigate = useAppNavigate();
-  const onBack = useBackNavigation(spacePath(space.spaceId, "news"));
+  const onBack = useBackNavigation(
+    withReturn(spacePath(space.spaceId, "news")),
+  );
   const composer = useRecordComposer({
     spaceId: space.spaceId,
     onCreated: (id) =>
-      void navigate(newsDetailPath(space.spaceId, id), { replace: true }),
+      void navigate(withReturn(newsDetailPath(space.spaceId, id)), {
+        replace: true,
+      }),
   });
   return (
     <DetailLayout
@@ -35,6 +42,11 @@ export function ConnectedNewsCreatePage() {
         />
       }
     >
+      {withdrawing && (
+        <TextAction onClick={returnToWithdrawal}>
+          탈퇴 절차로 돌아가기
+        </TextAction>
+      )}
       <NewsForm
         id="news-form"
         space={toSpaceView(space, [])}

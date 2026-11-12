@@ -18,6 +18,7 @@ import { paths, spacePath } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useConnectedSpace } from "@/routes/useConnectedSpace";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 type RetryNotice = { title: string; body: string };
 
@@ -37,10 +38,11 @@ function describeRetryError(error: ApiError): RetryNotice {
 }
 
 export function ConnectedNewsDetailPage() {
+  const { withdrawing, withReturn, returnToWithdrawal } = useWithdrawalReturn();
   const { space } = useConnectedSpace();
   const { recordId = "" } = useParams();
   const navigate = useAppNavigate();
-  const listPath = spacePath(space.spaceId, "news");
+  const listPath = withReturn(spacePath(space.spaceId, "news"));
   const onBack = useBackNavigation(listPath);
   const detail = useRecordDetail(space.spaceId, recordId);
   const analysis = useRecordAnalysis(
@@ -146,6 +148,14 @@ export function ConnectedNewsDetailPage() {
                 </Button>
               )}
             </div>
+          )}
+          {withdrawing && (
+            <TextAction
+              className="w-full bg-hm-bg-surface pb-hm-20"
+              onClick={returnToWithdrawal}
+            >
+              탈퇴 절차로 돌아가기
+            </TextAction>
           )}
           <SpaceBottomNavigation
             spaceId={space.spaceId}

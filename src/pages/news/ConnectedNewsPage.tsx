@@ -1,4 +1,5 @@
 import { ErrorState, Notice } from "@/components/feedback";
+import { TextAction } from "@/components/ui";
 import { useRecordList } from "@/features/record/model/useRecords";
 import { toRecordView } from "@/features/record/model/recordView";
 import type { NewsListState } from "@/features/record/model/newsScreenStates";
@@ -6,6 +7,7 @@ import { NewsList } from "@/features/record/ui/NewsList";
 import { ApiError } from "@/lib/api";
 import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useConnectedSpace } from "@/routes/useConnectedSpace";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import {
   newsCreatePath,
   newsDetailPath,
@@ -14,6 +16,7 @@ import {
 } from "@/routes/paths";
 
 export function ConnectedNewsPage() {
+  const { withdrawing, withReturn, returnToWithdrawal } = useWithdrawalReturn();
   const { space } = useConnectedSpace();
   const navigate = useAppNavigate();
   const list = useRecordList(space.spaceId);
@@ -25,8 +28,10 @@ export function ConnectedNewsPage() {
       <ErrorState
         reason="no-permission"
         title="이 공간에 접근할 수 없어요"
-        actionLabel="참여 공간 선택"
-        onAction={() => void navigate(paths.spaces)}
+        actionLabel={withdrawing ? "탈퇴 절차로 돌아가기" : "참여 공간 선택"}
+        onAction={
+          withdrawing ? returnToWithdrawal : () => void navigate(paths.spaces)
+        }
       />
     );
   // 커서 사이에 같은 소식이 다시 내려와도 한 번만 표시한다.
@@ -46,6 +51,11 @@ export function ConnectedNewsPage() {
           : "empty";
   return (
     <>
+      {withdrawing && (
+        <TextAction onClick={returnToWithdrawal}>
+          탈퇴 절차로 돌아가기
+        </TextAction>
+      )}
       {list.isRefetchError && (
         <Notice
           tone="error"
@@ -67,9 +77,15 @@ export function ConnectedNewsPage() {
         }}
         onMore={() => void list.fetchNextPage()}
         pendingCount={0}
-        onCreate={() => void navigate(newsCreatePath(space.spaceId))}
-        onOpen={(id) => void navigate(newsDetailPath(space.spaceId, id))}
-        onReview={() => void navigate(proposalListPath(space.spaceId))}
+        onCreate={() =>
+          void navigate(withReturn(newsCreatePath(space.spaceId)))
+        }
+        onOpen={(id) =>
+          void navigate(withReturn(newsDetailPath(space.spaceId, id)))
+        }
+        onReview={() =>
+          void navigate(withReturn(proposalListPath(space.spaceId)))
+        }
         onRetry={() => void list.refetch()}
       />
     </>
