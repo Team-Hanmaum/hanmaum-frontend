@@ -18,6 +18,7 @@ export function NewsList({
   pendingCount,
   visibleCount,
   onMore,
+  paging,
 }: {
   records: readonly RecordView[];
   state: NewsListState;
@@ -28,13 +29,18 @@ export function NewsList({
   pendingCount: number;
   visibleCount: number;
   onMore: () => void;
+  // 서버 커서 페이지: 불러온 소식을 모두 표시하고 다음 페이지 유무는 서버 응답을 따른다.
+  paging?: { hasNext: boolean; loading: boolean };
 }) {
   const nextFocus = useRef<string | null>(null);
+  const nextFocusIndex = useRef<number | null>(null);
   const sorted = sortNewsRecords(records);
-  const visible = sorted.slice(0, visibleCount);
-  const hasMore = visible.length < sorted.length;
+  const visible = paging ? sorted : sorted.slice(0, visibleCount);
+  const hasMore = paging ? paging.hasNext : visible.length < sorted.length;
+  const indexById = new Map(visible.map((record, index) => [record.id, index]));
   function showMore() {
-    nextFocus.current = sorted[visible.length]?.id ?? null;
+    if (paging) nextFocusIndex.current = visible.length;
+    else nextFocus.current = sorted[visible.length]?.id ?? null;
     onMore();
   }
   if (state === "loading")
@@ -96,8 +102,13 @@ export function NewsList({
                 tabIndex={-1}
                 aria-label={record.title}
                 ref={(element) => {
-                  if (element && nextFocus.current === record.id) {
+                  if (
+                    element &&
+                    (nextFocus.current === record.id ||
+                      nextFocusIndex.current === indexById.get(record.id))
+                  ) {
                     nextFocus.current = null;
+                    nextFocusIndex.current = null;
                     element.focus({ preventScroll: true });
                   }
                 }}
@@ -130,7 +141,9 @@ export function NewsList({
             role="status"
             className="text-center text-hm-body-small text-hm-text-secondary"
           >
-            전체 {records.length}건 중 {visible.length}건
+            {paging
+              ? `불러온 소식 ${visible.length}건`
+              : `전체 ${records.length}건 중 ${visible.length}건`}
           </p>
           {state === "more-error" ? (
             <>
@@ -142,6 +155,8 @@ export function NewsList({
               <Button
                 variant="secondary"
                 onClick={showMore}
+                loading={paging?.loading}
+                loadingLabel="이전 소식을 불러오고 있어요"
               >
                 나머지 소식 다시 불러오기
               </Button>
@@ -150,6 +165,8 @@ export function NewsList({
             <Button
               variant="secondary"
               onClick={showMore}
+              loading={paging?.loading}
+              loadingLabel="이전 소식을 불러오고 있어요"
             >
               이전 소식 더 보기
             </Button>

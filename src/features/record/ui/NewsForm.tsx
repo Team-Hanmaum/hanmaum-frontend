@@ -5,6 +5,11 @@ import {
   type CareSpaceView,
 } from "@/features/carespace/model/careSpaceViewTypes";
 
+const defaultFailure = {
+  title: "소식을 등록하지 못했어요",
+  body: "작성한 내용은 그대로 있어요. 연결 상태를 확인한 뒤 다시 시도해 주세요.",
+};
+
 export function NewsForm({
   id,
   space,
@@ -21,9 +26,10 @@ export function NewsForm({
   onChange: (value: string) => void;
   onSubmit: () => void;
   error?: string;
-  failed: boolean;
+  failed: boolean | { title: string; body: string };
   disabled: boolean;
 }) {
+  const failure = failed === true ? defaultFailure : failed || undefined;
   return (
     <form
       id={id}
@@ -33,12 +39,12 @@ export function NewsForm({
         onSubmit();
       }}
     >
-      {failed && (
+      {failure && (
         <Notice
           tone="error"
           role="alert"
-          title="소식을 등록하지 못했어요"
-          body="작성한 내용은 그대로 있어요. 연결 상태를 확인한 뒤 다시 시도해 주세요."
+          title={failure.title}
+          body={failure.body}
         />
       )}
       <div className="flex flex-col gap-hm-12">
