@@ -11,6 +11,7 @@ import {
   useJoinInvitation,
 } from "@/features/carespace/model/useInvitation";
 import { InvitationContent } from "@/features/carespace/ui/InvitationContent";
+import { describeInvitationJoinError } from "@/features/carespace/model/invitationJoinError";
 import { ApiError } from "@/lib/api";
 import { paths, spacePath } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
@@ -39,7 +40,8 @@ export function ConnectedInvitationPage() {
   const navigate = useAppNavigate();
   const preview = useInvitationPreview(invitationToken);
   const join = useJoinInvitation(invitationToken, preview.data?.spaceId);
-  const [joinFailed, setJoinFailed] = useState(false);
+  const [joinFailure, setJoinFailure] =
+    useState<ReturnType<typeof describeInvitationJoinError>>();
   const [joinInvalid, setJoinInvalid] = useState<InvalidReason>();
   // 한 참여 시도의 요청 ID. 처리 중·통신 실패 재시도에는 같은 값을 다시 보낸다.
   const attempt = useRef<string | null>(null);
@@ -54,7 +56,7 @@ export function ConnectedInvitationPage() {
   function joinSpace() {
     if (join.isPending) return;
     if (!attempt.current) attempt.current = crypto.randomUUID();
-    setJoinFailed(false);
+    setJoinFailure(undefined);
     join.mutate(
       { clientRequestId: attempt.current },
       {
@@ -67,7 +69,7 @@ export function ConnectedInvitationPage() {
           if (reason) setJoinInvalid(reason);
           else {
             if (error.code === "IDEMPOTENCY_KEY_REUSED") attempt.current = null;
-            setJoinFailed(true);
+            setJoinFailure(describeInvitationJoinError(error));
           }
         },
       },
@@ -95,7 +97,7 @@ export function ConnectedInvitationPage() {
       <ActionBar
         position="fixed"
         primary={{
-          label: joinFailed ? "다시 참여하기" : "가족 공간에 참여하기",
+          label: joinFailure ? "다시 참여하기" : "가족 공간에 참여하기",
           loading: join.isPending,
           loadingLabel: "공간에 참여하고 있어요",
           disabled: !preview.data,
@@ -163,7 +165,8 @@ export function ConnectedInvitationPage() {
         </>
       ) : (
         <InvitationContent
-          state={joinFailed ? "error" : "default"}
+          state={joinFailure ? "error" : "default"}
+          failure={joinFailure}
           ready
           expiresAt={preview.data?.expiresAt}
         />

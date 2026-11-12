@@ -13,11 +13,13 @@ export function InvitationContent({
   state,
   ready = false,
   expiresAt,
+  failure,
 }: {
   state: "default" | "expired" | "unavailable" | "error";
   // 로그인 후 초대를 확인한 상태. 참여 안내 문구와 참여 가능 기한을 표시한다.
   ready?: boolean;
   expiresAt?: string;
+  failure?: { title: string; body: string };
 }) {
   if (state === "expired" || state === "unavailable")
     return (
@@ -102,8 +104,11 @@ export function InvitationContent({
         <Notice
           tone="error"
           role="alert"
-          title="참여를 완료하지 못했어요"
-          body="초대 링크는 그대로예요. 아래 버튼으로 다시 시도해 주세요."
+          title={failure?.title ?? "참여를 완료하지 못했어요"}
+          body={
+            failure?.body ??
+            "초대 링크는 그대로예요. 아래 버튼으로 다시 시도해 주세요."
+          }
         />
       )}
       <Notice
