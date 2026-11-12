@@ -47,10 +47,11 @@ export function useDeleteRecord(space: string, record: string) {
       if (canRetryReview(error) || error.status === 403 || error.status === 404)
         await resetDeletedRecordData(client, session.accountId, space);
     },
-    onSuccess: async (result) => {
-      await resetDeletedRecordData(client, session.accountId, space);
+    onSuccess: (result) => {
       // 삭제 결과에는 원문이나 제목을 넣지 않는다. 새로고침/세션 종료 시 소멸한다.
       client.setQueryData(resultKey(session.accountId, space, record), result);
+      // 관련 조회가 느리거나 실패해도 삭제 결과 확인은 지연하지 않는다.
+      void resetDeletedRecordData(client, session.accountId, space);
     },
   });
 }
