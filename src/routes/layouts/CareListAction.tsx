@@ -25,7 +25,7 @@ export function CareListAction({ spaceId }: { spaceId: string }) {
           )
         }
       >
-        {news ? "소식 남기기" : `${careKindLabels[filter.type]} 추가`}
+        {news ? "소식 남기기" : `${careKindLabels[filter.type]} 추가 · 예시`}
       </Button>
     </div>
   );

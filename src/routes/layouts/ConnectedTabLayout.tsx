@@ -9,12 +9,9 @@ import { paths, spacePath, newsCreatePath, type SpaceTab } from "../paths";
 import { useConnectedSpace } from "../useConnectedSpace";
 import { useAppNavigate } from "../useAppNavigate";
 import { SpaceBottomNavigation } from "./SpaceBottomNavigation";
-import { useMockCareSpaces } from "@/features/carespace/model/useMockCareSpaces";
 import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
 import { LoadingState, ErrorState } from "@/components/feedback";
-import { ExampleSurface } from "./ExampleSurface";
 import { CareListAction } from "./CareListAction";
-import { SpaceAccessState } from "./SpaceAccessState";
 import { ApiError } from "@/lib/api";
 import { useWithdrawalReturn } from "../useWithdrawalReturn";
 
@@ -30,21 +27,10 @@ export function ConnectedTabLayout() {
   const active =
     (match?.handle as { tab: SpaceTab } | undefined)?.tab ?? "home";
   const members = useSpaceMembers(space.spaceId, active === "all");
-  const examples = useMockCareSpaces();
-  const example = active === "care";
   const membersDenied =
     members.error instanceof ApiError &&
     [403, 404].includes(members.error.status ?? 0);
-  const exampleSpace = examples.spaces.find(
-    (entry) => entry.id === space.spaceId,
-  );
-  if (example && examples.ended[space.spaceId])
-    return (
-      <ExampleSurface>
-        <SpaceAccessState />
-      </ExampleSurface>
-    );
-  const view = example ? exampleSpace : toSpaceView(space, members.data ?? []);
+  const view = toSpaceView(space, members.data ?? []);
   const items = (spaces.data ?? []).map((value) => ({
     id: value.spaceId,
     subjectLabel: value.subjectLabel,
@@ -105,12 +91,10 @@ export function ConnectedTabLayout() {
         ) : (
           <LoadingState label="공간 정보를 확인하고 있어요" />
         )
-      ) : example && !view ? (
-        <LoadingState label="예시 화면을 준비하고 있어요" />
       ) : (
         <Outlet context={{ ...view, ...context }} />
       )}
     </PageLayout>
   );
-  return example ? <ExampleSurface>{page}</ExampleSurface> : page;
+  return page;
 }
