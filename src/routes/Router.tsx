@@ -455,53 +455,54 @@ const spaceInfoRoutes: RouteObject[] = [
   },
 ];
 
-// 가족 관리: 역할 확인은 각 화면과 Mock 액션에서 재검사
+// 가족 관리: 각 화면에서 최신 역할과 API 처리 결과를 확인한다.
 const familyRoutes: RouteObject[] = [
   {
     path: "family/leave",
     lazy: async () => ({
-      Component: (await import("@/pages/family/FamilyLeavePage"))
-        .FamilyLeavePage,
+      Component: (await import("@/pages/family/ConnectedFamilyLeavePage"))
+        .ConnectedFamilyLeavePage,
     }),
     handle: { title: "공간 나가기" },
   },
   {
     path: "family/delete",
     lazy: async () => ({
-      Component: (await import("@/pages/family/FamilyDeletePage"))
-        .FamilyDeletePage,
+      Component: (await import("@/pages/family/ConnectedFamilyDeletePage"))
+        .ConnectedFamilyDeletePage,
     }),
     handle: { title: "공간 삭제" },
   },
   {
     path: "family/transfer",
     lazy: async () => ({
-      Component: (await import("@/pages/family/FamilyTransferPage"))
-        .FamilyTransferPage,
+      Component: (await import("@/pages/family/ConnectedFamilyTransferPage"))
+        .ConnectedFamilyTransferPage,
     }),
     handle: { title: "소유권 이전" },
   },
   {
     path: "family/transfer/:memberId",
     lazy: async () => ({
-      Component: (await import("@/pages/family/FamilyTransferConfirmPage"))
-        .FamilyTransferConfirmPage,
+      Component: (
+        await import("@/pages/family/ConnectedFamilyTransferConfirmPage")
+      ).ConnectedFamilyTransferConfirmPage,
     }),
     handle: { title: "소유권 이전 확인" },
   },
   {
     path: "family/members",
     lazy: async () => ({
-      Component: (await import("@/pages/family/FamilyMembersPage"))
-        .FamilyMembersPage,
+      Component: (await import("@/pages/family/ConnectedFamilyMembersPage"))
+        .ConnectedFamilyMembersPage,
     }),
     handle: { title: "구성원 관리" },
   },
   {
     path: "family/members/:memberId/remove",
     lazy: async () => ({
-      Component: (await import("@/pages/family/FamilyRemovePage"))
-        .FamilyRemovePage,
+      Component: (await import("@/pages/family/ConnectedFamilyRemovePage"))
+        .ConnectedFamilyRemovePage,
     }),
     handle: { title: "참여 관리" },
   },
@@ -567,8 +568,12 @@ const spaceRoutes: RouteObject[] = [
     handle: { title: "가족 초대" },
   },
   {
+    handle: { familyManagement: true },
+    children: familyRoutes,
+  },
+  {
     Component: FamilyRouteLayout,
-    children: [...familyRoutes, ...spaceInfoRoutes],
+    children: spaceInfoRoutes,
   },
   notFoundRoute,
 ];
