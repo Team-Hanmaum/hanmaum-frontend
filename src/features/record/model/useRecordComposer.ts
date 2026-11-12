@@ -27,7 +27,7 @@ function describeError(error: ApiError): {
     return {
       failure: {
         title: "로그인이 필요해요",
-        body: "작성한 내용은 그대로 있어요. 다시 로그인한 뒤 등록해 주세요.",
+        body: "저장하지 않은 내용은 사라져요. 다시 로그인한 뒤 새로 작성해 주세요.",
       },
     };
   if (error.status === 403 || error.status === 404)
