@@ -97,7 +97,7 @@ export function ConnectedCarePage() {
           void navigate(withReturn(proposalListPath(space.spaceId)))
         }
       />
-      <h1 className="text-hm-heading-page">돌봄</h1>
+      <h1 className="text-hm-title-page">돌봄</h1>
       <Tabs
         label="돌봄 종류"
         value={filter.type}

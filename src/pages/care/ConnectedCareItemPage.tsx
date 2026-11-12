@@ -4,7 +4,10 @@ import { Notice } from "@/components/feedback";
 import { useCareItem } from "@/features/careitem/model/useCareQueries";
 import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
 import { CareValuesView } from "@/features/careitem/ui/CareValuesView";
-import { itemLabels } from "@/features/careitem/model/careReadView";
+import {
+  fieldLabels,
+  itemLabels,
+} from "@/features/careitem/model/careReadView";
 import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import { useConnectedSpace } from "@/routes/useConnectedSpace";
@@ -53,7 +56,7 @@ export function ConnectedCareItemPage() {
       ) : (
         <>
           <Badge label={itemLabels[item.itemType]} />
-          <h1 className="text-hm-heading-page">
+          <h1 className="text-hm-title-page">
             {item.title ?? "내용이 제거된 항목"}
           </h1>
           {(item.needsReconfirmation || item.needsConflictReview) && (
@@ -69,6 +72,10 @@ export function ConnectedCareItemPage() {
           <section className="rounded-hm-14 bg-hm-bg-surface p-hm-20">
             <CareValuesView
               values={{ ...item, fields: item.fields }}
+              keys={Object.keys(fieldLabels).filter(
+                (key) =>
+                  key !== "confirmedAnswer" || item.itemType === "QUESTION",
+              )}
               members={members.data}
             />
           </section>

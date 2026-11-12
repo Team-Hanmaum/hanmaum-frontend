@@ -26,7 +26,7 @@ export function ConnectedCareSourcesPage() {
       spaceId={space.spaceId}
       onBack={back}
     >
-      <h1 className="text-hm-heading-page">돌봄 정보의 근거</h1>
+      <h1 className="text-hm-title-page">돌봄 정보의 근거</h1>
       <p className="text-hm-body-default text-hm-text-secondary">
         연결된 자료예요. 각 자료가 현재 정보의 모든 필드를 뒷받침하는 것은
         아니에요.

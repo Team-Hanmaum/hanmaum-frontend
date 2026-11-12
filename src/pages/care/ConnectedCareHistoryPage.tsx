@@ -43,7 +43,7 @@ export function ConnectedCareHistoryPage() {
       spaceId={space.spaceId}
       onBack={back}
     >
-      <h1 className="text-hm-heading-page">
+      <h1 className="text-hm-title-page">
         {historyId ? "변경 전후 확인" : "돌봄 정보가 바뀐 내역"}
       </h1>
       {historyId ? (

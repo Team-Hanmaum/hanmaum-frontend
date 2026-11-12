@@ -83,8 +83,10 @@ export const isCareDetail = (v: unknown): v is CareDetail =>
 export const isCareEvidence = (v: unknown): v is CareEvidence =>
   isObject(v) &&
   typeof v.evidenceId === "string" &&
-  ["RECORD_QUOTE", "DIRECT_INPUT", "DERIVED"].includes(String(v.kind)) &&
-  ["VALID", "REDACTED"].includes(String(v.status)) &&
+  typeof v.kind === "string" &&
+  ["RECORD_QUOTE", "DIRECT_INPUT", "DERIVED"].includes(v.kind) &&
+  typeof v.status === "string" &&
+  ["VALID", "REDACTED"].includes(v.status) &&
   isNullableString(v.recordId) &&
   isNullableString(v.text) &&
   isNullableString(v.createdByMembershipId) &&
