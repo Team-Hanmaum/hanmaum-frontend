@@ -89,10 +89,17 @@ export function useRecordAnalysis(
     isAnalysisInProgress(latest?.status) &&
     !isAnalysisInProgress(current);
   useEffect(() => {
-    if (stale)
+    if (stale) {
       void queryClient.invalidateQueries({
         queryKey: recordKeys.space(session.accountId, spaceId),
       });
+      void queryClient.invalidateQueries({
+        queryKey: ["proposals", session.accountId, spaceId],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["dashboard", session.accountId, spaceId],
+      });
+    }
   }, [stale, queryClient, session.accountId, spaceId]);
   return query;
 }
