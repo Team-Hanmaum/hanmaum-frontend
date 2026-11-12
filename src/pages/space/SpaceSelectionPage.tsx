@@ -2,7 +2,12 @@ import { useAppNavigate } from "@/routes/useAppNavigate";
 import { AppLink } from "@/routes/AppLink";
 import { useLocation } from "react-router";
 import { Header, PageLayout } from "@/components/layout";
-import { EmptyState, ErrorState, LoadingState } from "@/components/feedback";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  Notice,
+} from "@/components/feedback";
 import { MockStateSelect } from "@/components/feedback/MockStateSelect";
 import { ExampleResultNotice } from "@/components/feedback/ExampleResultNotice";
 import { MenuRow } from "@/components/ui";
@@ -78,6 +83,23 @@ export function SpaceSelectionPage() {
   const currentId = isMockPreviewEnabled ? mock.currentId : undefined;
   const currentSpace = spaces.find((space) => space.id === currentId);
   const location = useLocation();
+  const familyAction = (
+    location.state as {
+      familyAction?: { kind: string; spaceId: string };
+    } | null
+  )?.familyAction;
+  const endedParticipation =
+    !isMockPreviewEnabled &&
+    remote.isSuccess &&
+    !remote.isFetching &&
+    typeof familyAction?.spaceId === "string" &&
+    familyAction.spaceId.length > 0 &&
+    (familyAction.kind === "left" || familyAction.kind === "deleted")
+      ? familyAction
+      : undefined;
+  const participatingAgain =
+    endedParticipation?.kind === "left" &&
+    spaces.some((space) => space.id === endedParticipation.spaceId);
   const exit =
     mock.lastExit?.id ===
     (location.state as { familyExit?: string } | null)?.familyExit
@@ -118,6 +140,22 @@ export function SpaceSelectionPage() {
           )
         }
       >
+        {endedParticipation && (
+          <Notice
+            title={
+              endedParticipation.kind === "deleted"
+                ? "공간을 삭제했어요"
+                : participatingAgain
+                  ? "이전 참여 종료를 확인했어요"
+                  : "공간에서 나왔어요"
+            }
+            body={
+              participatingAgain
+                ? "현재 다시 참여 중인 공간은 목록에 표시돼요."
+                : "현재 참여 중인 공간은 아래 목록에서 확인해 주세요."
+            }
+          />
+        )}
         {exit && (
           <ExampleResultNotice
             title={

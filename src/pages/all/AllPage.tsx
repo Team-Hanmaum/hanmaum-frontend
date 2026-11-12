@@ -85,14 +85,12 @@ export function AllPage() {
           <MenuRow
             icon="family-brand"
             title="구성원 관리"
-            badge="예시"
             description="함께하는 가족의 참여 관리"
             onClick={go(familyMembersPath(space.id))}
           />
           <MenuRow
             icon="person"
             title="소유권 이전"
-            badge="예시"
             description="가족에게 소유자 역할을 넘겨요"
             onClick={go(familyTransferPath(space.id))}
           />
@@ -102,7 +100,6 @@ export function AllPage() {
         tone="danger"
         icon="chevron-right-error"
         title="공간 나가기"
-        badge="예시"
         description={
           space.role === "owner"
             ? "소유권 이전 또는 공간 삭제 후 가능"
@@ -115,7 +112,6 @@ export function AllPage() {
           tone="danger"
           icon="chevron-right-error"
           title="공간 삭제"
-          badge="예시"
           description="소유자만 가능 · 삭제 후 복구 불가"
           onClick={go(familyDeletePath(space.id))}
         />
