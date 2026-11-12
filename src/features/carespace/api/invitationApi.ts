@@ -27,14 +27,10 @@ export async function createInvitation(
 ): Promise<CreatedInvitation> {
   const result = await apiClient.request<unknown>(
     `/api/spaces/${encodeURIComponent(spaceId)}/invitations`,
-    { method: "POST", body: request, signal },
+    { method: "POST", expectedStatus: 201, body: request, signal },
   );
   const data = result.body.data;
-  if (
-    result.status !== 201 ||
-    !isCreatedInvitation(data) ||
-    data.spaceId !== spaceId
-  )
+  if (!isCreatedInvitation(data) || data.spaceId !== spaceId)
     throw invalidResponse(
       result.status,
       "초대 링크 발급 응답 형식을 확인할 수 없습니다.",
@@ -59,14 +55,10 @@ export async function joinInvitation(
 ): Promise<JoinInvitationResult> {
   const result = await apiClient.request<unknown>(
     `${invitationPath(token)}/join`,
-    { method: "POST", body: request, signal },
+    { method: "POST", expectedStatus: [200, 201], body: request, signal },
   );
   const data = result.body.data;
-  if (
-    (result.status !== 200 && result.status !== 201) ||
-    !isJoinedInvitation(data) ||
-    data.spaceId !== expectedSpaceId
-  )
+  if (!isJoinedInvitation(data) || data.spaceId !== expectedSpaceId)
     throw invalidResponse(
       result.status,
       "초대 참여 응답 형식을 확인할 수 없습니다.",

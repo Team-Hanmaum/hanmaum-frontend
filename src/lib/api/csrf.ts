@@ -8,7 +8,11 @@ let generation = 0;
 let pending:
   { controller: AbortController; promise: Promise<CsrfToken> } | undefined;
 
-async function fetchCsrfToken(signal: AbortSignal): Promise<CsrfToken> {
+// OAuth 준비는 오래된 메모리 토큰 대신 실제 세션 쿠키 발급 응답을 기다린다.
+// 일반 변경 요청은 동시 발급·캐시를 관리하는 getCsrfToken을 사용한다.
+export async function requestCsrfToken(
+  signal: AbortSignal,
+): Promise<CsrfToken> {
   try {
     const response = await httpClient.get<unknown>(
       getApiUrl("/api/auth/csrf"),
@@ -35,7 +39,7 @@ export async function getCsrfToken(): Promise<CsrfToken> {
   const currentGeneration = generation;
   if (!cachedToken && !pending) {
     const controller = new AbortController();
-    const promise = fetchCsrfToken(controller.signal)
+    const promise = requestCsrfToken(controller.signal)
       .then((token) => {
         if (generation === currentGeneration) cachedToken = token;
         return token;

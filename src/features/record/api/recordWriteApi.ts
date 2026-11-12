@@ -10,6 +10,6 @@ export function createRecord(
   return readApiData(
     `/api/spaces/${encodeURIComponent(spaceId)}/source-records`,
     isCreatedRecord,
-    { method: "POST", body: request, signal },
+    { method: "POST", expectedStatus: 201, body: request, signal },
   );
 }

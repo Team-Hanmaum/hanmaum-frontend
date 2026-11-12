@@ -54,6 +54,15 @@ async function request<T>(
   options?: ApiRequestOptions,
 ): Promise<ApiResult<T>> {
   const response = await send(path, options);
+  const expected = options?.expectedStatus ?? 200;
+  const accepted = typeof expected === "number" ? [expected] : expected;
+  if (!accepted.includes(response.status)) {
+    throw new ApiError({
+      kind: "invalid-response",
+      status: response.status,
+      message: "서버 응답의 성공 상태를 확인할 수 없습니다.",
+    });
+  }
   if (!isApiResponse(response.data)) {
     throw new ApiError({
       kind: "invalid-response",
@@ -73,7 +82,7 @@ async function request<T>(
 
 async function requestEmpty(
   path: ApiPath,
-  options?: ApiRequestOptions,
+  options?: Omit<ApiRequestOptions, "expectedStatus">,
 ): Promise<void> {
   const response = await send(path, options);
   if (response.status !== 204) {

@@ -29,6 +29,7 @@ export async function createCareSpace(
 ): Promise<CreatedCareSpace> {
   const result = await apiClient.request<unknown>("/api/spaces", {
     method: "POST",
+    expectedStatus: 201,
     body: request,
     signal,
   });

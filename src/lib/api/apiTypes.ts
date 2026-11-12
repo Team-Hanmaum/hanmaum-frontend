@@ -33,6 +33,8 @@ export type ApiMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 type QueryValue = string | number | boolean | null | undefined;
 
 export interface ApiRequestOptions {
+  /** Contract success status. Defaults to 200; mutations declare 201/202 when needed. */
+  expectedStatus?: number | readonly number[];
   /** Only identity probes, logout and explicitly public endpoints bypass the session gate. */
   session?: "independent";
   method?: ApiMethod;

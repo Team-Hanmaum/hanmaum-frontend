@@ -6,38 +6,71 @@ import { resetSessionState } from "./resetSessionState";
 import { saveLoginReturn } from "./loginReturn";
 import { getOAuthLoginUrl } from "./getOAuthLoginUrl";
 import { publishSessionChange } from "./sessionChanges";
+import {
+  OAuthPreparationError,
+  prepareOAuthSession,
+} from "./prepareOAuthSession";
+
+const preparationTimeoutMs = 20_000;
 
 export function useOAuthLogin() {
   const queryClient = useQueryClient();
-  const pending = useRef(false);
+  const pending = useRef<AbortController | null>(null);
   const [provider, setProvider] = useState<SocialProvider | null>(null);
   const [error, setError] = useState("");
   useEffect(() => {
+    const cancel = () => {
+      pending.current?.abort();
+      pending.current = null;
+    };
     const restore = () => {
-      pending.current = false;
+      cancel();
       setProvider(null);
     };
     window.addEventListener("pageshow", restore);
-    return () => window.removeEventListener("pageshow", restore);
+    window.addEventListener("pagehide", cancel);
+    return () => {
+      cancel();
+      window.removeEventListener("pageshow", restore);
+      window.removeEventListener("pagehide", cancel);
+    };
   }, []);
   async function start(next: SocialProvider, returnTo?: string) {
     if (isMockPreviewEnabled || pending.current) return;
-    pending.current = true;
+    const attempt = new AbortController();
+    pending.current = attempt;
     setProvider(next);
     setError("");
+    const timeout = window.setTimeout(
+      () =>
+        attempt.abort(
+          new DOMException("Login preparation timed out", "TimeoutError"),
+        ),
+      preparationTimeoutMs,
+    );
     try {
       const url = getOAuthLoginUrl(next, window.location.origin);
-      if (returnTo) saveLoginReturn(returnTo);
       await resetSessionState(queryClient);
-      publishSessionChange();
-      // Session cookies and provider redirects are handled by the browser and BE.
-      window.location.assign(url);
-    } catch {
-      pending.current = false;
+      await prepareOAuthSession(attempt.signal, () => {
+        if (returnTo) saveLoginReturn(returnTo);
+        publishSessionChange();
+        // 세션 준비 응답 후에만 BE의 OAuth 시작 주소로 브라우저를 이동한다.
+        window.location.assign(url);
+      });
+    } catch (failure) {
+      if (pending.current !== attempt) return;
+      pending.current = null;
       setProvider(null);
       setError(
-        "로그인을 시작하지 못했어요. 연결과 API 주소 설정을 확인해 주세요.",
+        failure instanceof OAuthPreparationError
+          ? failure.message
+          : attempt.signal.reason instanceof DOMException &&
+              attempt.signal.reason.name === "TimeoutError"
+            ? "로그인 준비가 지연되고 있어요. 잠시 후 다시 시도해 주세요."
+            : "로그인을 시작하지 못했어요. 연결 상태를 확인한 뒤 다시 시도해 주세요.",
       );
+    } finally {
+      window.clearTimeout(timeout);
     }
   }
   return { provider, error, start };
