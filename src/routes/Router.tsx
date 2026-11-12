@@ -22,7 +22,7 @@ import { SpaceCreatePage } from "@/pages/space/SpaceCreatePage";
 import { ConnectedSpaceInvitePage } from "@/pages/space/ConnectedSpaceInvitePage";
 import { ConnectedHomePage } from "@/pages/home/ConnectedHomePage";
 import { CarePage } from "@/pages/care/CarePage";
-import { NewsPage } from "@/pages/news/NewsPage";
+import { ConnectedNewsPage } from "@/pages/news/ConnectedNewsPage";
 import { ConnectedFamilyPage } from "@/pages/family/ConnectedFamilyPage";
 import { AllPage } from "@/pages/all/AllPage";
 
@@ -54,13 +54,15 @@ function redirectToSpaceHome({ params, request }: LoaderFunctionArgs) {
 
 // 소식 페이지 지연 로딩
 async function loadNewsCreatePage() {
-  const { NewsCreatePage } = await import("@/pages/news/NewsCreatePage");
-  return { Component: NewsCreatePage };
+  const { ConnectedNewsCreatePage } =
+    await import("@/pages/news/ConnectedNewsCreatePage");
+  return { Component: ConnectedNewsCreatePage };
 }
 
+// 실제 소식은 API 상세, 미연동 예시 화면의 예시 소식은 기존 예시 상세를 사용한다.
 async function loadNewsDetailPage() {
-  const { NewsDetailPage } = await import("@/pages/news/NewsDetailPage");
-  return { Component: NewsDetailPage };
+  const { NewsDetailRoute } = await import("@/pages/news/NewsDetailRoute");
+  return { Component: NewsDetailRoute };
 }
 async function loadCareChangePage() {
   return {
@@ -181,7 +183,7 @@ const tabRoutes: RouteObject[] = [
   },
   {
     path: "news",
-    Component: NewsPage,
+    Component: ConnectedNewsPage,
     handle: { title: "소식", tab: "news" },
   },
   {
@@ -196,7 +198,7 @@ const tabRoutes: RouteObject[] = [
   },
 ];
 
-// 작성·상세의 공간 확인은 RecordRouteLayout에서 처리
+// 작성·상세: 실제 소식은 연결된 공간, 예시 소식은 RecordRouteLayout의 예시 공간을 사용
 const recordRoutes: RouteObject[] = [
   {
     path: "news/new",

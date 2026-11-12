@@ -4,7 +4,7 @@
 
 SessionProvider → SessionBoundary가 로그인 상태를 관리한다. `/`, `/login`, `/auth/callback`, 초대 URL은 공개 진입이며 공간·계정·온보딩은 `/api/users/me` 확인 후 표시한다. `/auth/callback`은 저장된 내부 복귀 경로를 우선하고, 없으면 기존 useCareSpaces로 한 공간은 홈, 0/여러 공간은 `/spaces`로 보낸다. 실패는 재확인하며 빈 목록으로 간주하지 않는다.
 
-공간 내부는 SpaceSessionLayout → ConnectedSpaceLayout에서 공간 상세와 접근 권한을 확인한다. Router.tsx의 공통 경로 그룹을 유지한다. ConnectedTabLayout의 홈·가족 목록·공간 메뉴는 실제 API를 사용하고, 돌봄·소식 및 하위 미연동 화면은 ExampleSurface의 안내와 함께 기존 메모리 예시를 사용한다. 가족 관리·공간 정보·탈퇴도 예시 동작이며 실제 API 캐시와 분리한다. 혼합 메뉴에서는 미연동 목적지에만 예시 배지를 표시한다. 예시 초기화·새로고침·실제 세션 종료/계정 변경 시 메모리 데이터를 정리한다.
+공간 내부는 SpaceSessionLayout → ConnectedSpaceLayout에서 공간 상세와 접근 권한을 확인한다. Router.tsx의 공통 경로 그룹을 유지한다. ConnectedTabLayout의 홈·가족 목록·소식·공간 메뉴는 실제 API를 사용하고, 돌봄 및 하위 미연동 화면은 ExampleSurface의 안내와 함께 기존 메모리 예시를 사용한다. 소식 작성·상세(`recordRoutes`)는 실제 소식을 연결된 공간으로 표시하며, 미연동 예시 화면이 여는 `mock-` 예시 소식만 RecordRouteLayout의 예시 공간과 기존 예시 상세를 사용한다. 가족 관리·공간 정보·탈퇴도 예시 동작이며 실제 API 캐시와 분리한다. 혼합 메뉴에서는 미연동 목적지에만 예시 배지를 표시한다. 예시 초기화·새로고침·실제 세션 종료/계정 변경 시 메모리 데이터를 정리한다.
 
 BE 성공 복귀 주소와 환경 설정은 [공통 API 규격](../lib/api/README.md)과 [배포 문서](../../docs/deployment.md)를 따른다.
 

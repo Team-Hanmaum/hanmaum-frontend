@@ -8,13 +8,24 @@ import { useMockCareSpaces } from "@/features/carespace/model/useMockCareSpaces"
 import { isExamplePreviewEnabled } from "@/lib/examplePreview";
 import { paths } from "../paths";
 import { SpaceAccessState } from "./SpaceAccessState";
+import { isExampleRecordId } from "@/features/record/model/exampleRecords";
+import { useConnectedSpace } from "../useConnectedSpace";
 
 // 작성·상세에서 공간을 검증하고, 공간/소식 전환 시 진행 중인 Mock 동작을 해제한다.
+// 소식 작성과 실제 소식 상세는 API에 연결된 공간을 그대로 사용한다.
 export function RecordRouteLayout() {
   const { careSpaceId, recordId } = useParams();
+  const connected = useConnectedSpace();
   const { spaces, ended } = useMockCareSpaces();
   const navigate = useAppNavigate();
   const space = spaces.find((item) => item.id === careSpaceId);
+  if (!recordId || !isExampleRecordId(recordId))
+    return (
+      <Outlet
+        key={`${careSpaceId}:${recordId ?? "new"}`}
+        context={connected}
+      />
+    );
   if (careSpaceId && ended[careSpaceId])
     return (
       <ExampleSurface>

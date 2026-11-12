@@ -15,10 +15,11 @@ import { LoadingState, ErrorState } from "@/components/feedback";
 import { ExampleSurface } from "./ExampleSurface";
 import { CareListAction } from "./CareListAction";
 import { SpaceAccessState } from "./SpaceAccessState";
-import { Badge } from "@/components/ui";
 import { ApiError } from "@/lib/api";
+import { useWithdrawalReturn } from "../useWithdrawalReturn";
 
 export function ConnectedTabLayout() {
+  const { withReturn } = useWithdrawalReturn();
   const context = useConnectedSpace();
   const { space } = context;
   const navigate = useAppNavigate();
@@ -30,7 +31,7 @@ export function ConnectedTabLayout() {
     (match?.handle as { tab: SpaceTab } | undefined)?.tab ?? "home";
   const members = useSpaceMembers(space.spaceId, active === "all");
   const examples = useMockCareSpaces();
-  const example = active === "care" || active === "news";
+  const example = active === "care";
   const membersDenied =
     members.error instanceof ApiError &&
     [403, 404].includes(members.error.status ?? 0);
@@ -72,15 +73,11 @@ export function ConnectedTabLayout() {
             <div className="bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-12">
               <Button
                 className="w-full"
-                onClick={() => void navigate(newsCreatePath(space.spaceId))}
+                onClick={() =>
+                  void navigate(withReturn(newsCreatePath(space.spaceId)))
+                }
               >
-                소식 남기기{" "}
-                {active === "home" && (
-                  <Badge
-                    label="예시"
-                    tone="neutral"
-                  />
-                )}
+                소식 남기기
               </Button>
             </div>
           )}
