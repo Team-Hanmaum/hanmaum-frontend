@@ -13,6 +13,7 @@ export function FamilyPageLayout({
   actions,
   tabs = false,
   preview,
+  connected = false,
 }: {
   title: string;
   spaceId: string;
@@ -20,6 +21,7 @@ export function FamilyPageLayout({
   children: ReactNode;
   actions?: ReactNode;
   tabs?: boolean;
+  connected?: boolean;
   preview?: {
     value: string;
     options: readonly { value: string; label: string }[];
@@ -33,7 +35,7 @@ export function FamilyPageLayout({
       title={title}
       onBack={onBack}
       notice={
-        preview ? (
+        connected ? undefined : preview ? (
           <MockStateSelect
             message={message}
             {...preview}
