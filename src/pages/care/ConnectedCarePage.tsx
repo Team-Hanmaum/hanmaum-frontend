@@ -78,12 +78,12 @@ export function ConnectedCarePage() {
         )}
         {query.data.items.length ? (
           query.data.items.map(row)
-        ) : (
+        ) : !query.data.reconfirmationItems.length ? (
           <EmptyState
             title="아직 표시할 돌봄 정보가 없어요"
             body="소식을 남기고 제안을 반영하면 이곳에서 확인할 수 있어요."
           />
-        )}
+        ) : null}
       </div>
     );
   const statusTabs = careStatusTabs[filter.type];
@@ -122,10 +122,12 @@ export function ConnectedCarePage() {
             ) : null,
         }))}
       />
-      <Notice
-        title="직접 추가·관리는 화면 예시로 제공해요"
-        body="아래 추가 버튼은 예시 화면이에요. 실제 저장은 소식의 제안 검토·반영을 이용해 주세요."
-      />
+      {filter.type !== "observation" && filter.type !== "guidance" && (
+        <Notice
+          title="직접 추가·관리는 화면 예시로 제공해요"
+          body="아래 추가 버튼은 예시 화면이에요. 실제 저장은 소식의 제안 검토·반영을 이용해 주세요."
+        />
+      )}
     </>
   );
 }

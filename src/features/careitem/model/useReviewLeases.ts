@@ -25,9 +25,13 @@ export function useReviewLeases(
     ready: false,
   });
   const queue = useRef<Promise<unknown>>(Promise.resolve());
+  const expireCurrent = useRef<(() => void) | null>(null);
   useEffect(() => {
     if (!enabled) return;
     let active = true;
+    let invalidated = false;
+    const current = () => active && !invalidated;
+    const targets: LeaseTarget[] = JSON.parse(key)[1];
     let timer: ReturnType<typeof setTimeout> | undefined;
     const leases: AcquiredLease[] = [];
     const previous = queue.current;
@@ -40,14 +44,36 @@ export function useReviewLeases(
           ),
       );
     };
-    const publish = () =>
-      active &&
-      setState({ key, leases: [...leases], error: null, ready: true });
     const fail = (error: unknown) => {
+      invalidated = true;
+      if (timer) clearTimeout(timer);
       if (active) setState({ key, leases: [], error, ready: false });
     };
+    const expire = () => {
+      fail(
+        new Error(
+          "편집 확인 시간이 만료됐어요. 최신 내용을 다시 확인해 주세요.",
+        ),
+      );
+      void release();
+    };
+    expireCurrent.current = expire;
+    const publish = () => {
+      if (!current()) return false;
+      if (leases.some((lease) => Date.parse(lease.expiresAt) <= Date.now())) {
+        expire();
+        return false;
+      }
+      const ready =
+        leases.length === targets.length &&
+        targets.every((target) =>
+          leases.some((lease) => lease.itemId === target.itemId),
+        );
+      setState({ key, leases: [...leases], error: null, ready });
+      return ready;
+    };
     const schedule = () => {
-      if (!active || !leases.length) return;
+      if (!current() || !leases.length) return;
       timer = setTimeout(
         () => void renew(),
         Math.max(
@@ -57,7 +83,7 @@ export function useReviewLeases(
       );
     };
     const renew = async () => {
-      if (!active) return;
+      if (!current()) return;
       if (document.visibilityState === "hidden") {
         schedule();
         return;
@@ -74,11 +100,10 @@ export function useReviewLeases(
             lease.itemId,
             lease.leaseToken,
           );
-          if (!active) return;
+          if (!current()) return;
           leases[i] = { ...renewed, leaseToken: lease.leaseToken };
         }
-        publish();
-        schedule();
+        if (publish()) schedule();
       } catch (error) {
         fail(error);
         await release();
@@ -86,22 +111,24 @@ export function useReviewLeases(
     };
     const start = (async () => {
       await previous;
-      if (!active) return;
+      if (!current()) return;
       try {
-        const targets: LeaseTarget[] = JSON.parse(key)[1];
         if (new Set(targets.map((t) => t.itemId)).size !== targets.length)
           throw new Error("같은 돌봄 항목의 제안은 하나씩 반영해 주세요.");
         for (const target of targets) {
-          leases.push(
-            await acquireEditLease(space, target.itemId, target.version),
+          const lease = await acquireEditLease(
+            space,
+            target.itemId,
+            target.version,
           );
-          if (!active) {
-            await release();
+          // 만료·언마운트 이후 도착한 획득 응답은 상태에 넣지 않고 반환한다.
+          if (!current()) {
+            await releaseEditLease(space, lease.itemId, lease.leaseToken);
             return;
           }
+          leases.push(lease);
         }
-        publish();
-        schedule();
+        if (publish()) schedule();
       } catch (error) {
         fail(error);
         await release();
@@ -113,18 +140,13 @@ export function useReviewLeases(
         document.visibilityState === "visible" &&
         leases.some((l) => Date.parse(l.expiresAt) <= Date.now())
       ) {
-        if (timer) clearTimeout(timer);
-        fail(
-          new Error(
-            "편집 확인 시간이 만료됐어요. 최신 내용을 다시 확인해 주세요.",
-          ),
-        );
-        void release();
+        expire();
       }
     };
     document.addEventListener("visibilitychange", visible);
     return () => {
       active = false;
+      if (expireCurrent.current === expire) expireCurrent.current = null;
       if (timer) clearTimeout(timer);
       document.removeEventListener("visibilitychange", visible);
       queue.current = start.then(release);
@@ -137,13 +159,7 @@ export function useReviewLeases(
       if (state.key !== key || !state.ready) return false;
       if (state.leases.every((l) => Date.parse(l.expiresAt) > Date.now()))
         return true;
-      setState({
-        ...state,
-        ready: false,
-        error: new Error(
-          "편집 확인 시간이 만료됐어요. 최신 내용을 다시 확인해 주세요.",
-        ),
-      });
+      expireCurrent.current?.();
       return false;
     },
     error: state.key === key ? state.error : null,

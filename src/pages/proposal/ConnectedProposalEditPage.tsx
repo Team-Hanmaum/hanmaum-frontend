@@ -28,7 +28,7 @@ export function ConnectedProposalEditPage() {
   const query = useProposal(space.spaceId, proposalId);
   const { withReturn } = useWithdrawalReturn();
   const back = useBackNavigation(withReturn(proposalListPath(space.spaceId)));
-  return !query.data || query.isError ? (
+  return !query.data ? (
     <ProposalPageLayout
       connected
       title="제안 내용 수정"
@@ -59,6 +59,8 @@ export function ConnectedProposalEditPage() {
       spaceId={space.spaceId}
       proposal={query.data}
       onBack={back}
+      refreshFailed={query.isError}
+      onRetry={() => void query.refetch()}
     />
   );
 }
@@ -66,10 +68,14 @@ function Editor({
   spaceId,
   proposal,
   onBack,
+  refreshFailed,
+  onRetry,
 }: {
   spaceId: string;
   proposal: ProposalDetail;
   onBack: () => void;
+  refreshFailed: boolean;
+  onRetry: () => void;
 }) {
   const { drafts, save } = useProposalDrafts(spaceId);
   const [initial] = useState(() =>
@@ -89,6 +95,7 @@ function Editor({
     draft.reviewToken !== proposal.reviewToken ||
     proposal.status !== "REVIEW_PENDING";
   function confirm() {
+    if (refreshFailed) return;
     const problem = proposalDraftProblem(proposal, draft);
     if (problem) {
       setError(problem);
@@ -102,6 +109,14 @@ function Editor({
       open={guard.blocker.state === "blocked"}
       onStay={() => guard.blocker.reset?.()}
       onLeave={() => guard.blocker.proceed?.()}
+    />
+  );
+  const refreshNotice = refreshFailed && (
+    <Notice
+      tone="error"
+      title="최신 제안을 확인하지 못했어요"
+      body="수정 중인 내용은 유지하고 있어요. 다시 불러온 뒤 수정 내용을 확인해 주세요."
+      action={{ label: "다시 불러오기", onClick: onRetry }}
     />
   );
   if (time.open)
@@ -127,6 +142,7 @@ function Editor({
               onBack={time.close}
               actions={actions}
             >
+              {refreshNotice}
               {content}
             </ProposalPageLayout>
           )}
@@ -141,7 +157,7 @@ function Editor({
       onBack={onBack}
       actions={
         <Button
-          disabled={expired}
+          disabled={expired || refreshFailed}
           onClick={confirm}
         >
           수정 내용 확인
@@ -149,6 +165,7 @@ function Editor({
       }
     >
       {dialog}
+      {refreshNotice}
       <h1 className="text-hm-title-page">반영할 내용을 다듬어 주세요</h1>
       <Notice
         title="현재 돌봄 정보는 그대로예요"

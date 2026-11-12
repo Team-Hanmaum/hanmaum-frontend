@@ -78,6 +78,9 @@ export function ProposalValuesForm({
                 onChange={(e) => onChange(key, e.target.value || null)}
               >
                 <option value="">미지정</option>
+                {value && !members.some((m) => m.membershipId === value) && (
+                  <option value={value}>담당자 확인 필요</option>
+                )}
                 {members.map((m) => (
                   <option
                     key={m.membershipId}

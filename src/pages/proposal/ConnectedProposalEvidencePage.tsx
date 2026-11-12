@@ -3,6 +3,7 @@ import { Button } from "@/components/ui";
 import { Notice } from "@/components/feedback";
 import { useProposal } from "@/features/proposal/model/useProposalQueries";
 import { initialProposalDraft } from "@/features/proposal/model/proposalDraft";
+import { useProposalDrafts } from "@/features/proposal/model/useProposalDrafts";
 import { ConnectedProposalCard } from "@/features/proposal/ui/ConnectedProposalCard";
 import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
@@ -15,6 +16,7 @@ export function ConnectedProposalEvidencePage() {
   const { space } = useConnectedSpace();
   const { proposalId = "" } = useParams();
   const query = useProposal(space.spaceId, proposalId);
+  const { drafts } = useProposalDrafts(space.spaceId);
   const { withReturn } = useWithdrawalReturn();
   const navigate = useAppNavigate();
   const back = useBackNavigation(withReturn(proposalListPath(space.spaceId)));
@@ -34,7 +36,11 @@ export function ConnectedProposalEvidencePage() {
         <>
           <ConnectedProposalCard
             proposal={query.data}
-            draft={initialProposalDraft(query.data)}
+            draft={
+              drafts[proposalId]?.reviewToken === query.data.reviewToken
+                ? drafts[proposalId]
+                : initialProposalDraft(query.data)
+            }
             readonly
             onRecord={(id) =>
               void navigate(withReturn(newsDetailPath(space.spaceId, id)))

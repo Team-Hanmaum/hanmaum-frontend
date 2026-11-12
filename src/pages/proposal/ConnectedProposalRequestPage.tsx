@@ -99,6 +99,12 @@ export function ConnectedProposalRequestPage() {
       return;
     if (mode === "cancel" && !mine) return;
     if (mode === "apply") {
+      if (chosen.some((e) => e.redactedFields.length > 0)) {
+        setMessage(
+          "일부 내용이 가려진 요청은 반영할 수 없어요. 최신 내용을 확인하거나 반영하지 않기로 처리해 주세요.",
+        );
+        return;
+      }
       if (chosen.some((e) => e.sourceType !== "AI_PROPOSAL")) {
         setMessage(
           "직접 입력 요청의 반영은 다음 연동에서 지원해요. 지금은 AI 제안 요청만 선택해 주세요.",
@@ -333,6 +339,29 @@ export function ConnectedProposalRequestPage() {
                 <h2 className="text-hm-heading-section">
                   {actionLabels[e.action]}
                 </h2>
+              )}
+              {e.targetItemId && (
+                <div className="flex flex-col gap-hm-8">
+                  <p className="text-hm-body-emphasis">
+                    {e.redactedFields.length || e.status === "INVALIDATED"
+                      ? "내용이 가려진 돌봄 항목"
+                      : typeof e.currentValues?.title === "string" &&
+                          e.currentValues.title.trim()
+                        ? e.currentValues.title
+                        : "대상 돌봄 항목 확인 필요"}
+                  </p>
+                  <TextAction
+                    onClick={() =>
+                      void navigate(
+                        withReturn(
+                          careItemPath(space.spaceId, e.targetItemId!),
+                        ),
+                      )
+                    }
+                  >
+                    대상 돌봄 항목 보기
+                  </TextAction>
+                </div>
               )}
               <ChangeRequestValues
                 entry={e}

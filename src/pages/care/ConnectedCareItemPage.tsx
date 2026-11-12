@@ -8,6 +8,7 @@ import {
   fieldLabels,
   itemLabels,
 } from "@/features/careitem/model/careReadView";
+import { careTypeTabs } from "@/features/careitem/model/careItemSelectors";
 import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import { useConnectedSpace } from "@/routes/useConnectedSpace";
@@ -17,7 +18,7 @@ import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import {
   careSourcesPath,
   careHistoryPath,
-  spacePath,
+  careListPath,
   proposalListPath,
 } from "@/routes/paths";
 export function ConnectedCareItemPage() {
@@ -28,7 +29,14 @@ export function ConnectedCareItemPage() {
   const query = useCareItem(space.spaceId, itemId);
   const members = useSpaceMembers(space.spaceId);
   const item = query.data;
-  const back = useBackNavigation(withReturn(spacePath(space.spaceId, "care")));
+  const listPath = withReturn(
+    careListPath(space.spaceId, {
+      type:
+        careTypeTabs.find((tab) => tab.value.toUpperCase() === item?.itemType)
+          ?.value ?? "schedule",
+    }),
+  );
+  const back = useBackNavigation(listPath);
   return (
     <ProposalPageLayout
       connected
@@ -40,9 +48,7 @@ export function ConnectedCareItemPage() {
       actions={
         <Button
           variant="secondary"
-          onClick={() =>
-            void navigate(withReturn(spacePath(space.spaceId, "care")))
-          }
+          onClick={() => void navigate(listPath)}
         >
           돌봄 목록으로
         </Button>
