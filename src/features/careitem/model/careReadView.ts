@@ -8,6 +8,7 @@ export const itemLabels: Record<ItemType, string> = {
   GUIDANCE: "안내",
 };
 export const fieldLabels: Record<string, string> = {
+  itemType: "항목 종류",
   title: "제목",
   description: "내용",
   scheduledDate: "날짜",
@@ -18,6 +19,8 @@ export const fieldLabels: Record<string, string> = {
   status: "상태",
   confirmedAnswer: "확정 답변",
   answerText: "답변",
+  answer: "답변",
+  basis: "어떻게 확인했나요?",
   observedDate: "관찰 날짜",
   observedTimeText: "관찰 시각",
   sourceName: "안내 출처",
@@ -63,5 +66,7 @@ export function displayCareValue(
       : "미지정";
   if (value === null || value === undefined || value === "") return "미정";
   if (typeof value !== "string") return "표시할 수 없는 값";
+  if (key === "itemType" && Object.hasOwn(itemLabels, value))
+    return itemLabels[value as ItemType];
   return key === "status" ? (statuses[value] ?? value) : value;
 }

@@ -29,7 +29,18 @@ export type ProposalDeclined = {
 };
 export type RequestSubmissionBody = {
   clientRequestId: string;
-  entries: (ProposalApplicationEntry & { sourceType: "AI_PROPOSAL" })[];
+  entries: (
+    | (ProposalApplicationEntry & { sourceType: "AI_PROPOSAL" })
+    | DirectRequestEntry
+  )[];
+};
+export type DirectRequestEntry = {
+  sourceType: "DIRECT_INPUT";
+  action: "CREATE_ITEM" | "UPDATE_ITEM" | "DELETE_ITEM";
+  targetItemId?: string;
+  expectedItemVersion?: string;
+  leaseToken?: string;
+  values?: CareValues;
 };
 export type RequestSubmitted = {
   requestId: string;

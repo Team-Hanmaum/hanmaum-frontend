@@ -6,3 +6,4 @@ export type EditLease = {
   renewAfterSeconds: number;
 };
 export type AcquiredLease = EditLease & { leaseToken: string };
+export type EditLockPurpose = "EDIT" | "DELETION";

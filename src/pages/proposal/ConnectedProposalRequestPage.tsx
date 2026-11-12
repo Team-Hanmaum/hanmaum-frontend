@@ -76,6 +76,10 @@ export function ConnectedProposalRequestPage() {
           .map((e) => ({
             itemId: e.targetItemId!,
             version: e.expectedItemVersion!,
+            purpose:
+              e.action === "DELETE_ITEM"
+                ? ("DELETION" as const)
+                : ("EDIT" as const),
           }))
       : [];
   const leases = useReviewLeases(
@@ -105,9 +109,20 @@ export function ConnectedProposalRequestPage() {
         );
         return;
       }
-      if (chosen.some((e) => e.sourceType !== "AI_PROPOSAL")) {
+      if (
+        chosen.some(
+          (e) =>
+            e.sourceType !== "AI_PROPOSAL" &&
+            ![
+              "CREATE_ITEM",
+              "UPDATE_ITEM",
+              "DELETE_ITEM",
+              "RESOLVE_QUESTION",
+            ].includes(e.action),
+        )
+      ) {
         setMessage(
-          "직접 입력 요청의 반영은 다음 연동에서 지원해요. 지금은 AI 제안 요청만 선택해 주세요.",
+          "아직 연결되지 않은 변경 요청이 포함되어 있어요. 다른 요청을 선택해 주세요.",
         );
         return;
       }
@@ -313,7 +328,7 @@ export function ConnectedProposalRequestPage() {
               decision?.mode === "apply"
                 ? "요청에 저장된 내용 그대로 반영해요. 최신 정보와 다르면 반영할 수 없어요."
                 : decision?.mode === "cancel"
-                  ? "취소 후 다시 요청하려면 제안 검토에서 새 요청을 제출해 주세요."
+                  ? "다시 요청하려면 해당 항목의 입력 화면이나 제안 검토에서 새 요청을 제출해 주세요."
                   : "소유자가 최종 확인한 결과를 여기에서 볼 수 있어요."
             }
           />

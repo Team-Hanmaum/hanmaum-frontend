@@ -65,12 +65,6 @@ async function loadNewsDetailPage() {
   const { NewsDetailRoute } = await import("@/pages/news/NewsDetailRoute");
   return { Component: NewsDetailRoute };
 }
-async function loadCareChangePage() {
-  return {
-    Component: (await import("@/pages/care/change/CareChangePage"))
-      .CareChangePage,
-  };
-}
 
 function RouteLoadingFallback() {
   return (
@@ -81,6 +75,12 @@ function RouteLoadingFallback() {
       화면을 불러오는 중이에요
     </p>
   );
+}
+async function loadCareEditPage() {
+  return {
+    Component: (await import("@/pages/care/change/CareWriteRoutes"))
+      .CareEditRoute,
+  };
 }
 
 // 공간 진입 전 화면
@@ -260,32 +260,35 @@ const careItemRoutes: RouteObject[] = [
   },
   {
     path: "care/new/:kind",
-    lazy: loadCareChangePage,
+    lazy: async () => ({
+      Component: (await import("@/pages/care/change/CareWriteRoutes"))
+        .CareCreateRoute,
+    }),
     handle: { title: "돌봄 추가", operation: "create" },
   },
   {
     path: "care/items/:itemId/edit",
-    lazy: loadCareChangePage,
+    lazy: loadCareEditPage,
     handle: { title: "내용 수정", operation: "edit" },
   },
   {
     path: "care/items/:itemId/assignee",
-    lazy: loadCareChangePage,
+    lazy: loadCareEditPage,
     handle: { title: "담당자 변경", operation: "assignee" },
   },
   {
     path: "care/items/:itemId/status",
-    lazy: loadCareChangePage,
+    lazy: loadCareEditPage,
     handle: { title: "상태 변경", operation: "status" },
   },
   {
     path: "care/items/:itemId/answer",
-    lazy: loadCareChangePage,
+    lazy: loadCareEditPage,
     handle: { title: "답변 남기기", operation: "answer" },
   },
   {
     path: "care/items/:itemId/delete",
-    lazy: loadCareChangePage,
+    lazy: loadCareEditPage,
     handle: { title: "항목 삭제", operation: "delete" },
   },
   {
@@ -299,7 +302,8 @@ const careItemRoutes: RouteObject[] = [
   {
     path: "care/items/:itemId/manage",
     lazy: async () => ({
-      Component: (await import("@/pages/care/CareManagePage")).CareManagePage,
+      Component: (await import("@/pages/care/change/CareWriteRoutes"))
+        .CareManageRoute,
     }),
     handle: { title: "항목 관리" },
   },
@@ -336,6 +340,13 @@ const careItemRoutes: RouteObject[] = [
 
 // 제안 검토·요청·결과
 const careReadPaths = [
+  "care/items/:itemId/answer",
+  "care/items/:itemId/delete",
+  "care/items/:itemId/edit",
+  "care/items/:itemId/assignee",
+  "care/items/:itemId/status",
+  "care/items/:itemId/manage",
+  "care/new/:kind",
   "care/items/:itemId",
   "care/items/:itemId/sources",
   "care/items/:itemId/history/:historyId?",

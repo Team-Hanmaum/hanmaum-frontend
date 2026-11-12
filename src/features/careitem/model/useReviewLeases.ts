@@ -4,8 +4,12 @@ import {
   releaseEditLease,
   renewEditLease,
 } from "../api/editLockApi";
-import type { AcquiredLease } from "../api/editLockTypes";
-export type LeaseTarget = { itemId: string; version: string };
+import type { AcquiredLease, EditLockPurpose } from "../api/editLockTypes";
+export type LeaseTarget = {
+  itemId: string;
+  version: string;
+  purpose?: EditLockPurpose;
+};
 type LeaseState = {
   key: string;
   leases: AcquiredLease[];
@@ -26,6 +30,7 @@ export function useReviewLeases(
   });
   const queue = useRef<Promise<unknown>>(Promise.resolve());
   const expireCurrent = useRef<(() => void) | null>(null);
+  const releaseCurrent = useRef<(() => Promise<void>) | null>(null);
   useEffect(() => {
     if (!enabled) return;
     let active = true;
@@ -35,14 +40,21 @@ export function useReviewLeases(
     let timer: ReturnType<typeof setTimeout> | undefined;
     const leases: AcquiredLease[] = [];
     const previous = queue.current;
-    const release = async () => {
-      await Promise.allSettled(
-        leases
-          .splice(0)
-          .map((lease) =>
-            releaseEditLease(space, lease.itemId, lease.leaseToken),
-          ),
+    const release = async (strict = false) => {
+      const releasing = leases.splice(0);
+      const results = await Promise.allSettled(
+        releasing.map((lease) =>
+          releaseEditLease(space, lease.itemId, lease.leaseToken),
+        ),
       );
+      if (strict) {
+        const failed = results.find((result) => result.status === "rejected");
+        // 명시적 재시작은 해제가 확인된 경우만 진행하며, 실패한 잠금은 재시도한다.
+        results.forEach((result, index) => {
+          if (result.status === "rejected") leases.push(releasing[index]);
+        });
+        if (failed?.status === "rejected") throw failed.reason;
+      }
     };
     const fail = (error: unknown) => {
       invalidated = true;
@@ -99,6 +111,7 @@ export function useReviewLeases(
             space,
             lease.itemId,
             lease.leaseToken,
+            targets.find((target) => target.itemId === lease.itemId)?.purpose,
           );
           if (!current()) return;
           leases[i] = { ...renewed, leaseToken: lease.leaseToken };
@@ -120,6 +133,7 @@ export function useReviewLeases(
             space,
             target.itemId,
             target.version,
+            target.purpose,
           );
           // 만료·언마운트 이후 도착한 획득 응답은 상태에 넣지 않고 반환한다.
           if (!current()) {
@@ -135,6 +149,27 @@ export function useReviewLeases(
       }
     })();
     queue.current = start;
+    let restarting: Promise<void> | undefined;
+    const releaseBeforeRestart = () => {
+      restarting ??= (async () => {
+        await start;
+        fail(
+          new Error(
+            "편집을 종료했어요. 최신 내용을 불러와 다시 시작해 주세요.",
+          ),
+        );
+        try {
+          await release(true);
+        } catch (error) {
+          fail(error);
+          throw error;
+        }
+      })().finally(() => {
+        restarting = undefined;
+      });
+      return restarting;
+    };
+    releaseCurrent.current = releaseBeforeRestart;
     const visible = () => {
       if (
         document.visibilityState === "visible" &&
@@ -147,12 +182,15 @@ export function useReviewLeases(
     return () => {
       active = false;
       if (expireCurrent.current === expire) expireCurrent.current = null;
+      if (releaseCurrent.current === releaseBeforeRestart)
+        releaseCurrent.current = null;
       if (timer) clearTimeout(timer);
       document.removeEventListener("visibilitychange", visible);
-      queue.current = start.then(release);
+      queue.current = start.then(() => release());
     };
   }, [space, key, enabled]);
   return {
+    release: () => releaseCurrent.current?.() ?? Promise.resolve(),
     ready: !targets.length || (state.key === key && state.ready),
     ensureCurrent: () => {
       if (!targets.length) return true;

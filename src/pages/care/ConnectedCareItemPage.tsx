@@ -19,6 +19,7 @@ import {
   careSourcesPath,
   careHistoryPath,
   careListPath,
+  careItemPath,
   proposalListPath,
 } from "@/routes/paths";
 export function ConnectedCareItemPage() {
@@ -119,8 +120,18 @@ export function ConnectedCareItemPage() {
             }
           />
           <Notice
-            title="직접 수정·공유는 연동 준비 중이에요"
-            body="이 화면은 서버에 저장된 돌봄 정보예요. 제안 반영 결과를 확인할 수 있어요."
+            title="공유는 연동 준비 중이에요"
+            body="이 화면은 서버에 저장된 돌봄 정보예요. 항목 관리에서 내용을 변경할 수 있어요."
+          />
+          <MenuRow
+            icon="edit"
+            title="항목 관리"
+            description="내용·담당자·상태 변경, 답변과 삭제"
+            onClick={() =>
+              void navigate(
+                withReturn(`${careItemPath(space.spaceId, itemId)}/manage`),
+              )
+            }
           />
         </>
       )}
