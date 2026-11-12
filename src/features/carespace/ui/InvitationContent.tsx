@@ -1,10 +1,25 @@
 import { Notice } from "@/components/feedback";
 import { Icon } from "@/components/ui";
 
+const expiryFormat = new Intl.DateTimeFormat("ko-KR", {
+  month: "long",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZone: "Asia/Seoul",
+});
+
 export function InvitationContent({
   state,
+  ready = false,
+  expiresAt,
+  failure,
 }: {
   state: "default" | "expired" | "unavailable" | "error";
+  // 로그인 후 초대를 확인한 상태. 참여 안내 문구와 참여 가능 기한을 표시한다.
+  ready?: boolean;
+  expiresAt?: string;
+  failure?: { title: string; body: string };
 }) {
   if (state === "expired" || state === "unavailable")
     return (
@@ -65,17 +80,35 @@ export function InvitationContent({
           초대했어요
         </h1>
         <p className="text-hm-body-default text-hm-text-secondary">
-          로그인하면 초대를 확인하고
-          <br />
-          가족의 돌봄 공간에 참여할 수 있어요.
+          {ready ? (
+            <>
+              초대를 확인했어요. 참여하면
+              <br />
+              가족의 돌봄 공간을 함께 볼 수 있어요.
+            </>
+          ) : (
+            <>
+              로그인하면 초대를 확인하고
+              <br />
+              가족의 돌봄 공간에 참여할 수 있어요.
+            </>
+          )}
         </p>
+        {expiresAt && (
+          <p className="text-hm-body-small text-hm-text-secondary">
+            {expiryFormat.format(Date.parse(expiresAt))}까지 참여할 수 있어요.
+          </p>
+        )}
       </div>
       {state === "error" && (
         <Notice
           tone="error"
           role="alert"
-          title="참여를 완료하지 못했어요"
-          body="초대 링크는 그대로예요. 아래 버튼으로 다시 시도해 주세요."
+          title={failure?.title ?? "참여를 완료하지 못했어요"}
+          body={
+            failure?.body ??
+            "초대 링크는 그대로예요. 아래 버튼으로 다시 시도해 주세요."
+          }
         />
       )}
       <Notice
