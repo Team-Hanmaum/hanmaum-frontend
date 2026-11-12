@@ -35,7 +35,7 @@ export function CareEditInputs({
             key={s}
             control="radio"
             name="care-status"
-            label={`${displayCareValue("status", s)}로 변경`}
+            label={displayCareValue("status", s)}
             checked={status === s}
             onChange={() => onStatus(s)}
             disabled={disabled}

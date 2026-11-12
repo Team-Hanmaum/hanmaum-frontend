@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ComponentProps } from "react";
 import { useMatches, useParams } from "react-router";
 import { EmptyState } from "@/components/feedback";
 import { Button } from "@/components/ui";
@@ -27,15 +27,15 @@ export function ConnectedCareEditPage() {
     void navigate(withReturn(careItemPath(space.spaceId, itemId)), {
       motion: "back",
     });
-  const unavailable = query.data && careWriteUnavailable(query.data, operation);
-  if (query.data && !unavailable)
+  if (query.data)
     return (
-      <CareEditForm
+      <CareEditEntry
         key={`${itemId}:${operation}:${revision}`}
         space={space}
         item={query.data}
         operation={operation}
         queryError={query.error}
+        onBack={back}
         reload={() =>
           void query.refetch().then((result) => {
             if (!result.error) setRevision((value) => value + 1);
@@ -51,17 +51,36 @@ export function ConnectedCareEditPage() {
       onBack={back}
       actions={<Button onClick={back}>항목 상세로</Button>}
     >
-      {unavailable ? (
-        <EmptyState
-          title="지금은 변경할 수 없어요"
-          body={unavailable}
-        />
-      ) : (
-        <ReviewQueryState
-          error={query.error}
-          retry={() => void query.refetch()}
-        />
-      )}
+      <ReviewQueryState
+        error={query.error}
+        retry={() => void query.refetch()}
+      />
     </ProposalPageLayout>
+  );
+}
+
+function CareEditEntry({
+  onBack,
+  ...props
+}: ComponentProps<typeof CareEditForm> & { onBack: () => void }) {
+  // 저장 후 무효화·재조회가 완료 화면 이동 전에 폼을 해제하지 않도록 진입 시만 검사한다.
+  const [unavailable] = useState(() =>
+    careWriteUnavailable(props.item, props.operation),
+  );
+  return unavailable ? (
+    <ProposalPageLayout
+      connected
+      title="돌봄 변경"
+      spaceId={props.space.spaceId}
+      onBack={onBack}
+      actions={<Button onClick={onBack}>항목 상세로</Button>}
+    >
+      <EmptyState
+        title="지금은 변경할 수 없어요"
+        body={unavailable}
+      />
+    </ProposalPageLayout>
+  ) : (
+    <CareEditForm {...props} />
   );
 }

@@ -126,7 +126,7 @@ export function ConnectedCareItemPage() {
           <MenuRow
             icon="edit"
             title="항목 관리"
-            description="내용·담당자·상태 변경"
+            description="내용·담당자·상태 변경, 답변과 삭제"
             onClick={() =>
               void navigate(
                 withReturn(`${careItemPath(space.spaceId, itemId)}/manage`),

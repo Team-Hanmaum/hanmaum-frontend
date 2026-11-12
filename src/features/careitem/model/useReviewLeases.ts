@@ -4,8 +4,12 @@ import {
   releaseEditLease,
   renewEditLease,
 } from "../api/editLockApi";
-import type { AcquiredLease } from "../api/editLockTypes";
-export type LeaseTarget = { itemId: string; version: string };
+import type { AcquiredLease, EditLockPurpose } from "../api/editLockTypes";
+export type LeaseTarget = {
+  itemId: string;
+  version: string;
+  purpose?: EditLockPurpose;
+};
 type LeaseState = {
   key: string;
   leases: AcquiredLease[];
@@ -100,6 +104,7 @@ export function useReviewLeases(
             space,
             lease.itemId,
             lease.leaseToken,
+            targets.find((target) => target.itemId === lease.itemId)?.purpose,
           );
           if (!current()) return;
           leases[i] = { ...renewed, leaseToken: lease.leaseToken };
@@ -121,6 +126,7 @@ export function useReviewLeases(
             space,
             target.itemId,
             target.version,
+            target.purpose,
           );
           // 만료·언마운트 이후 도착한 획득 응답은 상태에 넣지 않고 반환한다.
           if (!current()) {
@@ -137,8 +143,9 @@ export function useReviewLeases(
     })();
     queue.current = start;
     const releaseBeforeRestart = async () => {
-      invalidated = true;
-      if (timer) clearTimeout(timer);
+      fail(
+        new Error("편집을 종료했어요. 최신 내용을 불러와 다시 시작해 주세요."),
+      );
       await start;
       await release();
     };

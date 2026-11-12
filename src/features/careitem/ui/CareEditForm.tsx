@@ -1,4 +1,6 @@
-import { Button, Badge, TextAction, MenuRow } from "@/components/ui";
+import { Button, Badge, TextAction, MenuRow, Field } from "@/components/ui";
+import { CareSection } from "./CareSection";
+import type { CareItemKind } from "../model/careItemViewTypes";
 import { Notice } from "@/components/feedback";
 import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog";
 import { useUnsavedChanges } from "@/lib/useUnsavedChanges";
@@ -17,6 +19,7 @@ import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { useTimeSelectionScreen } from "@/routes/useTimeSelectionScreen";
 import {
   careItemPath,
+  careListPath,
   careSourcesPath,
   proposalRequestPath,
 } from "@/routes/paths";
@@ -45,7 +48,11 @@ export function CareEditForm({
           withReturn(
             requestId
               ? proposalRequestPath(space.spaceId, requestId)
-              : careItemPath(space.spaceId, item.itemId),
+              : operation === "delete"
+                ? careListPath(space.spaceId, {
+                    type: item.itemType.toLowerCase() as CareItemKind,
+                  })
+                : careItemPath(space.spaceId, item.itemId),
           ),
           { replace: true },
         ),
@@ -63,7 +70,11 @@ export function CareEditForm({
       ? "내용 변경"
       : operation === "assignee"
         ? "담당자 변경"
-        : "상태 변경";
+        : operation === "answer"
+          ? "답변 제출"
+          : operation === "delete"
+            ? "항목 삭제"
+            : "상태 변경";
   const blocked = !!queryError || form.changed || !form.leases.ready;
   const dialog = (
     <UnsavedChangesDialog
@@ -106,6 +117,7 @@ export function CareEditForm({
       actions={
         <>
           <Button
+            variant={operation === "delete" ? "destructive" : "primary"}
             loading={form.mutation.isPending}
             disabled={!form.retry && (blocked || form.mutation.isError)}
             onClick={form.review ? () => form.submit(complete) : form.confirm}
@@ -113,14 +125,20 @@ export function CareEditForm({
             {form.retry
               ? "같은 요청으로 다시 확인"
               : form.review
-                ? `${title}${form.direct ? " 반영" : " 요청"}`
-                : "변경 내용 확인"}
+                ? operation === "answer"
+                  ? "답변 제출하기"
+                  : `${title}${form.direct ? "" : " 요청"}`
+                : operation === "answer"
+                  ? "답변 내용 확인"
+                  : "변경 내용 확인"}
           </Button>
           <TextAction
             disabled={form.frozen}
-            onClick={form.review ? form.edit : back}
+            onClick={form.review && operation !== "delete" ? form.edit : back}
           >
-            {form.review ? "내용 다시 수정" : "돌아가기"}
+            {form.review && operation !== "delete"
+              ? "내용 다시 수정"
+              : "돌아가기"}
           </TextAction>
         </>
       }
@@ -132,12 +150,16 @@ export function CareEditForm({
       />
       <h1 className="text-hm-title-page">
         {form.review
-          ? "이 내용으로 진행할까요?"
+          ? operation === "delete"
+            ? "이 항목을 삭제할까요?"
+            : "이 내용으로 진행할까요?"
           : operation === "assignee"
             ? "누가 챙길까요?"
             : operation === "status"
               ? "상태를 어떻게 바꿀까요?"
-              : "무엇이 달라졌나요?"}
+              : operation === "answer"
+                ? "확인한 내용을 알려주세요"
+                : "무엇이 달라졌나요?"}
       </h1>
       {(form.error || form.mutation.isError) && (
         <Notice
@@ -169,7 +191,10 @@ export function CareEditForm({
         />
       )}
       {!form.frozen &&
-        (form.changed || !!form.leases.error || !!queryError) && (
+        (form.changed ||
+          form.needsRefresh ||
+          !!form.leases.error ||
+          !!queryError) && (
           <TextAction onClick={() => void form.leases.release().then(reload)}>
             입력을 버리고 최신 내용으로 다시 시작
           </TextAction>
@@ -179,13 +204,45 @@ export function CareEditForm({
           담당자 다시 불러오기
         </TextAction>
       )}
-      {form.review ? (
+      {operation === "delete" ? (
+        <>
+          <CareSection title="삭제할 항목">
+            {item.title ?? "내용이 제거된 항목"}
+          </CareSection>
+          <Notice
+            title="돌봄 목록과 홈에서 숨겨져요"
+            body="소식 원본과 변경 이력은 유지돼요. 공유된 링크에서는 항목 상세를 볼 수 없어요."
+          />
+        </>
+      ) : form.review ? (
         <CareValuesView
-          before={form.item}
+          before={operation === "answer" ? undefined : form.item}
           values={form.values}
           keys={Object.keys(flattenCareValues(form.values))}
           members={members.data}
         />
+      ) : operation === "answer" ? (
+        <>
+          <CareSection title="질문">{item.title}</CareSection>
+          <Field
+            multiline
+            rows={5}
+            label="답변"
+            value={form.answer}
+            onChange={(event) => form.setAnswer(event.target.value)}
+            maxLength={10000}
+            disabled={form.frozen}
+          />
+          <Field
+            multiline
+            rows={5}
+            label="어떻게 확인했나요?"
+            value={form.basis}
+            onChange={(event) => form.setBasis(event.target.value)}
+            maxLength={10000}
+            disabled={form.frozen}
+          />
+        </>
       ) : (
         <CareEditInputs
           item={form.item}
@@ -204,7 +261,9 @@ export function CareEditForm({
         body={
           form.direct
             ? "변경 이력과 돌봄 목록·홈을 함께 갱신해요."
-            : "소유자가 요청을 확인하고 승인한 뒤 반영해요."
+            : operation === "answer"
+              ? "답변은 승인 대기로 저장돼요. 소유자가 승인하기 전까지 질문은 미확인 상태를 유지해요."
+              : "소유자가 요청을 확인하고 승인한 뒤 반영해요."
         }
       />
       {operation === "edit" && (

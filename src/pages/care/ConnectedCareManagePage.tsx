@@ -50,6 +50,8 @@ export function ConnectedCareManagePage() {
               { operation: "edit", label: "내용 수정" },
               { operation: "assignee", label: "담당자 변경" },
               { operation: "status", label: "상태 변경" },
+              { operation: "answer", label: "답변 남기기" },
+              { operation: "delete", label: "항목 삭제" },
             ] as const
           )
             .filter(({ operation }) => !careWriteUnavailable(item, operation))
@@ -57,7 +59,8 @@ export function ConnectedCareManagePage() {
               <MenuRow
                 key={operation}
                 icon="edit"
-                title={`${label}${canChangeDirectly(space, item, operation) ? "" : " 요청"}`}
+                tone={operation === "delete" ? "danger" : "default"}
+                title={`${label}${operation === "answer" || canChangeDirectly(space, item, operation) ? "" : " 요청"}`}
                 onClick={() =>
                   void navigate(withReturn(`${base}/${operation}`))
                 }

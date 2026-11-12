@@ -67,11 +67,15 @@ export function CareFieldsForm({
                   : "제목"
           }
           value={fields.title}
+          multiline={apiMode && kind === "question"}
+          rows={apiMode && kind === "question" ? 5 : undefined}
           maxLength={10000}
           helper={original ? `AI 제안 · ${original}` : undefined}
           error={errors.title}
           disabled={disabled}
-          onChange={(event) => update("title", event.target.value)}
+          onChange={(
+            event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+          ) => update("title", event.target.value)}
         />
       ) : (
         <Field

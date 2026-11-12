@@ -1,6 +1,11 @@
 import { isObject, isTimestamp } from "@/lib/api/responseValidators";
 import { isVersion } from "./careReadValidators";
-import type { CreatedCareItem, UpdatedCareItem } from "./careWriteTypes";
+import type {
+  CreatedCareItem,
+  UpdatedCareItem,
+  SubmittedCareAnswer,
+  DeletedCareItem,
+} from "./careWriteTypes";
 
 export const isCreatedCareItem = (value: unknown): value is CreatedCareItem =>
   isObject(value) &&
@@ -16,3 +21,20 @@ export const isUpdatedCareItem = (value: unknown): value is UpdatedCareItem =>
   !!value.itemId &&
   isVersion(value.version) &&
   isTimestamp(value.updatedAt);
+export const isSubmittedCareAnswer = (
+  value: unknown,
+): value is SubmittedCareAnswer =>
+  isObject(value) &&
+  [value.answerId, value.requestId, value.requestEntryId].every(
+    (id) => typeof id === "string" && !!id,
+  ) &&
+  value.status === "PENDING" &&
+  value.questionStatus === "UNCONFIRMED" &&
+  isTimestamp(value.submittedAt);
+export const isDeletedCareItem = (value: unknown): value is DeletedCareItem =>
+  isObject(value) &&
+  typeof value.itemId === "string" &&
+  !!value.itemId &&
+  isVersion(value.version) &&
+  value.visibility === "DELETED" &&
+  isTimestamp(value.deletedAt);

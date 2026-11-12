@@ -65,12 +65,6 @@ async function loadNewsDetailPage() {
   const { NewsDetailRoute } = await import("@/pages/news/NewsDetailRoute");
   return { Component: NewsDetailRoute };
 }
-async function loadCareChangePage() {
-  return {
-    Component: (await import("@/pages/care/change/CareChangePage"))
-      .CareChangePage,
-  };
-}
 
 function RouteLoadingFallback() {
   return (
@@ -289,12 +283,12 @@ const careItemRoutes: RouteObject[] = [
   },
   {
     path: "care/items/:itemId/answer",
-    lazy: loadCareChangePage,
+    lazy: loadCareEditPage,
     handle: { title: "답변 남기기", operation: "answer" },
   },
   {
     path: "care/items/:itemId/delete",
-    lazy: loadCareChangePage,
+    lazy: loadCareEditPage,
     handle: { title: "항목 삭제", operation: "delete" },
   },
   {
@@ -346,6 +340,8 @@ const careItemRoutes: RouteObject[] = [
 
 // 제안 검토·요청·결과
 const careReadPaths = [
+  "care/items/:itemId/answer",
+  "care/items/:itemId/delete",
   "care/items/:itemId/edit",
   "care/items/:itemId/assignee",
   "care/items/:itemId/status",

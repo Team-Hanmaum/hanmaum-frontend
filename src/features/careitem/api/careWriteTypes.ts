@@ -26,3 +26,23 @@ export type UpdatedCareItem = {
   version: string;
   updatedAt: string;
 };
+export type AnswerCareItemBody = {
+  clientRequestId: string;
+  expectedItemVersion: string;
+  answer: string;
+  basis: string;
+};
+export type SubmittedCareAnswer = {
+  answerId: string;
+  requestId: string;
+  requestEntryId: string;
+  status: "PENDING";
+  questionStatus: "UNCONFIRMED";
+  submittedAt: string;
+};
+export type DeletedCareItem = {
+  itemId: string;
+  version: string;
+  visibility: "DELETED";
+  deletedAt: string;
+};

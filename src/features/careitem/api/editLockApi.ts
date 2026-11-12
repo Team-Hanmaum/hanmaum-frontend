@@ -1,10 +1,19 @@
 import { apiClient } from "@/lib/api";
 import { readApiData } from "@/lib/api/responseData";
-import type { AcquiredLease, EditLease } from "./editLockTypes";
+import type {
+  AcquiredLease,
+  EditLease,
+  EditLockPurpose,
+} from "./editLockTypes";
 import { isEditLease } from "./editLockValidators";
 const base = (space: string, item: string) =>
   `/api/spaces/${encodeURIComponent(space)}/items/${encodeURIComponent(item)}/edit-lock` as const;
-export function acquireEditLease(space: string, item: string, version: string) {
+export function acquireEditLease(
+  space: string,
+  item: string,
+  version: string,
+  purpose: EditLockPurpose = "EDIT",
+) {
   return readApiData(
     base(space, item),
     (v): v is AcquiredLease =>
@@ -15,7 +24,7 @@ export function acquireEditLease(space: string, item: string, version: string) {
     {
       method: "POST",
       expectedStatus: 201,
-      body: { expectedItemVersion: version, purpose: "EDIT" },
+      body: { expectedItemVersion: version, purpose },
     },
   );
 }
@@ -23,11 +32,12 @@ export function renewEditLease(
   space: string,
   item: string,
   leaseToken: string,
+  purpose: EditLockPurpose = "EDIT",
 ) {
   return readApiData(
     `${base(space, item)}/renewals`,
     (v): v is EditLease => isEditLease(v) && v.itemId === item,
-    { method: "POST", body: { leaseToken, purpose: "EDIT" } },
+    { method: "POST", body: { leaseToken, purpose } },
   );
 }
 export const releaseEditLease = (

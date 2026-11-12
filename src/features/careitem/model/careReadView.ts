@@ -18,6 +18,8 @@ export const fieldLabels: Record<string, string> = {
   status: "상태",
   confirmedAnswer: "확정 답변",
   answerText: "답변",
+  answer: "답변",
+  basis: "어떻게 확인했나요?",
   observedDate: "관찰 날짜",
   observedTimeText: "관찰 시각",
   sourceName: "안내 출처",
