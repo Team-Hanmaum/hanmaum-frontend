@@ -48,7 +48,8 @@ export const formatServerTime = (value: string) =>
   }).format(new Date(value));
 export function flattenCareValues(values: CareValues | null): CareValues {
   if (!values) return {};
-  return { ...values, ...(isObject(values.fields) ? values.fields : {}) };
+  const { fields, ...flat } = values;
+  return { ...flat, ...(isObject(fields) ? fields : {}) };
 }
 export function displayCareValue(
   key: string,

@@ -24,7 +24,7 @@ import {
   actionLabels,
 } from "@/features/proposal/model/reviewLabels";
 import { useReviewLeases } from "@/features/careitem/model/useReviewLeases";
-import { CareValuesView } from "@/features/careitem/ui/CareValuesView";
+import { ChangeRequestValues } from "@/features/proposal/ui/ChangeRequestValues";
 import {
   authorName,
   formatServerTime,
@@ -334,25 +334,10 @@ export function ConnectedProposalRequestPage() {
                   {actionLabels[e.action]}
                 </h2>
               )}
-              {e.status === "INVALIDATED" || e.redactedFields.length > 0 ? (
-                <Notice
-                  title="제거된 내용은 표시하지 않아요"
-                  body="요청을 처리할 수 없거나 일부 내용이 제거됐어요. 최신 제안을 다시 확인해 주세요."
-                />
-              ) : (
-                <CareValuesView
-                  before={e.currentValues}
-                  values={
-                    e.status === "APPLIED"
-                      ? (e.decision?.appliedValues ?? null)
-                      : e.requestedValues
-                  }
-                  members={members.data}
-                  afterLabel={
-                    e.status === "APPLIED" ? "반영된 내용" : "요청한 내용"
-                  }
-                />
-              )}
+              <ChangeRequestValues
+                entry={e}
+                members={members.data}
+              />
               {e.proposalId &&
                 e.status !== "INVALIDATED" &&
                 !e.redactedFields.length && (
