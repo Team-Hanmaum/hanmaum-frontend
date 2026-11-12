@@ -218,15 +218,16 @@ const recordDeletionRoutes: RouteObject[] = [
   {
     path: "news/:recordId/delete",
     lazy: async () => ({
-      Component: (await import("@/pages/news/NewsDeletePage")).NewsDeletePage,
+      Component: (await import("@/pages/news/NewsDeletionRoutes"))
+        .NewsDeleteRoute,
     }),
     handle: { title: "소식 원본 삭제" },
   },
   {
     path: "news/deletions/:deletionId",
     lazy: async () => ({
-      Component: (await import("@/pages/news/NewsDeletePage"))
-        .NewsDeletionResultPage,
+      Component: (await import("@/pages/news/NewsDeletionRoutes"))
+        .NewsDeletionResultRoute,
     }),
     handle: { title: "소식 삭제 결과" },
   },
@@ -331,8 +332,8 @@ const careItemRoutes: RouteObject[] = [
   {
     path: "care/items/:itemId/reconfirm",
     lazy: async () => ({
-      Component: (await import("@/pages/care/CareReconfirmPage"))
-        .CareReconfirmPage,
+      Component: (await import("@/pages/care/CareReadRoutes"))
+        .CareReconfirmRoute,
     }),
     handle: { title: "다시 확인하기" },
   },
@@ -340,6 +341,7 @@ const careItemRoutes: RouteObject[] = [
 
 // 제안 검토·요청·결과
 const careReadPaths = [
+  "care/items/:itemId/reconfirm",
   "care/items/:itemId/answer",
   "care/items/:itemId/delete",
   "care/items/:itemId/edit",
@@ -543,7 +545,6 @@ const spaceRoutes: RouteObject[] = [
   {
     Component: ProposalRouteLayout,
     children: [
-      ...recordDeletionRoutes,
       ...careItemRoutes.filter(
         (route) => !careReadPaths.includes(route.path ?? ""),
       ),
@@ -552,6 +553,7 @@ const spaceRoutes: RouteObject[] = [
   {
     Component: ConnectedReviewLayout,
     children: [
+      ...recordDeletionRoutes,
       ...proposalRoutes,
       ...careItemRoutes.filter((route) =>
         careReadPaths.includes(route.path ?? ""),
