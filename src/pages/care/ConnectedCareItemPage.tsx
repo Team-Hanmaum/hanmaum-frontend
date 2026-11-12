@@ -20,6 +20,7 @@ import {
   careHistoryPath,
   careListPath,
   careItemPath,
+  careReconfirmPath,
   proposalListPath,
 } from "@/routes/paths";
 export function ConnectedCareItemPage() {
@@ -76,6 +77,24 @@ export function ConnectedCareItemPage() {
               body="근거와 제안을 확인해 주세요. 현재 정보를 임의로 확정하지 않아요."
             />
           )}
+          {item.needsReconfirmation &&
+            item.visibility !== "DELETED" &&
+            (space.role === "OWNER" ? (
+              <Button
+                onClick={() =>
+                  void navigate(
+                    withReturn(careReconfirmPath(space.spaceId, itemId)),
+                  )
+                }
+              >
+                다시 확인하기
+              </Button>
+            ) : (
+              <Notice
+                title="소유자의 재확인이 필요해요"
+                body="소유자가 현재 값과 유효한 근거를 다시 확인해야 해요."
+              />
+            ))}
           <section className="rounded-hm-14 bg-hm-bg-surface p-hm-20">
             <CareValuesView
               values={{ ...item, fields: item.fields }}

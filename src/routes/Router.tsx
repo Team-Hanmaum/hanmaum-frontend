@@ -332,8 +332,8 @@ const careItemRoutes: RouteObject[] = [
   {
     path: "care/items/:itemId/reconfirm",
     lazy: async () => ({
-      Component: (await import("@/pages/care/CareReconfirmPage"))
-        .CareReconfirmPage,
+      Component: (await import("@/pages/care/CareReadRoutes"))
+        .CareReconfirmRoute,
     }),
     handle: { title: "다시 확인하기" },
   },
@@ -341,6 +341,7 @@ const careItemRoutes: RouteObject[] = [
 
 // 제안 검토·요청·결과
 const careReadPaths = [
+  "care/items/:itemId/reconfirm",
   "care/items/:itemId/answer",
   "care/items/:itemId/delete",
   "care/items/:itemId/edit",

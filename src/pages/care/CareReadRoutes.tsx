@@ -5,6 +5,15 @@ import { CareHistoryPage } from "./CareHistoryPage";
 import { ConnectedCareItemPage } from "./ConnectedCareItemPage";
 import { ConnectedCareSourcesPage } from "./ConnectedCareSourcesPage";
 import { ConnectedCareHistoryPage } from "./ConnectedCareHistoryPage";
+import { CareReconfirmPage } from "./CareReconfirmPage";
+import { ConnectedCareReconfirmPage } from "./ConnectedCareReconfirmPage";
+export function CareReconfirmRoute() {
+  return useParams().itemId?.startsWith("mock-") ? (
+    <CareReconfirmPage />
+  ) : (
+    <ConnectedCareReconfirmPage />
+  );
+}
 export function CareItemRoute() {
   return useParams().itemId?.startsWith("mock-") ? (
     <CareItemPage />

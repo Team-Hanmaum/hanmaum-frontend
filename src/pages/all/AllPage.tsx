@@ -60,21 +60,18 @@ export function AllPage() {
       <MenuRow
         icon="care-brand"
         title="돌봄 항목"
-        badge="예시"
         description="일정 · 할 일 · 질문 · 관찰 · 안내"
         onClick={go(spacePath(space.id, "care"))}
       />
       <MenuRow
         icon="news-brand"
         title="가족 소식"
-        badge="예시"
         description="함께 남긴 소식"
         onClick={go(spacePath(space.id, "news"))}
       />
       <MenuRow
         icon="check"
         title="확인할 내용"
-        badge="예시"
         description={
           space.role === "owner"
             ? "제안과 승인 요청 확인"
