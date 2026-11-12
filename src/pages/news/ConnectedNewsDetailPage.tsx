@@ -14,7 +14,7 @@ import type { RecordDetail } from "@/features/record/api/recordReadTypes";
 import { NewsDetail } from "@/features/record/ui/NewsDetail";
 import { ApiError } from "@/lib/api";
 import { SpaceBottomNavigation } from "@/routes/layouts/SpaceBottomNavigation";
-import { paths, spacePath } from "@/routes/paths";
+import { paths, spacePath, proposalReviewPath } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useConnectedSpace } from "@/routes/useConnectedSpace";
@@ -194,8 +194,15 @@ export function ConnectedNewsDetailPage() {
           {view.proposalSummary && (
             <Notice
               tone="neutral"
-              title="제안 검토 화면은 연동을 준비하고 있어요"
-              body="분석으로 만들어진 제안은 이후 제안 검토 화면에서 확인할 수 있어요."
+              title="분석으로 만들어진 제안을 확인해 주세요"
+              body="제안의 근거와 현재 돌봄 정보를 비교한 뒤 반영하거나 소유자에게 요청할 수 있어요."
+              action={{
+                label: "제안 검토하기",
+                onClick: () =>
+                  void navigate(
+                    withReturn(proposalReviewPath(space.spaceId, recordId)),
+                  ),
+              }}
             />
           )}
         </>

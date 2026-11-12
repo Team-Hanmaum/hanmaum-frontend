@@ -21,7 +21,8 @@ import { SpaceCreatePage } from "@/pages/space/SpaceCreatePage";
 // 공간 안의 화면
 import { ConnectedSpaceInvitePage } from "@/pages/space/ConnectedSpaceInvitePage";
 import { ConnectedHomePage } from "@/pages/home/ConnectedHomePage";
-import { CarePage } from "@/pages/care/CarePage";
+import { ConnectedCarePage } from "@/pages/care/ConnectedCarePage";
+import { ConnectedReviewLayout } from "./layouts/ConnectedReviewLayout";
 import { ConnectedNewsPage } from "@/pages/news/ConnectedNewsPage";
 import { ConnectedFamilyPage } from "@/pages/family/ConnectedFamilyPage";
 import { AllPage } from "@/pages/all/AllPage";
@@ -178,7 +179,7 @@ const tabRoutes: RouteObject[] = [
   },
   {
     path: "care",
-    Component: CarePage,
+    Component: ConnectedCarePage,
     handle: { title: "돌봄", tab: "care" },
   },
   {
@@ -305,21 +306,21 @@ const careItemRoutes: RouteObject[] = [
   {
     path: "care/items/:itemId",
     lazy: async () => ({
-      Component: (await import("@/pages/care/CareItemPage")).CareItemPage,
+      Component: (await import("@/pages/care/CareReadRoutes")).CareItemRoute,
     }),
     handle: { title: "돌봄 상세" },
   },
   {
     path: "care/items/:itemId/sources",
     lazy: async () => ({
-      Component: (await import("@/pages/care/CareSourcesPage")).CareSourcesPage,
+      Component: (await import("@/pages/care/CareReadRoutes")).CareSourcesRoute,
     }),
     handle: { title: "근거 보기" },
   },
   {
     path: "care/items/:itemId/history/:historyId?",
     lazy: async () => ({
-      Component: (await import("@/pages/care/CareHistoryPage")).CareHistoryPage,
+      Component: (await import("@/pages/care/CareReadRoutes")).CareHistoryRoute,
     }),
     handle: { title: "변경 이력" },
   },
@@ -334,68 +335,73 @@ const careItemRoutes: RouteObject[] = [
 ];
 
 // 제안 검토·요청·결과
+const careReadPaths = [
+  "care/items/:itemId",
+  "care/items/:itemId/sources",
+  "care/items/:itemId/history/:historyId?",
+];
 const proposalRoutes: RouteObject[] = [
   {
     path: "proposals/:proposalId/evidence",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal/ProposalEvidencePage"))
-        .ProposalEvidencePage,
+      Component: (await import("@/pages/proposal/ProposalRoutes"))
+        .ProposalEvidenceRoute,
     }),
     handle: { title: "근거 비교" },
   },
   {
     path: "proposals/:proposalId/edit",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal/ProposalEditPage"))
-        .ProposalEditPage,
+      Component: (await import("@/pages/proposal/ProposalRoutes"))
+        .ProposalEditRoute,
     }),
     handle: { title: "제안 내용 수정" },
   },
   {
     path: "proposals/:proposalId/target",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal/ProposalTargetPage"))
-        .ProposalTargetPage,
+      Component: (await import("@/pages/proposal/ProposalRoutes"))
+        .ProposalTargetRoute,
     }),
     handle: { title: "연결 대상 선택" },
   },
   {
     path: "news/:recordId/proposals",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal/ProposalReviewPage"))
-        .ProposalReviewPage,
+      Component: (await import("@/pages/proposal/ProposalRoutes"))
+        .ProposalReviewRoute,
     }),
     handle: { title: "제안 검토" },
   },
   {
     path: "proposals/confirm",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal/ProposalConfirmPage"))
-        .ProposalConfirmPage,
+      Component: (await import("@/pages/proposal/ProposalRoutes"))
+        .ProposalConfirmRoute,
     }),
     handle: { title: "반영 전 확인" },
   },
   {
     path: "proposal-requests/:requestId",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal/ProposalRequestPage"))
-        .ProposalRequestPage,
+      Component: (await import("@/pages/proposal/ProposalRoutes"))
+        .ProposalRequestRoute,
     }),
     handle: { title: "요청 상태" },
   },
   {
     path: "proposals/results/:resultId",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal/ProposalResultPage"))
-        .ProposalResultPage,
+      Component: (await import("@/pages/proposal/ProposalRoutes"))
+        .ProposalResultRoute,
     }),
     handle: { title: "반영 결과" },
   },
   {
     path: "proposals",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal/ProposalListPage"))
-        .ProposalListPage,
+      Component: (await import("@/pages/proposal/ProposalRoutes"))
+        .ProposalListRoute,
     }),
     handle: { title: "확인할 내용" },
   },
@@ -525,7 +531,21 @@ const spaceRoutes: RouteObject[] = [
   },
   {
     Component: ProposalRouteLayout,
-    children: [...recordDeletionRoutes, ...careItemRoutes, ...proposalRoutes],
+    children: [
+      ...recordDeletionRoutes,
+      ...careItemRoutes.filter(
+        (route) => !careReadPaths.includes(route.path ?? ""),
+      ),
+    ],
+  },
+  {
+    Component: ConnectedReviewLayout,
+    children: [
+      ...proposalRoutes,
+      ...careItemRoutes.filter((route) =>
+        careReadPaths.includes(route.path ?? ""),
+      ),
+    ],
   },
   // 가족 초대 링크 발급은 실제 API에 연결된 공간을 사용한다.
   {

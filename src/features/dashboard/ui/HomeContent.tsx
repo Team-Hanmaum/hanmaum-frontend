@@ -154,7 +154,7 @@ export function HomeContent({
                 variant="secondary"
                 onClick={() => onCare()}
               >
-                {connected ? "돌봄 목록 예시" : "돌봄 목록 보기"}
+                돌봄 목록 보기
               </Button>
             </div>
           </section>
@@ -162,7 +162,6 @@ export function HomeContent({
       ) : (
         <>
           <MenuRow
-            badge={connected ? "예시" : undefined}
             icon="news-brand"
             title={
               data.pendingCount === undefined
@@ -185,7 +184,7 @@ export function HomeContent({
                 state === "section-error"
                   ? undefined
                   : {
-                      label: connected ? "목록 화면 예시" : "모두 보기",
+                      label: "모두 보기",
                       onClick: () =>
                         onCare({ type: "schedule", status: "upcoming" }),
                     }
@@ -214,14 +213,14 @@ export function HomeContent({
                     body={schedule.body}
                     bodyTone="hint"
                     action={{
-                      label: connected ? "상세 화면 예시" : "일정 자세히 보기",
+                      label: "일정 자세히 보기",
                       onClick: () => onOpenCare(schedule.id),
                     }}
                   />
                 ))}
                 <MenuRow
                   icon="clock"
-                  badge={connected ? "예시 화면" : undefined}
+
                   title={`지난 일정 ${data.pastScheduleCount}건`}
                   description="날짜가 지났지만 아직 예정으로 남아 있어요."
                   onClick={() => onCare({ type: "schedule", status: "past" })}
@@ -233,7 +232,7 @@ export function HomeContent({
             <SectionHeader
               title={`남은 할 일 ${data.totalCounts.tasks}`}
               action={{
-                label: connected ? "목록 화면 예시" : "모두 보기",
+                label: "모두 보기",
                 onClick: () => onCare({ type: "task", status: "remaining" }),
               }}
             />
@@ -246,7 +245,7 @@ export function HomeContent({
               {data.tasks.map((task) => (
                 <MenuRow
                   key={task.id}
-                  badge={connected ? "예시 화면" : undefined}
+
                   icon="check-secondary"
                   title={task.title}
                   description={task.description}
@@ -259,7 +258,7 @@ export function HomeContent({
             <SectionHeader
               title={`미확인 질문 ${data.totalCounts.questions}`}
               action={{
-                label: connected ? "목록 화면 예시" : "모두 보기",
+                label: "모두 보기",
                 onClick: () =>
                   onCare({ type: "question", status: "unconfirmed" }),
               }}
@@ -272,7 +271,7 @@ export function HomeContent({
             {data.questions.map((question) => (
               <MenuRow
                 key={question.id}
-                badge={connected ? "예시 화면" : undefined}
+
                 icon="info-secondary"
                 title={question.title}
                 description={question.description}
@@ -284,7 +283,7 @@ export function HomeContent({
             <SectionHeader
               title="최근 확정된 변경"
               action={{
-                label: connected ? "이력 화면 예시" : "이력 보기",
+                label: connected ? "반영 결과 보기" : "이력 보기",
                 onClick: onHistory,
               }}
             />
@@ -296,7 +295,7 @@ export function HomeContent({
             {data.recentChanges.map((change) => (
               <MenuRow
                 key={change.id}
-                badge={connected ? "예시 화면" : undefined}
+
                 icon="check"
                 title={change.title}
                 description={change.description}

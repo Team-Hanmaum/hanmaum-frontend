@@ -1,5 +1,5 @@
 import { ErrorState, Notice } from "@/components/feedback";
-import { TextAction } from "@/components/ui";
+import { TextAction, MenuRow } from "@/components/ui";
 import { useRecordList } from "@/features/record/model/useRecords";
 import { toRecordView } from "@/features/record/model/recordView";
 import type { NewsListState } from "@/features/record/model/newsScreenStates";
@@ -87,6 +87,14 @@ export function ConnectedNewsPage() {
           void navigate(withReturn(proposalListPath(space.spaceId)))
         }
         onRetry={() => void list.refetch()}
+      />
+      <MenuRow
+        icon="news-brand"
+        title="제안·가족 요청 확인"
+        description="소식 분석으로 만들어진 제안과 요청 상태"
+        onClick={() =>
+          void navigate(withReturn(proposalListPath(space.spaceId)))
+        }
       />
     </>
   );

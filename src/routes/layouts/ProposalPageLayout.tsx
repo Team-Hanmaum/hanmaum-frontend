@@ -17,6 +17,7 @@ export function ProposalPageLayout({
   tabs = false,
   activeTab = "news",
   preview,
+  connected = false,
 }: {
   title: string;
   spaceId: string;
@@ -30,6 +31,7 @@ export function ProposalPageLayout({
     options: readonly { value: string; label: string }[];
     onChange: (value: string) => void;
   };
+  connected?: boolean;
 }) {
   const { withdrawing, returnToWithdrawal } = useWithdrawalReturn();
   const message = "소식·돌봄 UI 예시 · 실제 요청·돌봄 정보 변경 없음";
@@ -38,7 +40,7 @@ export function ProposalPageLayout({
       title={title}
       onBack={onBack}
       notice={
-        preview ? (
+        connected ? undefined : preview ? (
           <MockStateSelect
             message={message}
             {...preview}

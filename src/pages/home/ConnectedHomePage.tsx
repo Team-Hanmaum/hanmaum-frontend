@@ -17,8 +17,9 @@ import {
   paths,
   careListPath,
   newsDetailPath,
+  careItemPath,
+  careHistoryPath,
 } from "@/routes/paths";
-import { exampleCarePath } from "@/routes/exampleDestinations";
 
 export function ConnectedHomePage() {
   const { space } = useConnectedSpace();
@@ -77,25 +78,20 @@ export function ConnectedHomePage() {
         onNews={() => void navigate(spacePath(space.spaceId, "news"))}
         onOpenNews={(id) => void navigate(newsDetailPath(space.spaceId, id))}
         onCare={(filter) => void navigate(careListPath(space.spaceId, filter))}
-        onOpenCare={(id) => {
-          const kind = dashboard.data.remainingTasks.items.some(
-            (item) => item.itemId === id,
-          )
-            ? "task"
-            : dashboard.data.unconfirmedQuestions.items.some(
-                  (item) => item.itemId === id,
-                )
-              ? "question"
-              : "schedule";
-          void navigate(exampleCarePath(space.spaceId, kind));
-        }}
+        onOpenCare={(id) => void navigate(careItemPath(space.spaceId, id))}
         onPending={() => void navigate(proposalListPath(space.spaceId))}
         onHistory={() =>
-          void navigate(exampleCarePath(space.spaceId, "schedule", true))
+          void navigate(proposalListPath(space.spaceId, "applied"))
         }
-        onChange={() =>
-          void navigate(exampleCarePath(space.spaceId, "schedule", true))
-        }
+        onChange={(id) => {
+          const change = dashboard.data.recentChanges.items.find(
+            (entry) => `${entry.itemId}:${entry.version}` === id,
+          );
+          if (change)
+            void navigate(
+              careHistoryPath(space.spaceId, change.itemId, change.version),
+            );
+        }}
         onRetry={retry}
       />
     </>
