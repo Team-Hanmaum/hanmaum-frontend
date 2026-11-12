@@ -21,7 +21,7 @@ export type CareListResponse = {
   items: CareSummary[];
   totalCount: number;
   reconfirmationItems: CareSummary[];
-  pastScheduleCount: number | null;
+  pastScheduleCount?: number | null;
 };
 export type CareDetail = Omit<CareSummary, "assigneeDisplayName"> & {
   spaceId: string;

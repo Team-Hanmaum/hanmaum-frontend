@@ -7,7 +7,7 @@ export type RequestStatus =
   "PENDING" | "APPLIED" | "DECLINED" | "CANCELED" | "INVALIDATED";
 export type RequestEntrySummary = {
   requestEntryId: string;
-  sourceType: string;
+  sourceType: "AI_PROPOSAL" | "DIRECT_INPUT";
   action: ProposalAction;
   targetItemId: string | null;
   status: RequestStatus;

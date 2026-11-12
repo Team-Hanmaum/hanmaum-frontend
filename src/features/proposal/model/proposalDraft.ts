@@ -39,7 +39,6 @@ export function initialProposalDraft(
   const before = target
     ? flattenCareValues(target)
     : flattenCareValues(proposal.currentValues);
-  const proposed = flattenCareValues(proposal.proposedValues);
   const values: CareValues = { ...before };
   const keys = draftKeys(proposal);
   const canonical = (field: string) => {
@@ -56,6 +55,12 @@ export function initialProposalDraft(
             : "scheduledDate";
     return key;
   };
+  const rawProposed = flattenCareValues(proposal.proposedValues);
+  const proposed: CareValues = {};
+  for (const [field, value] of Object.entries(rawProposed)) {
+    const key = canonical(field);
+    proposed[key] = Object.hasOwn(rawProposed, key) ? rawProposed[key] : value;
+  }
   if (proposal.action === "RESOLVE_QUESTION")
     values.confirmedAnswer = proposed.answerText ?? null;
   else

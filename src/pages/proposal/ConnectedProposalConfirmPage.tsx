@@ -136,8 +136,8 @@ export function ConnectedProposalConfirmPage() {
       };
     }
     mutation.mutate(attempt.current, {
-      onSuccess: (result) => {
-        clear();
+      onSuccess: (result, submitted) => {
+        clear(submitted.body.entries.map((entry) => entry.proposalId));
         void navigate(
           withReturn(
             result.requestId

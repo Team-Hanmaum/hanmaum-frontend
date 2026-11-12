@@ -52,7 +52,9 @@ export const isCareList = (v: unknown): v is CareListResponse =>
   isCount(v.totalCount) &&
   Array.isArray(v.reconfirmationItems) &&
   v.reconfirmationItems.every(isCareSummary) &&
-  (v.pastScheduleCount === null || isCount(v.pastScheduleCount));
+  (v.pastScheduleCount === undefined ||
+    v.pastScheduleCount === null ||
+    isCount(v.pastScheduleCount));
 export const isCareDetail = (v: unknown): v is CareDetail =>
   isObject(v) &&
   isCareBase(v) &&

@@ -57,7 +57,9 @@ export const isProposalPage = (v: unknown): v is ProposalPage =>
   Array.isArray(v.items) &&
   v.items.every(isProposalSummary) &&
   isNullableString(v.nextCursor) &&
-  typeof v.hasNext === "boolean";
+  typeof v.hasNext === "boolean" &&
+  (!v.hasNext ||
+    (typeof v.nextCursor === "string" && v.nextCursor.trim().length > 0));
 export const isProposalDetail = (v: unknown): v is ProposalDetail =>
   isObject(v) &&
   typeof v.spaceId === "string" &&

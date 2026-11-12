@@ -25,7 +25,7 @@ export const isRequestStatus = (v: unknown): v is RequestStatus =>
 const isEntry = (v: unknown): v is RequestEntrySummary =>
   isObject(v) &&
   typeof v.requestEntryId === "string" &&
-  typeof v.sourceType === "string" &&
+  (v.sourceType === "AI_PROPOSAL" || v.sourceType === "DIRECT_INPUT") &&
   isProposalAction(v.action) &&
   isNullableString(v.targetItemId) &&
   isRequestStatus(v.status) &&
@@ -63,8 +63,10 @@ export const isChangeRequestPage = (v: unknown): v is ChangeRequestPage =>
   isObject(v) &&
   Array.isArray(v.items) &&
   v.items.every(isSummary) &&
-  isNullableString(v.nextCursor) &&
-  typeof v.hasNext === "boolean";
+  typeof v.hasNext === "boolean" &&
+  (v.hasNext
+    ? typeof v.nextCursor === "string" && v.nextCursor.trim().length > 0
+    : v.nextCursor === null);
 export const isChangeRequestDetail = (v: unknown): v is ChangeRequestDetail =>
   isObject(v) &&
   Array.isArray(v.entries) &&

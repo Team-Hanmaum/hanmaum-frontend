@@ -20,6 +20,15 @@ export function useProposalDrafts(space: string) {
         ...previous,
         [id]: value,
       })),
-    clear: () => client.removeQueries({ queryKey: key }),
+    clear: (processedIds: readonly string[]) =>
+      client.setQueryData<Record<string, ProposalDraft>>(key, (previous) =>
+        previous
+          ? Object.fromEntries(
+              Object.entries(previous).filter(
+                ([id]) => !processedIds.includes(id),
+              ),
+            )
+          : previous,
+      ),
   };
 }
