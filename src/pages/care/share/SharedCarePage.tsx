@@ -4,6 +4,7 @@ import { Badge, Button } from "@/components/ui";
 import { useSession } from "@/features/auth/model/useSession";
 import { useOAuthLogin } from "@/features/auth/model/useOAuthLogin";
 import { SocialLoginOptions } from "@/features/auth/ui/SocialLoginOptions";
+import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
 import { CareSection } from "@/features/careitem/ui/CareSection";
 import { CareValuesView } from "@/features/careitem/ui/CareValuesView";
 import {
@@ -41,6 +42,7 @@ function SharedCareContent({ token }: { token: string }) {
   const login = isShareToken(token) && session.status === "anonymous";
   const error = query.error instanceof ApiError ? query.error : undefined;
   const shared = query.data;
+  const members = useSpaceMembers(shared?.spaceId ?? "", !!shared);
   const forbidden = authenticated && error?.status === 403;
   const unavailable = !isShareToken(token) || error?.status === 404;
   const toStart = () =>
@@ -161,6 +163,7 @@ function SharedCareContent({ token }: { token: string }) {
                   <Badge label={itemLabels[entry.item.itemType]} />
                   <CareValuesView
                     values={{ ...entry.item, fields: entry.item.fields }}
+                    members={members.data}
                     keys={Object.keys(fieldLabels).filter(
                       (key) =>
                         key !== "title" &&

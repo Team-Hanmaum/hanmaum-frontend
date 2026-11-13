@@ -19,8 +19,9 @@ import {
   needsShareRefresh,
   shareLinkFailure,
 } from "@/features/sharing/model/shareLinkFailure";
+import { ApiError } from "@/lib/api";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
-import { careItemPath } from "@/routes/paths";
+import { careItemPath, careListPath } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useConnectedSpace } from "@/routes/useConnectedSpace";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
@@ -31,8 +32,12 @@ export function CareSharePage() {
   const query = useCareItem(space.spaceId, itemId);
   const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
+  const backPath =
+    query.error instanceof ApiError && query.error.status === 404
+      ? careListPath(space.spaceId)
+      : careItemPath(space.spaceId, itemId);
   const back = () =>
-    void navigate(withReturn(careItemPath(space.spaceId, itemId)), {
+    void navigate(withReturn(backPath), {
       motion: "back",
     });
   const [revision, setRevision] = useState(0);
