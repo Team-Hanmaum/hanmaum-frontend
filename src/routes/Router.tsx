@@ -340,6 +340,7 @@ const careItemRoutes: RouteObject[] = [
 
 // 제안 검토·요청·결과
 const careReadPaths = [
+  "care/items/:itemId/share",
   "care/items/:itemId/reconfirm",
   "care/items/:itemId/answer",
   "care/items/:itemId/delete",

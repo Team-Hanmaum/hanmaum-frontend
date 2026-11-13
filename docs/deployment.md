@@ -59,6 +59,20 @@ Discord 알림은 기존 GitHub 저장소 웹훅의 `check_run`·`check_suite` �
 - 로그인 Mock 활성화는 제거했다. 미연동 도메인의 예시 데이터는 별도 메모리 모델로 제공한다. 기존 `VITE_ENABLE_MOCK_PREVIEW=true`가 남아 있어도 실제 API 흐름을 사용하므로 Preview 임시 주소에서 운영 API에 접근할 수 있다고 가정하지 않는다.
 - 미연동 업무 화면의 작성·수정·삭제는 예시 전용이며 실제 API를 호출하지 않는다. `/_dev/components`는 로컬 개발 전용이다.
 
+## 카카오톡 돌봄 공유 설정 (#71)
+
+공유 링크 API와 카카오톡 전송 화면은 별도다. 링크 발급·복사·수신 조회는 카카오 키 없이도 사용하며, 카카오톡 공유 버튼에는 아래 설정이 필요하다.
+
+1. 카카오디벨로퍼스에서 기존 한마음 앱의 **앱 → 플랫폼 키 → JavaScript 키** 확인. REST API 키·Admin 키·Client Secret 대신 공개 JavaScript 키 사용.
+2. **JavaScript SDK 도메인**에 `https://hanmaum.site` 및 로컬 검증용 `https://local.hanmaum.site:5173` 등록.
+3. **제품 링크 관리 → 웹 도메인**에 공유 카드가 여는 `https://hanmaum.site` 등록. 로컬 링크를 별도로 발급하는 환경이면 해당 도메인도 등록.
+4. 로컬 `.env.development.local`에 `VITE_KAKAO_JAVASCRIPT_KEY=발급받은_JavaScript_키` 설정 후 개발 서버 재시작. Vercel Production에도 같은 이름의 Config 변수 등록 후 재빌드. Preview는 허용한 SDK·API 도메인에서만 검증.
+5. BE `SHARE_URL_PREFIX`가 `https://hanmaum.site/share/`를 반환하는지 확인. FE는 발급된 URL을 임의로 로컬 주소로 바꾸지 않는다. 로컬 수신 화면 확인 시에는 URL의 Origin만 개발 주소로 바꾸고 `/share/{token}` 경로를 유지.
+
+SDK 2.8.5를 공식 CDN과 고정 SRI로 공유 화면에서만 준비한다. 키가 없거나 SDK를 불러오지 못하면 링크 복사를 제공한다. 카드에는 항목 유형·변경 여부·서비스 링크만 전달하며 부모님 이름·항목 제목·원문은 포함하지 않는다. 카카오톡 실행·복귀는 전송 완료를 의미하지 않으므로 성공 전송으로 표시하지 않는다.
+
+공식 기준: [JavaScript SDK 설치·초기화](https://developers.kakao.com/docs/ko/javascript/getting-started), [카카오톡 공유](https://developers.kakao.com/docs/ko/kakaotalk-share/js-link), [SDK 다운로드](https://developers.kakao.com/docs/ko/javascript/download).
+
 ## 최초 배포 기록
 
 - 배포 주소: [hanmaum-frontend.vercel.app](https://hanmaum-frontend.vercel.app/)

@@ -17,6 +17,7 @@ import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import {
   careSourcesPath,
+  careSharePath,
   careHistoryPath,
   careListPath,
   careItemPath,
@@ -138,10 +139,20 @@ export function ConnectedCareItemPage() {
               void navigate(withReturn(proposalListPath(space.spaceId)))
             }
           />
-          <Notice
-            title="공유는 연동 준비 중이에요"
-            body="이 화면은 서버에 저장된 돌봄 정보예요. 항목 관리에서 내용을 변경할 수 있어요."
-          />
+          {!item.needsReconfirmation &&
+            item.visibility !== "DELETED" &&
+            !item.redactedFields.length && (
+              <MenuRow
+                icon="link-brand"
+                title="공유"
+                description="카카오톡 또는 링크로 가족에게 알리기"
+                onClick={() =>
+                  void navigate(
+                    withReturn(careSharePath(space.spaceId, itemId)),
+                  )
+                }
+              />
+            )}
           <MenuRow
             icon="edit"
             title="항목 관리"
