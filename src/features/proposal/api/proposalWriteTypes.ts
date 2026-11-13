@@ -34,14 +34,26 @@ export type RequestSubmissionBody = {
     | DirectRequestEntry
   )[];
 };
-export type DirectRequestEntry = {
+export type DirectItemRequestEntry = {
   sourceType: "DIRECT_INPUT";
   action: "CREATE_ITEM" | "UPDATE_ITEM" | "DELETE_ITEM";
   targetItemId?: string;
   expectedItemVersion?: string;
   leaseToken?: string;
+  expectedSpaceVersion?: never;
   values?: CareValues;
 };
+export type DirectSpaceRequestEntry = {
+  sourceType: "DIRECT_INPUT";
+  action: "UPDATE_SPACE";
+  expectedSpaceVersion: string;
+  targetItemId?: never;
+  expectedItemVersion?: never;
+  leaseToken?: never;
+  values: { subjectLabel: string };
+};
+export type DirectRequestEntry =
+  DirectItemRequestEntry | DirectSpaceRequestEntry;
 export type RequestSubmitted = {
   requestId: string;
   submittedAt: string;

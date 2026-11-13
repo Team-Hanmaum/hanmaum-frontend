@@ -34,7 +34,6 @@ export function AllPage() {
       <MenuRow
         icon="person"
         title="돌봄 대상·공간 정보"
-        badge="예시"
         description={`${space.subjectLabel}의 돌봄`}
         onClick={go(spaceInfoPath(space.id))}
       />

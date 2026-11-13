@@ -25,6 +25,8 @@ import {
   proposalReviewPath,
   proposalRequestPath,
   proposalResultPath,
+  spaceInfoRequestsPath,
+  spaceInfoRequestPath,
 } from "@/routes/paths";
 const tabs = [
   { value: "review", label: "검토 필요" },
@@ -46,6 +48,7 @@ export function ConnectedProposalListPage() {
     ? params.get("status")!
     : "review";
   const { withReturn } = useWithdrawalReturn();
+  const navigate = useAppNavigate();
   const back = useBackNavigation(withReturn(spacePath(space.spaceId, "news")));
   return (
     <ProposalPageLayout
@@ -61,6 +64,14 @@ export function ConnectedProposalListPage() {
           ? "내용을 검토하고 선택한 내용만 반영해요."
           : "가족에게 반영을 요청할 수 있어요. 최종 반영은 소유자가 진행해요."}
       </p>
+      <MenuRow
+        icon="edit"
+        title="공간 정보 수정 요청"
+        description="공간 이름 수정 요청과 처리 결과"
+        onClick={() =>
+          void navigate(withReturn(spaceInfoRequestsPath(space.spaceId)))
+        }
+      />
       <Tabs
         label="제안 상태"
         value={status}
@@ -199,7 +210,11 @@ function RequestList({ spaceId }: { spaceId: string }) {
             description={`${formatServerTime(r.submittedAt)} · 대기 ${r.counts.pending}건`}
             onClick={() =>
               void navigate(
-                withReturn(proposalRequestPath(spaceId, r.requestId)),
+                withReturn(
+                  r.entries.every((entry) => entry.action === "UPDATE_SPACE")
+                    ? spaceInfoRequestPath(spaceId, r.requestId)
+                    : proposalRequestPath(spaceId, r.requestId),
+                ),
               )
             }
           />

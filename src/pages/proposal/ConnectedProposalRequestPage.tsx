@@ -41,6 +41,7 @@ import {
   proposalEvidencePath,
   careItemPath,
   careHistoryPath,
+  spaceInfoRequestPath,
 } from "@/routes/paths";
 type Decision = {
   mode: "apply" | "decline" | "cancel";
@@ -96,7 +97,10 @@ export function ConnectedProposalRequestPage() {
   function prepare(mode: Decision["mode"]) {
     const chosen =
       query.data?.entries.filter(
-        (e) => selected.includes(e.requestEntryId) && e.status === "PENDING",
+        (e) =>
+          e.action !== "UPDATE_SPACE" &&
+          selected.includes(e.requestEntryId) &&
+          e.status === "PENDING",
       ) ?? [];
     if (!chosen.length || chosen.length > 20 || mutation.isPending) return;
     if (mode !== "cancel" && (!owner || chosen.some((e) => !e.reviewToken)))
@@ -338,7 +342,10 @@ export function ConnectedProposalRequestPage() {
               className="flex flex-col gap-hm-16 rounded-hm-14 bg-hm-bg-surface p-hm-20"
             >
               <Badge label={requestStatusLabels[e.status]} />
-              {!decision && e.status === "PENDING" && (owner || mine) ? (
+              {!decision &&
+              e.action !== "UPDATE_SPACE" &&
+              e.status === "PENDING" &&
+              (owner || mine) ? (
                 <SelectionRow
                   label={actionLabels[e.action]}
                   checked={selected.includes(e.requestEntryId)}
@@ -382,6 +389,20 @@ export function ConnectedProposalRequestPage() {
                 entry={e}
                 members={members.data}
               />
+              {e.action === "UPDATE_SPACE" && (
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    void navigate(
+                      withReturn(
+                        spaceInfoRequestPath(space.spaceId, requestId),
+                      ),
+                    )
+                  }
+                >
+                  공간 정보 요청 확인
+                </Button>
+              )}
               {e.proposalId &&
                 e.status !== "INVALIDATED" &&
                 !e.redactedFields.length && (

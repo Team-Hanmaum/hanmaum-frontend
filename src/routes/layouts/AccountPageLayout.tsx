@@ -14,12 +14,14 @@ export function AccountPageLayout({
   actions,
   spaceId,
   preview,
+  connected = false,
 }: {
   title: string;
   onBack: () => void;
   children: ReactNode;
   actions?: ReactNode;
   spaceId?: string;
+  connected?: boolean;
   preview?: {
     value: string;
     options: readonly { value: string; label: string }[];
@@ -34,7 +36,7 @@ export function AccountPageLayout({
       title={title}
       onBack={onBack}
       notice={
-        preview ? (
+        connected ? undefined : preview ? (
           <MockStateSelect
             message={message}
             {...preview}

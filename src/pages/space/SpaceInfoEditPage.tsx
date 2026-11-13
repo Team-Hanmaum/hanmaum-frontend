@@ -1,197 +1,134 @@
-import { useAppNavigate } from "@/routes/useAppNavigate";
-import { useRef, useState } from "react";
-import { useBlocker, useOutletContext } from "react-router";
 import { Button, Field, TextAction } from "@/components/ui";
-import { ConfirmDialog, Notice } from "@/components/feedback";
-import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
-import {
-  mockSpaceInfoChanges,
-  validateSubjectLabel,
-  type SpaceInfoChangeFailure,
-} from "@/features/carespace/model/mockSpaceInfoChanges";
+import { Notice } from "@/components/feedback";
+import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog";
 import { FamilyInfoCard } from "@/features/carespace/ui/FamilyInfoCard";
 import { SpaceInfoComparison } from "@/features/carespace/ui/SpaceInfoComparison";
-import { useMockAction } from "@/lib/useMockAction";
+import { useSpaceInfoEditor } from "@/features/carespace/model/useSpaceInfoEditor";
+import { spaceInfoFailure } from "@/features/carespace/model/spaceInfoFailure";
+import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
+import { useUnsavedChanges } from "@/lib/useUnsavedChanges";
 import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
-import { paths, spaceInfoPath, spaceInfoRequestPath } from "@/routes/paths";
-import { useMockScreenState } from "@/routes/useMockScreenState";
-const states = [
-  { value: "default", label: "기본" },
-  { value: "error", label: "처리 실패" },
-  { value: "stale", label: "정보 변경·재비교" },
-  { value: "role", label: "역할 변경" },
-  { value: "locked", label: "변경 잠금 예시" },
-  { value: "unknown", label: "결과 미확인" },
-] as const;
+import {
+  spaceInfoPath,
+  spaceInfoRequestPath,
+  spaceInfoRequestsPath,
+} from "@/routes/paths";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useConnectedSpace } from "@/routes/useConnectedSpace";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
+
 export function SpaceInfoEditPage() {
-  const space = useOutletContext<CareSpaceView>();
+  const { space } = useConnectedSpace();
+  const editor = useSpaceInfoEditor(space);
+  const { action, confirming, baseline, query } = editor;
+  const owner = baseline.role === "OWNER";
   const navigate = useAppNavigate();
-  const [value, setValue] = useState(space.subjectLabel);
-  const [baseline, setBaseline] = useState({
-    version: space.infoVersion ?? 0,
-    role: space.role,
-  });
-  const [confirm, setConfirm] = useState(false);
-  const [error, setError] = useState("");
-  const [failure, setFailure] = useState<SpaceInfoChangeFailure | null>(null);
-  const [resultId, setResultId] = useState("");
-  const committed = useRef(false);
-  const { pending, run } = useMockAction();
-  const [state, setState] = useMockScreenState(states, "default");
-  const dirty = value.trim() !== space.subjectLabel;
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      dirty &&
-      !committed.current &&
-      currentLocation.pathname !== nextLocation.pathname,
+  const { withReturn } = useWithdrawalReturn();
+  const { blocker, allowNavigation } = useUnsavedChanges(
+    editor.dirty || action.pending || action.uncertain,
   );
-  const changed =
-    baseline.version !== (space.infoVersion ?? 0) ||
-    baseline.role !== space.role ||
-    failure?.reason === "stale" ||
-    failure?.reason === "permission" ||
-    state === "stale" ||
-    state === "role";
-  const owner = baseline.role === "owner";
+  const go = (path: string) => void navigate(withReturn(path));
   const back = () => {
-    if (pending || resultId) return;
-    if (confirm) setConfirm(false);
-    else void navigate(spaceInfoPath(space.id), { motion: "back" });
+    if (action.pending || action.uncertain) return;
+    if (confirming && !action.result) editor.edit();
+    else
+      void navigate(withReturn(spaceInfoPath(space.spaceId)), {
+        motion: "back",
+      });
   };
-  function submit() {
-    setError("");
-    setFailure(null);
-    const invalid = validateSubjectLabel(value);
-    if (invalid) {
-      setError(invalid);
-      setConfirm(false);
-      return;
-    }
-    if (changed) {
-      setBaseline({ version: space.infoVersion ?? 0, role: space.role });
-      setState("default");
-      setConfirm(true);
-      return;
-    }
-    if (!confirm) {
-      setConfirm(true);
-      return;
-    }
-    run(() => {
-      if (state === "error") {
-        setError("변경을 보내지 못했어요. 입력한 내용은 그대로예요.");
-        setState("default");
-        return;
-      }
-      try {
-        const result = mockSpaceInfoChanges.submit(
-          space.id,
-          value,
-          baseline.version,
-          baseline.role,
-        );
-        if (!result.ok) {
-          setFailure(result);
-          if (result.reason === "validation" || result.reason === "unchanged")
-            setConfirm(false);
-          return;
-        }
-        committed.current = true;
-        if (state === "unknown") setResultId(result.change.id);
-        else
-          void navigate(spaceInfoRequestPath(space.id, result.change.id), {
-            replace: true,
-          });
-      } catch (cause) {
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "처리를 완료하지 못했어요. 다시 확인해 주세요.",
-        );
-      }
-    });
-  }
+  const result = action.result;
   return (
     <AccountPageLayout
+      connected
       title={
-        resultId
-          ? "처리 상태 확인"
-          : confirm
+        result
+          ? "공간 정보 처리 결과"
+          : confirming
             ? owner
               ? "공간 정보 변경 확인"
               : "수정 요청 확인"
             : "공간 정보 수정"
       }
       onBack={back}
-      preview={{
-        value: state,
-        options: states,
-        onChange: (next) => {
-          if (!pending && !resultId) {
-            setState(next);
-            setError("");
-            setFailure(null);
-          }
-        },
-      }}
       actions={
-        resultId ? (
+        result ? (
           <Button
             onClick={() =>
-              void navigate(spaceInfoRequestPath(space.id, resultId), {
-                replace: true,
-              })
+              allowNavigation(() =>
+                go(
+                  result.requestId
+                    ? spaceInfoRequestPath(space.spaceId, result.requestId)
+                    : spaceInfoPath(space.spaceId),
+                ),
+              )
             }
           >
-            처리 상태 확인
-          </Button>
-        ) : failure?.reason === "missing" ? (
-          <Button onClick={() => void navigate(paths.spaces)}>
-            내 공간 목록으로
+            {result.requestId ? "요청 상태 확인" : "현재 공간 정보 보기"}
           </Button>
         ) : (
           <>
             <Button
-              loading={pending}
-              disabled={!dirty || state === "locked"}
-              onClick={submit}
+              loading={action.pending}
+              disabled={
+                !action.uncertain &&
+                (editor.blocked ||
+                  editor.needsRefresh ||
+                  (!editor.changed &&
+                    editor.label === editor.space.subjectLabel))
+              }
+              onClick={editor.proceed}
             >
-              {failure?.reason === "permission"
-                ? "현재 역할 다시 확인"
-                : changed
+              {action.uncertain
+                ? "같은 요청으로 다시 확인"
+                : editor.changed
                   ? "변경 내용 다시 확인"
-                  : !confirm
+                  : !confirming
                     ? "변경 내용 확인"
                     : owner
                       ? "변경 내용 반영"
                       : "수정 요청 보내기"}
             </Button>
             <TextAction
-              disabled={pending}
+              disabled={action.pending || action.uncertain}
               onClick={back}
             >
-              {confirm ? "다시 수정하기" : "수정 취소"}
+              {confirming ? "다시 수정하기" : "수정 취소"}
             </TextAction>
           </>
         )
       }
     >
-      {resultId ? (
+      {result ? (
         <>
           <h1 className="text-hm-title-page">
-            처리 결과를
-            <br />
-            확인하지 못했어요
+            {result.role === "OWNER"
+              ? "공간 이름을 반영했어요"
+              : "수정 요청을 보냈어요"}
           </h1>
+          <FamilyInfoCard
+            title={
+              result.role === "OWNER" ? "반영한 공간 이름" : "요청한 공간 이름"
+            }
+          >
+            {result.subjectLabel}의 돌봄
+          </FamilyInfoCard>
           <Notice
-            title="같은 내용을 다시 보내지 않아요"
-            body="처리 상태를 확인한 뒤 결과를 안내할게요."
+            title={
+              result.role === "OWNER"
+                ? "가족에게 보이는 이름을 수정했어요"
+                : "현재 공간 정보는 그대로예요"
+            }
+            body={
+              result.role === "OWNER"
+                ? "현재 공간 정보에서 최신 이름을 확인할 수 있어요. 소식과 돌봄 기록은 그대로예요."
+                : "소유자가 확인한 뒤 최종 반영해요. 요청 상태에서 결과를 확인해 주세요."
+            }
           />
         </>
       ) : (
         <>
           <h1 className="text-hm-title-page">
-            {confirm ? (
+            {confirming ? (
               owner ? (
                 "이 이름으로 변경할까요?"
               ) : (
@@ -208,37 +145,23 @@ export function SpaceInfoEditPage() {
           <p className="text-hm-body-default text-hm-text-secondary">
             현재 공간의 이름·호칭을 수정해요.
           </p>
-          {confirm ? (
+          {confirming ? (
             <SpaceInfoComparison
-              before={space.subjectLabel}
-              after={value.trim()}
+              before={baseline.subjectLabel}
+              after={editor.label}
             />
           ) : (
             <>
               <Field
                 label="부모님 이름 또는 호칭"
-                value={value}
-                onChange={(event) => {
-                  setValue(event.target.value);
-                  setError("");
-                  if (
-                    failure?.reason === "validation" ||
-                    failure?.reason === "unchanged"
-                  )
-                    setFailure(null);
-                }}
-                helper={`현재: ${space.subjectLabel}`}
-                error={
-                  error ||
-                  (failure?.reason === "validation" ||
-                  failure?.reason === "unchanged"
-                    ? failure.message
-                    : undefined)
-                }
-                disabled={pending}
+                value={editor.value}
+                onChange={(event) => editor.changeValue(event.target.value)}
+                helper={`현재: ${editor.space.subjectLabel}`}
+                error={editor.validation}
+                disabled={action.pending || action.uncertain}
               />
               <FamilyInfoCard title="이렇게 표시돼요">
-                {value.trim() || "이름 또는 호칭"}의 돌봄
+                {editor.label || "이름 또는 호칭"}의 돌봄
               </FamilyInfoCard>
             </>
           )}
@@ -254,50 +177,72 @@ export function SpaceInfoEditPage() {
                 : "소유자가 요청 내용을 확인한 뒤 최종 반영해요."
             }
           />
-          {changed && (
+          {editor.changed && (
             <Notice
               title="현재 정보와 다시 비교해 주세요"
-              body="입력한 내용은 유지돼요. 현재 이름과 내 역할을 확인한 뒤 진행해 주세요."
+              body={`현재 이름: ${editor.space.subjectLabel} · 내 역할: ${editor.space.role === "OWNER" ? "소유자" : "구성원"}. 입력한 내용을 다시 확인한 후 진행해 주세요.`}
             />
           )}
-          {state === "locked" && (
-            <Notice
-              title="지금은 변경할 수 없어요"
-              body="잠금 상태의 UI 예시예요. 실제 잠금 조건과 해제 정책은 미정이에요."
+          {query.error && (
+            <ReviewQueryState
+              error={query.error}
+              retry={() => void editor.refresh()}
             />
           )}
-          {confirm && error && (
+          {action.error && (
             <Notice
-              tone="error"
               role="alert"
-              title="처리하지 못했어요"
-              body={error}
+              tone="error"
+              title={
+                action.uncertain
+                  ? "처리 결과를 다시 확인해 주세요"
+                  : "처리하지 못했어요"
+              }
+              body={spaceInfoFailure(action.error)}
             />
           )}
-          {failure &&
-            failure.reason !== "validation" &&
-            failure.reason !== "unchanged" && (
-              <Notice
-                tone="error"
-                role="alert"
-                title="처리하지 못했어요"
-                body={failure.message}
-              />
-            )}
+          {editor.needsRefresh && !action.uncertain && (
+            <Button
+              variant="secondary"
+              loading={query.isFetching}
+              onClick={() => void editor.refresh()}
+            >
+              현재 정보 다시 확인
+            </Button>
+          )}
+          {action.error?.code === "CHANGE_REQUEST_ALREADY_PENDING" && (
+            <TextAction
+              onClick={() => go(spaceInfoRequestsPath(space.spaceId))}
+            >
+              이미 보낸 요청 확인
+            </TextAction>
+          )}
         </>
       )}
-      <ConfirmDialog
+      <UnsavedChangesDialog
         open={blocker.state === "blocked"}
-        onOpenChange={(open) => {
-          if (!open && blocker.state === "blocked") blocker.reset();
+        onStay={() => {
+          if (blocker.state === "blocked") blocker.reset();
         }}
-        title="수정을 취소할까요?"
-        body="입력한 내용은 저장되지 않아요. 현재 공간 정보는 그대로예요."
-        confirmLabel="수정 취소"
-        cancelLabel="계속 수정"
-        onConfirm={() => {
-          if (blocker.state === "blocked") blocker.proceed();
+        onLeave={() => {
+          if (!action.pending && blocker.state === "blocked") blocker.proceed();
         }}
+        title={
+          action.pending
+            ? "요청을 처리하고 있어요"
+            : action.uncertain
+              ? "처리 결과를 확인하지 못했어요"
+              : "수정을 취소할까요?"
+        }
+        body={
+          action.pending
+            ? "처리가 끝난 뒤 이동해 주세요."
+            : action.uncertain
+              ? "요청이 저장됐을 수 있어요. 나간 뒤에는 공간 정보와 요청 목록에서 결과를 확인해 주세요."
+              : "입력한 내용은 저장되지 않아요. 현재 공간 정보는 그대로예요."
+        }
+        confirmLabel={action.pending ? "처리 완료 기다리기" : "나가기"}
+        cancelLabel="계속 확인하기"
       />
     </AccountPageLayout>
   );
