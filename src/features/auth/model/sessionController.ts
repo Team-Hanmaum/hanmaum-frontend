@@ -4,8 +4,10 @@ import {
   isUnauthenticated,
   resetCsrfToken,
   normalizeApiError,
+  cancelApiRequests,
 } from "@/lib/api";
 import { getMe } from "@/features/user/api/userApi";
+import { withdrawMember } from "@/features/user/api/withdrawalApi";
 import type { MyProfile } from "@/features/user/api/userTypes";
 import { userKeys } from "@/features/user/model/userKeys";
 import { logout } from "../api/authApi";
@@ -16,7 +18,7 @@ import { publishSessionChange } from "./sessionChanges";
 const recheckInterval = 60_000;
 
 export type SessionState =
-  | { status: "checking" | "signing-out" }
+  | { status: "checking" | "signing-out" | "withdrawing" | "withdrawn" }
   | {
       status: "authenticated";
       user: MyProfile;
@@ -24,6 +26,7 @@ export type SessionState =
         { status: "checking" } | { status: "error"; error: ApiError };
     }
   | { status: "anonymous"; reason: "required" | "expired" | "signed-out" }
+  | { status: "withdrawal-unknown"; error: ApiError; checking?: boolean }
   | { status: "error" | "logout-unknown"; error: ApiError };
 
 // One owner for transitions. The revision prevents late requests from reviving an old session.
@@ -32,6 +35,7 @@ export function createSessionController(queryClient: QueryClient) {
   let user: MyProfile | undefined;
   let revision = 0;
   let logoutPending = false;
+  let withdrawalRequestId: string | undefined;
   let pendingCheck: Promise<void> | undefined;
   let checkController: AbortController | undefined;
   let verifiedAt = 0;
@@ -44,7 +48,10 @@ export function createSessionController(queryClient: QueryClient) {
     state = next;
     listeners.forEach((listener) => listener());
   };
-  function clear(reason: "required" | "expired" | "signed-out") {
+  function clear(
+    reason: "required" | "expired" | "signed-out",
+    next?: SessionState,
+  ) {
     revision += 1;
     pendingCheck = undefined;
     checkController?.abort();
@@ -53,15 +60,42 @@ export function createSessionController(queryClient: QueryClient) {
     interruptedQueries.clear();
     user = undefined;
     logoutPending = false;
-    publish({ status: "anonymous", reason });
+    withdrawalRequestId = undefined;
+    publish(next ?? { status: "anonymous", reason });
     cleanup = resetSessionState(queryClient);
     return cleanup;
   }
   function expire() {
+    // A lost withdrawal response cannot be proven successful by a later 401.
+    if (withdrawalBlocked()) return;
     const reason = logoutPending ? "signed-out" : user ? "expired" : "required";
     void clear(reason);
   }
   function invalidateIdentity(changed = false) {
+    if (withdrawalBlocked()) {
+      if (changed && state.status !== "withdrawn") {
+        // Ordinary blur must not interrupt a destructive request, but an
+        // explicit cross-tab session change invalidates even independent
+        // withdrawal/identity requests and a pending CSRF acquisition.
+        revision += 1;
+        pendingCheck = undefined;
+        checkController?.abort();
+        uncertain = true;
+        verifiedAt = 0;
+        remoteChange = true;
+        cancelApiRequests();
+        resetCsrfToken();
+        publish({
+          status: "withdrawal-unknown",
+          error: new ApiError({
+            kind: "cancelled",
+            message:
+              "다른 탭에서 로그인 상태가 바뀌었어요. 탈퇴 결과를 확인할 수 없어요.",
+          }),
+        });
+      }
+      return;
+    }
     if (state.status === "signing-out") return;
     uncertain = true;
     remoteChange ||= changed;
@@ -117,7 +151,8 @@ export function createSessionController(queryClient: QueryClient) {
   }
   function check() {
     if (pendingCheck) return pendingCheck;
-    if (state.status === "signing-out") return Promise.resolve();
+    if (state.status === "signing-out" || withdrawalBlocked())
+      return Promise.resolve();
     const recoveringLogout = logoutPending;
     const currentRevision = ++revision;
     checkController = new AbortController();
@@ -228,6 +263,95 @@ export function createSessionController(queryClient: QueryClient) {
       throw failure;
     }
   }
+  function withdrawalBlocked() {
+    return (
+      state.status === "withdrawing" ||
+      state.status === "withdrawal-unknown" ||
+      state.status === "withdrawn"
+    );
+  }
+  async function withdraw() {
+    if (withdrawalBlocked()) return;
+    await ensureIdentity();
+    // A second click may have been waiting on the same identity check.
+    if (withdrawalBlocked()) return;
+    withdrawalRequestId ??= crypto.randomUUID();
+    const currentRevision = ++revision;
+    pendingCheck = undefined;
+    checkController?.abort();
+    uncertain = true;
+    interruptedQueries.clear();
+    publish({ status: "withdrawing" });
+    cancelProtectedRequests();
+    await queryClient.cancelQueries();
+    if (currentRevision !== revision) return;
+    try {
+      await withdrawMember({ clientRequestId: withdrawalRequestId });
+      if (currentRevision !== revision) return;
+      await clear("signed-out", { status: "withdrawn" });
+      publishSessionChange();
+    } catch (error) {
+      if (currentRevision !== revision) return;
+      const failure = normalizeApiError(error);
+      if (isUnauthenticated(error)) {
+        await clear("expired");
+      } else if (
+        (failure.kind === "configuration" ||
+          (failure.status !== undefined &&
+            [400, 403, 409, 413].includes(failure.status) &&
+            failure.code !== "REQUEST_IN_PROGRESS")) &&
+        user
+      ) {
+        // A definite rejection preserves the account. The next protected
+        // request revalidates identity before using the still-mounted cache.
+        publish({ status: "authenticated", user });
+      } else {
+        publish({ status: "withdrawal-unknown", error: failure });
+        publishSessionChange();
+      }
+      throw failure;
+    }
+  }
+  async function checkWithdrawal() {
+    if (state.status !== "withdrawal-unknown" || state.checking) return;
+    const originalUserId = user?.userId;
+    const currentRevision = ++revision;
+    checkController?.abort();
+    checkController = new AbortController();
+    const signal = checkController.signal;
+    publish({ ...state, checking: true });
+    try {
+      const profile = await getMe(signal);
+      if (currentRevision !== revision) return;
+      if (profile.userId !== originalUserId) {
+        await clear("required");
+        return;
+      }
+      // /me can only establish that this account is currently accessible.
+      // It never means withdrawal succeeded; retain the request ID for an
+      // explicit retry and refresh the space list before enabling it.
+      user = profile;
+      uncertain = false;
+      verifiedAt = Date.now();
+      remoteChange = false;
+      await queryClient.invalidateQueries({ refetchType: "none" });
+      if (currentRevision === revision)
+        publish({ status: "authenticated", user: profile });
+    } catch (error) {
+      if (currentRevision !== revision) return;
+      publish({
+        status: "withdrawal-unknown",
+        error: normalizeApiError(error),
+      });
+    }
+  }
+  function leaveWithdrawal() {
+    if (state.status !== "withdrawal-unknown" && state.status !== "withdrawn")
+      return Promise.resolve();
+    // Explicitly leave the uncertain flow without claiming account deletion.
+    publishSessionChange();
+    return clear("required");
+  }
   return {
     getSnapshot: () => state,
     getAccountId: () => user?.userId,
@@ -243,6 +367,9 @@ export function createSessionController(queryClient: QueryClient) {
     ensureIdentity,
     expire,
     signOut,
+    withdraw,
+    checkWithdrawal,
+    leaveWithdrawal,
   };
 }
 

@@ -54,8 +54,7 @@ export function ConnectedAccountPage() {
       <MenuRow
         tone="danger"
         title="회원 탈퇴"
-        badge="예시"
-        description="탈퇴 절차 확인 · 실제 계정은 삭제되지 않아요"
+        description="계정 정보 삭제와 모든 참여 공간의 접근 종료"
         onClick={() => void navigate(paths.withdrawal)}
       />
     </DetailLayout>

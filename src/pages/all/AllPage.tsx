@@ -134,7 +134,6 @@ export function AllPage() {
         tone="danger"
         icon="chevron-right-error"
         title="회원 탈퇴"
-        badge="예시"
         description="모든 참여 공간의 접근 종료"
         onClick={go(paths.withdrawal)}
       />

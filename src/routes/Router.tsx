@@ -1,4 +1,3 @@
-import { ExampleAccountLayout } from "./layouts/ExampleAccountLayout";
 import {
   createBrowserRouter,
   redirect,
@@ -36,7 +35,7 @@ import { ProposalRouteLayout } from "./layouts/ProposalRouteLayout";
 import { SpaceSessionLayout } from "./layouts/SpaceSessionLayout";
 import { recordNavigation, navigationDirection } from "./navigationHistory";
 import { getRouteMotion } from "./routeMotion";
-import { paths, spacePath } from "./paths";
+import { paths, spacePath, careItemPath } from "./paths";
 
 // 경로 이동 처리
 function landingLoader({ request }: LoaderFunctionArgs) {
@@ -106,6 +105,14 @@ const entryRoutes: RouteObject[] = [
     handle: { title: "초대 참여" },
   },
   {
+    path: "/share/:token",
+    lazy: async () => ({
+      Component: (await import("@/pages/care/share/SharedCarePage"))
+        .SharedCarePage,
+    }),
+    handle: { title: "공유된 돌봄" },
+  },
+  {
     path: paths.onboardingGuide,
     Component: OnboardingGuidePage,
     handle: { title: "시작 전 안내" },
@@ -125,33 +132,28 @@ const entryRoutes: RouteObject[] = [
 // 계정 화면은 선택한 공간이 없어도 접근한다.
 const accountRoutes: RouteObject[] = [
   {
-    Component: ExampleAccountLayout,
-    children: [
-      {
-        path: paths.withdrawal,
-        lazy: async () => ({
-          Component: (await import("@/pages/account/WithdrawalPage"))
-            .WithdrawalPage,
-        }),
-        handle: { title: "회원 탈퇴" },
-      },
-      {
-        path: paths.withdrawalNews,
-        lazy: async () => ({
-          Component: (await import("@/pages/account/WithdrawalNewsPage"))
-            .WithdrawalNewsPage,
-        }),
-        handle: { title: "탈퇴 전 소식 확인" },
-      },
-      {
-        path: paths.withdrawalComplete,
-        lazy: async () => ({
-          Component: (await import("@/pages/account/WithdrawalCompletePage"))
-            .WithdrawalCompletePage,
-        }),
-        handle: { title: "회원 탈퇴 완료" },
-      },
-    ],
+    path: paths.withdrawal,
+    lazy: async () => ({
+      Component: (await import("@/pages/account/WithdrawalPage"))
+        .WithdrawalPage,
+    }),
+    handle: { title: "회원 탈퇴" },
+  },
+  {
+    path: paths.withdrawalNews,
+    lazy: async () => ({
+      Component: (await import("@/pages/account/WithdrawalNewsPage"))
+        .WithdrawalNewsPage,
+    }),
+    handle: { title: "탈퇴 전 소식 확인" },
+  },
+  {
+    path: paths.withdrawalComplete,
+    lazy: async () => ({
+      Component: (await import("@/pages/account/WithdrawalCompletePage"))
+        .WithdrawalCompletePage,
+    }),
+    handle: { title: "회원 탈퇴 완료" },
   },
   {
     path: paths.account,
@@ -236,6 +238,11 @@ const recordDeletionRoutes: RouteObject[] = [
 const careItemRoutes: RouteObject[] = [
   {
     path: "care/items/:itemId/share",
+    loader: ({ params }) => {
+      if (params.itemId?.startsWith("mock-"))
+        throw new Response(null, { status: 404 });
+      return null;
+    },
     lazy: async () => ({
       Component: (await import("@/pages/care/share/CareSharePage"))
         .CareSharePage,
@@ -244,10 +251,11 @@ const careItemRoutes: RouteObject[] = [
   },
   {
     path: "care/items/:itemId/shared",
-    lazy: async () => ({
-      Component: (await import("@/pages/care/share/SharedCarePage"))
-        .SharedCarePage,
-    }),
+    // Legacy item-based preview URLs have no token; continue to the protected item.
+    loader: ({ params, request }) =>
+      redirect(
+        `${careItemPath(params.careSpaceId!, params.itemId!)}${new URL(request.url).search}`,
+      ),
     handle: { title: "공유된 돌봄" },
   },
   {
@@ -340,6 +348,8 @@ const careItemRoutes: RouteObject[] = [
 
 // 제안 검토·요청·결과
 const careReadPaths = [
+  "care/items/:itemId/share",
+  "care/items/:itemId/shared",
   "care/items/:itemId/reconfirm",
   "care/items/:itemId/answer",
   "care/items/:itemId/delete",
