@@ -19,7 +19,7 @@ export function safeLoginReturn(value: string | null): string | null {
   if (!value.startsWith("/") || url.origin !== "https://return.invalid")
     return null;
   if (
-    !/^\/(spaces(?:\/|$)|invitations\/[^/]+$|onboarding\/guide$|account$)/.test(
+    !/^\/(spaces(?:\/|$)|invitations\/[^/]+$|share\/[A-Za-z0-9_-]{43}$|onboarding\/guide$|account$)/.test(
       url.pathname,
     )
   )
