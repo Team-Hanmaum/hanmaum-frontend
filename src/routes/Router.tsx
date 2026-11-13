@@ -33,7 +33,6 @@ import { RouteErrorPage } from "@/pages/error/RouteErrorPage";
 import { ConnectedTabLayout } from "./layouts/ConnectedTabLayout";
 import { RecordRouteLayout } from "./layouts/RecordRouteLayout";
 import { ProposalRouteLayout } from "./layouts/ProposalRouteLayout";
-import { FamilyRouteLayout } from "./layouts/FamilyRouteLayout";
 import { SpaceSessionLayout } from "./layouts/SpaceSessionLayout";
 import { recordNavigation, navigationDirection } from "./navigationHistory";
 import { getRouteMotion } from "./routeMotion";
@@ -571,10 +570,7 @@ const spaceRoutes: RouteObject[] = [
     handle: { familyManagement: true },
     children: familyRoutes,
   },
-  {
-    Component: FamilyRouteLayout,
-    children: spaceInfoRoutes,
-  },
+  ...spaceInfoRoutes,
   notFoundRoute,
 ];
 
