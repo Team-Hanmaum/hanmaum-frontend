@@ -35,18 +35,22 @@ export function SpaceInfoRequestsPage() {
   const denied =
     query.error instanceof ApiError &&
     [403, 404].includes(query.error.status ?? 0);
-  const visible =
-    query.data?.pages
-      .flatMap((page) => page.items)
-      .filter(
-        (request) =>
-          request.entries.some(
-            (entry) =>
-              entry.action === "UPDATE_SPACE" && entry.status === tab.status,
-          ) &&
-          (space.role === "OWNER" ||
-            request.submittedBy.membershipId === space.membershipId),
-      ) ?? [];
+  const visible = [
+    ...new Map(
+      (query.data?.pages.flatMap((page) => page.items) ?? []).map((request) => [
+        request.requestId,
+        request,
+      ]),
+    ).values(),
+  ].filter(
+    (request) =>
+      request.entries.some(
+        (entry) =>
+          entry.action === "UPDATE_SPACE" && entry.status === tab.status,
+      ) &&
+      (space.role === "OWNER" ||
+        request.submittedBy.membershipId === space.membershipId),
+  );
   const contents =
     !query.data || denied ? (
       <ReviewQueryState

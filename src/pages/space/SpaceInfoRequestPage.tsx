@@ -83,7 +83,7 @@ function RequestDetail({ requestId }: { requestId: string }) {
   const unavailable = !!query.error || !!detail.error;
   const completed = action.result;
   const applyError =
-    latest && query.data
+    owner && latest && query.data
       ? spaceInfoDecisionError("apply", latest, query.data, space)
       : null;
   const staleDecision =
@@ -153,7 +153,8 @@ function RequestDetail({ requestId }: { requestId: string }) {
         : completed === "cancel"
           ? "CANCELED"
           : entry?.status;
-  const hiddenValues = !!entry?.redactedFields.length;
+  const hiddenValues =
+    !!entry?.redactedFields.length || !!latest?.redactedFields.length;
   const requestedName =
     !hiddenValues && typeof entry?.requestedValues?.subjectLabel === "string"
       ? entry.requestedValues.subjectLabel
