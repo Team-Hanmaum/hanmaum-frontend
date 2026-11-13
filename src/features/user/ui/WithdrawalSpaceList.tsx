@@ -1,9 +1,7 @@
 import { MenuRow } from "@/components/ui";
 import { Notice } from "@/components/feedback";
-import {
-  careSpaceName,
-  type CareSpaceView,
-} from "@/features/carespace/model/careSpaceViewTypes";
+import { careSpaceName } from "@/features/carespace/model/careSpaceViewTypes";
+import type { CareSpaceSummary } from "@/features/carespace/api/careSpaceTypes";
 import { AccountInfoCard } from "./AccountInfoCard";
 export function WithdrawalSpaceList({
   spaces,
@@ -11,7 +9,7 @@ export function WithdrawalSpaceList({
   onDelete,
   onInvite,
 }: {
-  spaces: readonly CareSpaceView[];
+  spaces: readonly CareSpaceSummary[];
   onTransfer: (id: string) => void;
   onDelete: (id: string) => void;
   onInvite: (id: string) => void;
@@ -20,21 +18,21 @@ export function WithdrawalSpaceList({
     <>
       {spaces.map((space) => (
         <section
-          key={space.id}
+          key={space.spaceId}
           className="flex flex-col gap-hm-16"
         >
           <AccountInfoCard title={careSpaceName(space)}>
             <p className="text-hm-body-default">
               나 · 소유자 /{" "}
-              {space.members.length > 1
-                ? `함께하는 가족 ${space.members.length}명`
+              {space.memberCount > 1
+                ? `함께하는 가족 ${space.memberCount}명`
                 : "참여자 나 혼자"}
             </p>
           </AccountInfoCard>
-          {space.members.length > 1 ? (
+          {space.memberCount > 1 ? (
             <MenuRow
               title={`${careSpaceName(space)} · 소유권 이전`}
-              onClick={() => onTransfer(space.id)}
+              onClick={() => onTransfer(space.spaceId)}
             />
           ) : (
             <>
@@ -46,7 +44,7 @@ export function WithdrawalSpaceList({
               <MenuRow
                 icon="plus"
                 title={`${careSpaceName(space)} · 가족 초대하기`}
-                onClick={() => onInvite(space.id)}
+                onClick={() => onInvite(space.spaceId)}
               />
             </>
           )}
@@ -54,7 +52,7 @@ export function WithdrawalSpaceList({
             tone="danger"
             icon="chevron-right-error"
             title={`${careSpaceName(space)} · 공간 삭제`}
-            onClick={() => onDelete(space.id)}
+            onClick={() => onDelete(space.spaceId)}
           />
         </section>
       ))}

@@ -26,6 +26,27 @@ export function SessionBoundary({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   if (isMockPreviewEnabled)
     return <MockAccountBoundary>{children}</MockAccountBoundary>;
+  if (session.status === "withdrawn")
+    return pathname === paths.withdrawalComplete ? (
+      children
+    ) : (
+      <Navigate
+        to={paths.withdrawalComplete}
+        replace
+      />
+    );
+  if (
+    session.status === "withdrawing" ||
+    session.status === "withdrawal-unknown"
+  )
+    return pathname === paths.withdrawal ? (
+      <Fragment key={session.accountId}>{children}</Fragment>
+    ) : (
+      <Navigate
+        to={paths.withdrawal}
+        replace
+      />
+    );
   const publicPath = !/^\/(spaces|account|onboarding)(\/|$)/.test(pathname);
   if (session.status === "signing-out" || session.status === "logout-unknown")
     return pathname === paths.logout ? (

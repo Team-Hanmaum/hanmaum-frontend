@@ -2,15 +2,17 @@ import { useAppNavigate } from "@/routes/useAppNavigate";
 import { Navigate } from "react-router";
 import { Button } from "@/components/ui";
 import { Notice } from "@/components/feedback";
-import { useMockAccount } from "@/features/user/model/mockAccount";
+import { useSession } from "@/features/auth/model/useSession";
 import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
 import { paths } from "@/routes/paths";
 export function WithdrawalCompletePage() {
-  const account = useMockAccount();
+  const session = useSession();
   const navigate = useAppNavigate();
-  const home = () =>
+  const home = async () => {
+    await session.leaveWithdrawal();
     void navigate(paths.landing, { replace: true, motion: "back" });
-  if (account.status !== "withdrawn")
+  };
+  if (session.status !== "withdrawn")
     return (
       <Navigate
         to={paths.withdrawal}
@@ -19,6 +21,7 @@ export function WithdrawalCompletePage() {
     );
   return (
     <AccountPageLayout
+      connected
       title="회원 탈퇴 완료"
       onBack={home}
       actions={<Button onClick={home}>처음으로</Button>}
@@ -29,7 +32,7 @@ export function WithdrawalCompletePage() {
       </p>
       <Notice
         title="가족과 공유한 기록은 남아요"
-        body="탈퇴만으로 공간 전체가 삭제되지는 않아요. 실제 계정 삭제가 아닌 Mock 완료 화면이에요."
+        body="탈퇴만으로 공간 전체가 삭제되지는 않아요. 남은 공동 기록의 작성자는 ‘탈퇴한 사용자’로 표시돼요."
       />
     </AccountPageLayout>
   );

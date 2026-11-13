@@ -13,5 +13,8 @@ export function useSession() {
     accountId: controller.getAccountId(),
     check: controller.check,
     signOut: controller.signOut,
+    withdraw: controller.withdraw,
+    checkWithdrawal: controller.checkWithdrawal,
+    leaveWithdrawal: controller.leaveWithdrawal,
   };
 }

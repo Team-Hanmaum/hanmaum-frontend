@@ -1,126 +1,88 @@
-import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useState } from "react";
 import { useSearchParams } from "react-router";
 import { Badge, Button, MenuRow, TextAction } from "@/components/ui";
 import { ErrorState, LoadingState, Notice } from "@/components/feedback";
-import { useMockCareSpaces } from "@/features/carespace/model/useMockCareSpaces";
-import { mockCareSpaces } from "@/features/carespace/model/mockCareSpaces";
-import { mockAccount, useMockAccount } from "@/features/user/model/mockAccount";
-import { withdrawMockAccount } from "@/features/user/model/mockWithdrawal";
+import { useSession } from "@/features/auth/model/useSession";
+import { useCareSpaces } from "@/features/carespace/model/useCareSpaces";
 import { AccountInfoCard } from "@/features/user/ui/AccountInfoCard";
 import { WithdrawalSpaceList } from "@/features/user/ui/WithdrawalSpaceList";
-import { useMockAction } from "@/lib/useMockAction";
-import { isExamplePreviewEnabled } from "@/lib/examplePreview";
+import { useWithdrawal } from "@/features/user/model/useWithdrawal";
 import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import {
   familyDeletePath,
   familyTransferPath,
   paths,
   spaceInvitePath,
 } from "@/routes/paths";
-import { useMockScreenState } from "@/routes/useMockScreenState";
-const states = [
-  { value: "default", label: "현재 공간 기준" },
-  { value: "loading", label: "공간 확인 중" },
-  { value: "load-error", label: "조회 실패" },
-  { value: "error", label: "탈퇴 실패" },
-  { value: "unknown", label: "결과 미확인" },
-] as const;
+
 export function WithdrawalPage() {
-  const { spaces } = useMockCareSpaces();
-  const account = useMockAccount();
+  const session = useSession();
+  const spaces = useCareSpaces({ enabled: session.status === "authenticated" });
+  const withdrawal = useWithdrawal();
   const navigate = useAppNavigate();
   const [params] = useSearchParams();
-  const owned = spaces.filter((space) => space.role === "owner");
-  const [state, setState] = useMockScreenState(states, "default");
-  const [error, setError] = useState("");
   const [checked, setChecked] = useState(false);
-  const { pending, run } = useMockAction();
-  const unknown = account.status === "withdrawal-unknown";
-  const complete = () =>
-    void navigate(paths.withdrawalComplete, { replace: true });
+  const owned = spaces.data?.filter((space) => space.role === "OWNER") ?? [];
+  const unknown = session.status === "withdrawal-unknown";
+  const checking = unknown && session.checking;
+  const pending = withdrawal.isPending || session.status === "withdrawing";
+  const ready = !!spaces.data && !spaces.isError;
   const cancel = () => {
     if (!pending && !unknown)
       void navigate(paths.account, { replace: true, motion: "back" });
   };
-  function submit() {
-    setError("");
-    run(() => {
-      try {
-        if (unknown) {
-          withdrawMockAccount();
-          complete();
-          return;
-        }
-        if (
-          mockCareSpaces
-            .getSnapshot()
-            .spaces.some((space) => space.role === "owner")
-        ) {
-          setChecked(true);
-          return;
-        }
-        if (state === "error") {
-          setError("탈퇴하지 못했어요. 계정과 참여 상태는 유지돼요.");
-          setState("default");
-          return;
-        }
-        if (state === "unknown") {
-          mockAccount.setStatus("withdrawal-unknown");
-          return;
-        }
-        withdrawMockAccount();
-        complete();
-      } catch (cause) {
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "처리하지 못했어요. 다시 확인해 주세요.",
-        );
-      }
-    });
-  }
-  const ready = state !== "loading" && state !== "load-error";
+  const leave = async () => {
+    await session.leaveWithdrawal();
+    void navigate(paths.landing, { replace: true, motion: "back" });
+  };
+  const refresh = () => {
+    setChecked(true);
+    withdrawal.reset();
+    void spaces.refetch();
+  };
+
   return (
     <AccountPageLayout
+      connected
       title="회원 탈퇴"
       onBack={cancel}
-      preview={{
-        value: state,
-        options: states,
-        onChange: (value) => {
-          if (!pending && !unknown) {
-            setState(value);
-            setError("");
-            setChecked(false);
-          }
-        },
-      }}
       actions={
-        (ready || unknown) && (
+        unknown ? (
           <>
             <Button
-              variant={!owned.length && !unknown ? "destructive" : "primary"}
-              loading={pending}
-              disabled={!isExamplePreviewEnabled}
-              onClick={submit}
+              loading={checking}
+              onClick={() => void session.checkWithdrawal()}
             >
-              {unknown
-                ? "탈퇴 처리 상태 확인"
-                : owned.length
-                  ? "정리 상태 확인하기"
-                  : "계정 정보 삭제하고 탈퇴"}
+              로그인 상태 확인
             </Button>
-            {!unknown && (
-              <TextAction
-                disabled={pending}
-                onClick={cancel}
-              >
-                탈퇴 취소
-              </TextAction>
-            )}
+            <TextAction
+              disabled={checking}
+              onClick={() => void leave()}
+            >
+              처음으로
+            </TextAction>
           </>
-        )
+        ) : ready ? (
+          <>
+            <Button
+              variant={owned.length ? "primary" : "destructive"}
+              loading={pending || spaces.isFetching}
+              onClick={() => {
+                if (owned.length) refresh();
+                else withdrawal.mutate();
+              }}
+            >
+              {owned.length ? "정리 상태 확인하기" : "계정 정보 삭제하고 탈퇴"}
+            </Button>
+            <TextAction
+              disabled={pending}
+              onClick={cancel}
+            >
+              탈퇴 취소
+            </TextAction>
+          </>
+        ) : undefined
       }
     >
       {unknown ? (
@@ -132,17 +94,27 @@ export function WithdrawalPage() {
           </h1>
           <Notice
             title="이전 돌봄 화면은 가려두었어요"
-            body="처리 상태를 확인할 때까지 다시 탈퇴 요청을 보내지 않아요."
+            body="응답을 받지 못해 탈퇴 완료 여부를 확인할 수 없어요. 탈퇴 요청을 자동으로 다시 보내지 않아요."
           />
+          <p className="text-hm-body-default text-hm-text-secondary">
+            로그인 상태를 확인해 계정이 유지되고 있으면 탈퇴 안내로 돌아가요.
+            로그인이 종료되었더라도 탈퇴 완료로 단정하지 않아요.
+          </p>
+          {session.error.status === 401 && (
+            <Notice
+              title="로그인이 종료되었어요"
+              body="탈퇴 완료 여부는 확인할 수 없어요. 탈퇴가 완료되었다면 이후 소셜 로그인 시 새 계정이 만들어질 수 있어요."
+            />
+          )}
         </>
-      ) : state === "loading" ? (
+      ) : spaces.isPending ? (
         <LoadingState label="소유 중인 공간을 확인하고 있어요" />
-      ) : state === "load-error" ? (
+      ) : spaces.isError ? (
         <ErrorState
           reason="load-error"
           title="공간 목록을 불러오지 못했어요"
           actionLabel="다시 확인"
-          onAction={() => setState("default")}
+          onAction={refresh}
         />
       ) : owned.length ? (
         <>
@@ -175,7 +147,7 @@ export function WithdrawalPage() {
             title="공간 삭제는 별도 작업이에요"
             body="이전하면 공간은 유지돼요. 삭제하면 해당 공간과 자료는 복구할 수 없어요."
           />
-          {checked && (
+          {checked && !spaces.isFetching && (
             <Notice
               role="status"
               title={`아직 소유 중인 공간이 ${owned.length}개 있어요`}
@@ -226,6 +198,7 @@ export function WithdrawalPage() {
           <MenuRow
             icon="news-brand"
             title="소식 확인하러 가기"
+            disabled={pending}
             onClick={() => void navigate(paths.withdrawalNews)}
           />
         </>
@@ -237,12 +210,12 @@ export function WithdrawalPage() {
           body="회원 탈퇴는 아직 하지 않았어요. 남은 소유 공간과 탈퇴 내용을 확인해 주세요."
         />
       )}
-      {error && (
+      {withdrawal.error && !unknown && (
         <Notice
           tone="error"
           role="alert"
-          title="처리하지 못했어요"
-          body={error}
+          title="탈퇴하지 못했어요"
+          body={withdrawal.error.message}
         />
       )}
     </AccountPageLayout>
