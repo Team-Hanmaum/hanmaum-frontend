@@ -1,15 +1,15 @@
 # Vercel 배포
 
-실제 인증 API 기본 주소는 `https://api.hanmaum.site`, FE 정식 Origin은 `https://hanmaum.site`다. `.env.production`은 실제 인증·공간 API 모드이며 Mock/QA는 false다. 아직 연결하지 않은 도메인은 기존 UI와 메모리 예시를 제공하고 API 미연동/실제 저장 없음 표시로 구분한다.
+API 기본 주소는 `https://api.hanmaum.site`, FE 정식 Origin은 `https://hanmaum.site`다. 업무 화면은 실제 API를 사용하고 `.env.production`의 QA 도구는 false다. 업무용 Mock 저장소·예시 화면·실제/Mock 분기는 제거했다.
 
 ## 인증 전환 시 함께 설정할 항목 (#49)
 
 1. FE `/auth/callback` 경로를 포함한 빌드 반영.
 2. BE 성공 복귀 설정 `FRONTEND_URL=https://hanmaum.site/auth/callback` 반영. 공급자에 등록한 BE callback(`/login/oauth2/code/google|kakao`) 변경 불필요.
-3. Vercel Production의 유효 값 확인: `VITE_API_BASE_URL=https://api.hanmaum.site`, `VITE_ENABLE_MOCK_PREVIEW=false`, `VITE_ENABLE_QA_TOOLS=false`. Vercel 변수는 저장소 env 파일보다 우선하며 변경 후 재빌드 필요.
+3. Vercel Production의 유효 값 확인: `VITE_API_BASE_URL=https://api.hanmaum.site`, `VITE_ENABLE_QA_TOOLS=false`. Vercel 변수는 저장소 env 파일보다 우선하며 변경 후 재빌드 필요. 기존 `VITE_ENABLE_MOCK_PREVIEW`는 더 이상 읽지 않으므로 남아 있어도 무시하며 삭제할 수 있음.
 4. 실제 기기에서 Google·카카오 로그인 → callback → me/공간 조회, 새로고침, 로그아웃(CSRF + 204), 재로그인 확인.
 
-현재 확인한 BE CORS는 `https://hanmaum.site`만 허용한다. localhost·www·Vercel 임시 주소에서 운영 API 연동을 확인할 수 있다고 가정하지 않는다. 배포 BE를 로컬 FE에서 사용하려면 [로컬 HTTPS 개발 환경과 BE 전달 사항](local-development.md)을 적용한다. `https://local.hanmaum.site:5173`의 정확한 CORS 허용 및 `frontend=local` OAuth 복귀 분기는 BE 후속 작업이다. CORS 허용만으로 서로 다른 사이트의 SameSite=Lax 쿠키 제한이 해결되지는 않는다.
+운영 Origin은 `https://hanmaum.site`이며 로컬 연동에는 `https://local.hanmaum.site:5173`의 정확한 CORS 허용 및 `frontend=local` OAuth 복귀 분기가 필요하다. [로컬 HTTPS 개발 환경과 BE 전달 사항](local-development.md)을 따른다. localhost·www·Vercel 임시 주소에서 운영 API 연동을 확인할 수 있다고 가정하지 않는다. CORS 허용만으로 서로 다른 사이트의 SameSite=Lax 쿠키 제한이 해결되지는 않는다.
 
 OAuth 실패는 현재 BE JSON 응답이다. FE 로그인 오류 화면으로 돌아오게 하려면 BE 실패 리다이렉트 계약을 추가해야 한다. 이번 FE 코드 변경은 BE·Vercel 프로젝트 설정을 직접 수정하지 않는다.
 
@@ -55,9 +55,9 @@ Discord 알림은 기존 GitHub 저장소 웹훅의 `check_run`·`check_suite` �
 
 - 로컬 배포 BE: `pnpm setup:local` 후 `pnpm dev`. 정확한 개발 Origin과 OAuth 복귀를 BE에서 허용해야 한다.
 - 로컬 BE: `.env.example`을 `.env.development.local`로 복사하고 로컬 BE의 CORS·세션 설정을 사용한다.
-- Production: API `https://api.hanmaum.site`, QA false. 실제 로그인·공간·홈·구성원 조회를 사용한다.
-- 로그인 Mock 활성화는 제거했다. 미연동 도메인의 예시 데이터는 별도 메모리 모델로 제공한다. 기존 `VITE_ENABLE_MOCK_PREVIEW=true`가 남아 있어도 실제 API 흐름을 사용하므로 Preview 임시 주소에서 운영 API에 접근할 수 있다고 가정하지 않는다.
-- 미연동 업무 화면의 작성·수정·삭제는 예시 전용이며 실제 API를 호출하지 않는다. `/_dev/components`는 로컬 개발 전용이다.
+- Production: API `https://api.hanmaum.site`, QA false. 모든 업무 화면의 조회·변경은 실제 API를 사용한다.
+- Mock 활성화 변수는 사용하지 않는다. Preview도 실제 API에 연결되므로 허용된 Origin에서 검증한다.
+- `/_dev/components`와 그 예시 데이터는 로컬 개발 전용이며 Production 경로·번들에서는 제외한다. 랜딩의 서비스 사용 예시는 소개 콘텐츠다.
 
 ## 카카오톡 돌봄 공유 설정 (#71)
 
@@ -121,14 +121,14 @@ pnpm build
 ```
 
 - `/` 랜딩 표시 및 시작하기 버튼의 `/login` 이동
-- `/login`, `/onboarding/guide`, `/spaces/example/home` 직접 접속·새로고침
+- `/login`, `/onboarding/guide`, 참여한 실제 공간의 홈 직접 접속·새로고침
 - 파비콘·로고·폰트·JS·CSS 정적 파일의 정상 응답
 - 잘못된 주소에서 앱의 404 화면 표시
 - `/_dev/components` 접근 시 앱의 404 화면 표시
 - 실제 모드: 두 OAuth 진입 → `/auth/callback` → 참여 공간 0/1/여러 개 분기
 - 실제 모드: 401 만료, 403 실패, 조회 재시도, 로그아웃 204와 응답 유실 후 재확인
-- 실제 로그인 → 공간 생성/선택 → 홈·가족 조회 확인. 예시 화면 변경 후 실제 홈/서버 데이터 불변 확인
-- 운영 빌드: 실제 응답에 예시 데이터 미혼합, 미연동 화면의 예시 표시, QA 도구 비노출
+- 실제 로그인 → 공간 생성/선택 → 홈·가족 조회, 소식·제안·돌봄·공간 관리·공유 확인
+- 운영 빌드: 업무용 예시 데이터·미연동 배지·QA 도구 비노출. 이전 `mock-` 식별자 주소의 404 처리 확인
 
 SPA rewrite는 브라우저가 직접 요청한 페이지 경로에도 `index.html`을 제공한다. 실제 화면과 알 수 없는 경로의 404 표시는 React Router에서 처리하므로 앱의 404 화면과 HTTP 404 상태 코드는 구분한다.
 
@@ -138,7 +138,7 @@ SPA rewrite는 브라우저가 직접 요청한 페이지 경로에도 `index.ht
 
 현재 `.env.production`의 `VITE_ENABLE_QA_TOOLS=false`는 QA 도구 활성화를 차단한다. 개발 QA가 필요한 환경에서만 true로 지정하며 인증·업무 데이터는 실제 API 흐름을 유지한다. 이전 빌드의 동작은 환경 변수만 변경해서 바뀌지 않으므로 다시 빌드·배포한다.
 
-비활성화된 빌드는 저장된 QA 모드와 `qa=1`을 무시하고 원래 화면을 표시한다. URL 쿼리만으로 404로 이동시키지 않는다. QA 도구와 Mock 동작은 별개이므로 실제 API 전환 시 `VITE_ENABLE_MOCK_PREVIEW=false` 및 실제 세션·권한 연결도 별도로 필요하다.
+비활성화된 빌드는 저장된 QA 모드와 `qa=1`을 무시하고 원래 화면을 표시한다. URL 쿼리만으로 404로 이동시키지 않는다. 도구 허용 여부와 관계없이 세션·권한·업무 데이터는 실제 API로 확인한다.
 
 ### API 계약
 
@@ -146,7 +146,7 @@ SPA rewrite는 브라우저가 직접 요청한 페이지 경로에도 `index.ht
 - 배포 도메인의 CORS 허용, 세션 쿠키 속성과 CSRF 처리 계약
 - Google·카카오 OAuth의 콜백 및 성공·실패 후 이동 주소
 - 운영에서 세션·공간 참여 권한 검증과 로그인 버튼 연결 확인
-- 소식·돌봄·가족·초대·탈퇴 등 후속 업무 API
+- 소식·돌봄·가족·초대·공유·탈퇴 등 업무 API의 계약 변경 시 DTO·검증·요청·소비 화면 함께 확인
 
 이번 인증 연결은 위 환경 변수와 BE 성공 복귀 설정을 함께 반영해야 한다. OAuth 비밀 키를 FE에 등록하지 않으며 브라우저에 공개되는 `VITE_` 환경 변수에 비밀 값을 넣지 않는다.
 

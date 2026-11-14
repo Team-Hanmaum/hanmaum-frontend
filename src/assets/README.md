@@ -71,7 +71,7 @@
 
 ## 소셜 로그인 연동 전 확인 사항
 
-현재 Mock UI는 Figma의 Noto Sans KR·색상·아이콘을 그대로 사용한다. [Google 공식 가이드](https://developers.google.com/identity/branding-guidelines)의 Google Sans Medium·버튼 색상·최신 G 아트워크 규격과 차이가 있어 실제 인증 출시 전에 디자인 조율이 필요하다. [카카오 공식 가이드](https://developers.kakao.com/docs/ko/kakaologin/design-guide)도 실제 인증 연동 시 함께 재확인한다. 이 구현은 제공사 브랜드 심사 완료를 의미하지 않는다.
+현재 UI는 Figma의 Noto Sans KR·색상·아이콘을 그대로 사용한다. 기존 자산 검토에서 기록한 [Google 공식 가이드](https://developers.google.com/identity/branding-guidelines)의 Google Sans Medium·버튼 색상·G 아트워크 규격 차이는 디자인 조율 대상이다. [카카오 공식 가이드](https://developers.kakao.com/docs/ko/kakaologin/design-guide)도 디자인 검토 시 함께 재확인한다. API 연동 완료가 제공사 브랜드 심사 완료를 의미하지 않는다.
 
 ## 홈 상세 UI 추가 원본
 
