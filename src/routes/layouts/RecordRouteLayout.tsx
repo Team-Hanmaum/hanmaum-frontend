@@ -1,60 +1,14 @@
-import { ExampleSurface } from "./ExampleSurface";
-import { useAppNavigate } from "@/routes/useAppNavigate";
 import { Outlet, useParams } from "react-router";
-import { DetailLayout } from "@/components/layout";
-import { ErrorState } from "@/components/feedback";
-import { MockNotice } from "@/components/feedback/MockNotice";
-import { useMockCareSpaces } from "@/features/carespace/model/useMockCareSpaces";
-import { isExamplePreviewEnabled } from "@/lib/examplePreview";
-import { paths } from "../paths";
-import { SpaceAccessState } from "./SpaceAccessState";
-import { isExampleRecordId } from "@/features/record/model/exampleRecords";
 import { useConnectedSpace } from "../useConnectedSpace";
 
-// 작성·상세에서 공간을 검증하고, 공간/소식 전환 시 진행 중인 Mock 동작을 해제한다.
-// 소식 작성과 실제 소식 상세는 API에 연결된 공간을 그대로 사용한다.
+// 소식 ID가 바뀌면 작성·상세 화면의 로컬 상태를 초기화한다.
 export function RecordRouteLayout() {
   const { careSpaceId, recordId } = useParams();
-  const connected = useConnectedSpace();
-  const { spaces, ended } = useMockCareSpaces();
-  const navigate = useAppNavigate();
-  const space = spaces.find((item) => item.id === careSpaceId);
-  if (!recordId || !isExampleRecordId(recordId))
-    return (
-      <Outlet
-        key={`${careSpaceId}:${recordId ?? "new"}`}
-        context={connected}
-      />
-    );
-  if (careSpaceId && ended[careSpaceId])
-    return (
-      <ExampleSurface>
-        <SpaceAccessState />
-      </ExampleSurface>
-    );
-  if (!isExamplePreviewEnabled || !space)
-    return (
-      <DetailLayout
-        title="소식"
-        onBack={() => void navigate(paths.spaces, { motion: "back" })}
-        notice={<MockNotice message="실제 공간 조회·권한 확인 연결 전" />}
-      >
-        <h1 className="sr-only">소식</h1>
-        <ErrorState
-          reason="load-error"
-          title="화면 확인용 공간이 없어요"
-          body="새로고침하면 직접 만든 Mock 공간은 초기화돼요. 예시 공간을 선택해 주세요."
-          actionLabel="공간 선택으로"
-          onAction={() => void navigate(paths.spaces)}
-        />
-      </DetailLayout>
-    );
+  const context = useConnectedSpace();
   return (
-    <ExampleSurface>
-      <Outlet
-        key={`${space.id}:${recordId ?? "new"}`}
-        context={space}
-      />
-    </ExampleSurface>
+    <Outlet
+      key={`${careSpaceId}:${recordId ?? "new"}`}
+      context={context}
+    />
   );
 }
