@@ -30,7 +30,6 @@ export function ConnectedProposalEditPage() {
   const back = useBackNavigation(withReturn(proposalListPath(space.spaceId)));
   return !query.data ? (
     <ProposalPageLayout
-      connected
       title="제안 내용 수정"
       spaceId={space.spaceId}
       onBack={back}
@@ -43,7 +42,6 @@ export function ConnectedProposalEditPage() {
   ) : query.data.status !== "REVIEW_PENDING" ||
     query.data.action === "LINK_EVIDENCE" ? (
     <ProposalPageLayout
-      connected
       title="제안 내용 수정"
       spaceId={space.spaceId}
       onBack={back}
@@ -136,7 +134,6 @@ function Editor({
           }}
           renderLayout={({ content, actions }) => (
             <ProposalPageLayout
-              connected
               title="시간 선택"
               spaceId={spaceId}
               onBack={time.close}
@@ -151,7 +148,6 @@ function Editor({
     );
   return (
     <ProposalPageLayout
-      connected
       title="제안 내용 수정"
       spaceId={spaceId}
       onBack={onBack}

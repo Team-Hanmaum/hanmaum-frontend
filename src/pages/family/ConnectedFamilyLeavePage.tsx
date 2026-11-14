@@ -70,7 +70,6 @@ export function ConnectedFamilyLeavePage() {
   };
   return (
     <FamilyPageLayout
-      connected
       title="공간 나가기"
       spaceId={spaceId}
       onBack={back}

@@ -179,7 +179,6 @@ function RequestDetail({ requestId }: { requestId: string }) {
             : "공간 정보 요청";
   return (
     <AccountPageLayout
-      connected
       title="공간 정보 요청"
       onBack={() => {
         if (action.pending) return;

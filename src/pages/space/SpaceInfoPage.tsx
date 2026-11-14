@@ -23,7 +23,6 @@ export function SpaceInfoPage() {
   const go = (path: string) => () => void navigate(withReturn(path));
   return (
     <AccountPageLayout
-      connected
       title="공간 정보"
       onBack={onBack}
       spaceId={space.spaceId}

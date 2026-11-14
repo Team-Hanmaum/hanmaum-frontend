@@ -22,7 +22,6 @@ export function ConnectedProposalEvidencePage() {
   const back = useBackNavigation(withReturn(proposalListPath(space.spaceId)));
   return (
     <ProposalPageLayout
-      connected
       title="근거 비교"
       spaceId={space.spaceId}
       onBack={back}

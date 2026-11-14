@@ -39,7 +39,6 @@ export function SpaceInfoEditPage() {
   const result = action.result;
   return (
     <AccountPageLayout
-      connected
       title={
         result
           ? "공간 정보 처리 결과"

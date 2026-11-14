@@ -1,7 +1,7 @@
 import { MenuRow } from "@/components/ui";
 import { careSpaceName, type CareSpaceView } from "../model/careSpaceViewTypes";
 
-// Mock 공간과 API 목록이 함께 사용하는 표시 항목. 인원수는 소유자·본인을 포함한다.
+// API 공간 목록의 표시 항목. 인원수는 소유자·본인을 포함한다.
 export type CareSpaceListItem = Pick<
   CareSpaceView,
   "id" | "subjectLabel" | "role"

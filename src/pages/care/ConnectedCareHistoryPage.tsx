@@ -38,7 +38,6 @@ export function ConnectedCareHistoryPage() {
   const value = detail.data;
   return (
     <ProposalPageLayout
-      connected
       title="변경 이력"
       spaceId={space.spaceId}
       onBack={back}

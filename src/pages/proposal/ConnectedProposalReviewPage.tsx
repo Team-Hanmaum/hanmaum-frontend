@@ -54,7 +54,6 @@ export function ConnectedProposalReviewPage() {
   );
   return (
     <ProposalPageLayout
-      connected
       title="제안 검토"
       spaceId={space.spaceId}
       onBack={back}

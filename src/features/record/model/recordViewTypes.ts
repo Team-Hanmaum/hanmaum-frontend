@@ -22,13 +22,4 @@ export type RecordView = {
   createdAt: number;
   analysisStatus: RecordAnalysisStatus;
   proposalSummary?: { status: NewsStatus; count: number; message: string };
-  proposal?: {
-    typeLabel: string;
-    title: string;
-    beforeLabel: string;
-    beforeValue: string;
-    afterLabel: string;
-    afterValue: string;
-    meta: string;
-  };
 };

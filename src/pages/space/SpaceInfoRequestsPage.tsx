@@ -110,7 +110,6 @@ export function SpaceInfoRequestsPage() {
     );
   return (
     <AccountPageLayout
-      connected
       title={space.role === "OWNER" ? "공간 정보 요청" : "내 공간 정보 요청"}
       onBack={back}
       spaceId={space.spaceId}

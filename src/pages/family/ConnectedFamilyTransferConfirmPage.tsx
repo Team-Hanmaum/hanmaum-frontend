@@ -99,7 +99,6 @@ function TransferConfirmation() {
   };
   return (
     <FamilyPageLayout
-      connected
       title={completed ? "소유권 이전 완료" : "소유권 이전 확인"}
       spaceId={spaceId}
       onBack={completed ? recover : onBack}

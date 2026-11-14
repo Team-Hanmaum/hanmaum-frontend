@@ -39,7 +39,6 @@ export function ConnectedCareReconfirmPage() {
     );
   return (
     <ProposalPageLayout
-      connected
       title="다시 확인하기"
       spaceId={space.spaceId}
       onBack={back}
@@ -70,7 +69,6 @@ function ReconfirmationEntry(
   if (opened || eligible) return <CareReconfirmationForm {...props} />;
   return (
     <ProposalPageLayout
-      connected
       title="다시 확인하기"
       spaceId={props.space.spaceId}
       onBack={props.onBack}

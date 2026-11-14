@@ -45,7 +45,6 @@ export function ConnectedCareEditPage() {
     );
   return (
     <ProposalPageLayout
-      connected
       title="돌봄 변경"
       spaceId={space.spaceId}
       onBack={back}
@@ -74,7 +73,6 @@ function CareEditEntry({
   if (unavailable && !currentUnavailable) setUnavailable("");
   return currentUnavailable ? (
     <ProposalPageLayout
-      connected
       title="돌봄 변경"
       spaceId={props.space.spaceId}
       onBack={onBack}

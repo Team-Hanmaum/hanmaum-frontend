@@ -95,7 +95,6 @@ export function CareEditForm({
           onBack={timeScreen.close}
           renderLayout={({ content, actions }) => (
             <ProposalPageLayout
-              connected
               title="시간 선택"
               spaceId={space.spaceId}
               onBack={timeScreen.close}
@@ -110,7 +109,6 @@ export function CareEditForm({
     );
   return (
     <ProposalPageLayout
-      connected
       title={form.review ? "내용 확인" : title}
       spaceId={space.spaceId}
       onBack={back}

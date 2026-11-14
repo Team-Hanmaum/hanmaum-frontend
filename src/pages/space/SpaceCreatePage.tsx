@@ -2,24 +2,14 @@ import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useRef, useState } from "react";
 
 import { ActionBar, DetailLayout } from "@/components/layout";
-import { MockStateSelect } from "@/components/feedback/MockStateSelect";
 import {
   CareSpaceForm,
   type CareSpaceFormFailure,
 } from "@/features/carespace/ui/CareSpaceForm";
-import { mockCareSpaces } from "@/features/carespace/model/mockCareSpaces";
 import { useCreateCareSpace } from "@/features/carespace/model/useCreateCareSpace";
 import type { ApiError } from "@/lib/api";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
-import { useMockAction } from "@/lib/useMockAction";
 import { paths, spacePath } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
-import { useMockScreenState } from "@/routes/useMockScreenState";
-
-const states = [
-  { value: "default", label: "기본" },
-  { value: "error", label: "생성 오류" },
-] as const;
 
 const labelRule = "이름 또는 호칭을 줄바꿈 없이 1~30자로 입력해 주세요.";
 
@@ -64,23 +54,11 @@ export function SpaceCreatePage() {
   const [value, setValue] = useState("");
   const [error, setError] = useState<string>();
   const [failure, setFailure] = useState<CareSpaceFormFailure | boolean>(false);
-  const [state, setState] = useMockScreenState(states, "default");
-  const mockAction = useMockAction();
   const create = useCreateCareSpace();
   // 한 생성 시도의 요청 ID. 호칭이 바뀌면 새 시도로 보고 새 ID를 발급한다.
   const attempt = useRef<{ label: string; id: string } | null>(null);
-  const pending = isMockPreviewEnabled ? mockAction.pending : create.isPending;
-  const failed = isMockPreviewEnabled ? state === "error" : failure;
-
-  function submitMock(label: string) {
-    mockAction.run(() => {
-      const space = mockCareSpaces.create(label);
-      if (space)
-        void navigate(`${spacePath(space.id)}?mockState=created`, {
-          replace: true,
-        });
-    });
-  }
+  const pending = create.isPending;
+  const failed = failure;
 
   function submitRemote(label: string) {
     if (attempt.current?.label !== label)
@@ -114,24 +92,13 @@ export function SpaceCreatePage() {
       return;
     }
     setError(undefined);
-    if (isMockPreviewEnabled) submitMock(label);
-    else submitRemote(label);
+    submitRemote(label);
   }
 
   return (
     <DetailLayout
       title="돌봄 공간 만들기"
       onBack={onBack}
-      notice={
-        isMockPreviewEnabled && (
-          <MockStateSelect
-            message="화면 확인용 · 실제 생성·동의 기록 없음 · 새로고침 시 초기화"
-            value={state}
-            options={states}
-            onChange={setState}
-          />
-        )
-      }
       footer={
         <ActionBar
           position="fixed"

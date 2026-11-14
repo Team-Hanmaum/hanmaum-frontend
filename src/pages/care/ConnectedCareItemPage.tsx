@@ -42,7 +42,6 @@ export function ConnectedCareItemPage() {
   const back = useBackNavigation(listPath);
   return (
     <ProposalPageLayout
-      connected
       title="돌봄 상세"
       spaceId={space.spaceId}
       onBack={back}

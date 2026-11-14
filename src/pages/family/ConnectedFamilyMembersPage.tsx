@@ -31,7 +31,6 @@ export function ConnectedFamilyMembersPage() {
       : undefined;
   return (
     <FamilyPageLayout
-      connected
       title="구성원 관리"
       spaceId={data.spaceId}
       onBack={withdrawing ? returnToWithdrawal : back}

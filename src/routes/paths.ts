@@ -15,7 +15,6 @@ export const paths = {
   onboardingGuide: "/onboarding/guide",
   spaces: "/spaces",
   spaceCreate: "/spaces/new",
-  invitationExample: "/invitations/mock-family",
   components: "/_dev/components",
 } as const;
 
@@ -127,12 +126,6 @@ export function careCreatePath(spaceId: string, kind: string) {
 }
 export function careManagePath(spaceId: string, itemId: string) {
   return `${careItemPath(spaceId, itemId)}/manage`;
-}
-export function careRequestsPath(spaceId: string) {
-  return `${spacePath(spaceId, "care")}/requests`;
-}
-export function careChangePath(spaceId: string, changeId: string) {
-  return `${careRequestsPath(spaceId)}/${encodeURIComponent(changeId)}`;
 }
 export function careSharePath(spaceId: string, itemId: string) {
   return `${careItemPath(spaceId, itemId)}/share`;

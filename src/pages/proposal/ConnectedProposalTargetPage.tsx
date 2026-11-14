@@ -56,7 +56,6 @@ export function ConnectedProposalTargetPage() {
   }
   return (
     <ProposalPageLayout
-      connected
       title="연결 대상 선택"
       spaceId={space.spaceId}
       onBack={back}

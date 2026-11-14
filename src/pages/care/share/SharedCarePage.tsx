@@ -52,7 +52,6 @@ function SharedCareContent({ token }: { token: string }) {
 
   return (
     <AccountPageLayout
-      connected
       title="한마음"
       onBack={toStart}
       actions={

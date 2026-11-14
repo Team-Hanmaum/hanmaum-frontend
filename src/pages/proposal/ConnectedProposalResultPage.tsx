@@ -33,7 +33,6 @@ export function ConnectedProposalResultPage() {
   const back = useBackNavigation(withReturn(proposalListPath(space.spaceId)));
   return (
     <ProposalPageLayout
-      connected
       title="반영 결과"
       spaceId={space.spaceId}
       onBack={back}

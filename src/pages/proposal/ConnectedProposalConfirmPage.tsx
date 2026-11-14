@@ -152,7 +152,6 @@ export function ConnectedProposalConfirmPage() {
   const blocked = !!mutation.error && !canRetryReview(mutation.error);
   return (
     <ProposalPageLayout
-      connected
       title="반영 전 확인"
       spaceId={space.spaceId}
       onBack={back}

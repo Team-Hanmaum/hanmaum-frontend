@@ -85,7 +85,6 @@ export function ConnectedNewsDeletePage() {
   }
   return (
     <ProposalPageLayout
-      connected
       title="소식 원본 삭제"
       spaceId={space.spaceId}
       onBack={back}

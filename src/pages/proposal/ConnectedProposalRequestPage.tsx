@@ -240,7 +240,6 @@ export function ConnectedProposalRequestPage() {
     });
   return (
     <ProposalPageLayout
-      connected
       title={title}
       spaceId={space.spaceId}
       onBack={() => {

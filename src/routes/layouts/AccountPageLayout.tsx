@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
 import { DetailLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
-import { MockStateSelect } from "@/components/feedback/MockStateSelect";
-import { MockNotice } from "@/components/feedback/MockNotice";
 import { SpaceBottomNavigation } from "./SpaceBottomNavigation";
 import { TextAction } from "@/components/ui";
 import { useWithdrawalReturn } from "../useWithdrawalReturn";
@@ -13,38 +11,18 @@ export function AccountPageLayout({
   children,
   actions,
   spaceId,
-  preview,
-  connected = false,
 }: {
   title: string;
   onBack: () => void;
   children: ReactNode;
   actions?: ReactNode;
   spaceId?: string;
-  connected?: boolean;
-  preview?: {
-    value: string;
-    options: readonly { value: string; label: string }[];
-    onChange: (value: string) => void;
-  };
 }) {
   const { withdrawing, returnToWithdrawal } = useWithdrawalReturn();
-  const message =
-    "계정·공간 관리 Mock · 실제 API·계정 변경 없음 · 새로고침 시 초기화";
   return (
     <DetailLayout
       title={title}
       onBack={onBack}
-      notice={
-        connected ? undefined : preview ? (
-          <MockStateSelect
-            message={message}
-            {...preview}
-          />
-        ) : (
-          <MockNotice message={message} />
-        )
-      }
       footer={
         (actions || spaceId) && (
           <FixedBottomArea position="fixed">

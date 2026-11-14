@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { SocialProvider } from "@/components/ui";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { resetSessionState } from "./resetSessionState";
 import { saveLoginReturn } from "./loginReturn";
 import { getOAuthLoginUrl } from "./getOAuthLoginUrl";
@@ -36,7 +35,7 @@ export function useOAuthLogin() {
     };
   }, []);
   async function start(next: SocialProvider, returnTo?: string) {
-    if (isMockPreviewEnabled || pending.current) return;
+    if (pending.current) return;
     const attempt = new AbortController();
     pending.current = attempt;
     setProvider(next);

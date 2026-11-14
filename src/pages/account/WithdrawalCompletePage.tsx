@@ -21,7 +21,6 @@ export function WithdrawalCompletePage() {
     );
   return (
     <AccountPageLayout
-      connected
       title="회원 탈퇴 완료"
       onBack={home}
       actions={<Button onClick={home}>처음으로</Button>}

@@ -71,7 +71,6 @@ function RemoveConfirmation() {
   };
   return (
     <FamilyPageLayout
-      connected
       title="참여 관리"
       spaceId={data.spaceId}
       onBack={withdrawing ? returnToWithdrawal : back}

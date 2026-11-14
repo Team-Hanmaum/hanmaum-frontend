@@ -1,5 +1,5 @@
 import { LoadingState, Notice } from "@/components/feedback";
-import { Badge, Comparison, TextAction } from "@/components/ui";
+import { Badge, TextAction } from "@/components/ui";
 import type { RecordView } from "../model/recordViewTypes";
 import type { NewsStatus } from "./NewsCard";
 import { RecordOriginalCard } from "./RecordOriginalCard";
@@ -73,7 +73,6 @@ export function NewsDetail({
   onDelete?: () => void;
 }) {
   const presentation = presentations[status];
-  const proposal = status === "review" ? record.proposal : undefined;
   return (
     <>
       <div className="flex flex-col items-start gap-hm-12">
@@ -109,40 +108,11 @@ export function NewsDetail({
         />
       )}
       <RecordOriginalCard record={record} />
-      {proposal && (
-        <section
-          className="flex flex-col items-start gap-hm-16 rounded-hm-16 bg-hm-bg-surface p-hm-20 wrap-anywhere"
-          aria-label="분석 제안 예시"
-        >
-          <Badge label={proposal.typeLabel} />
-          <h2 className="text-hm-heading-section">{proposal.title}</h2>
-          <Comparison
-            beforeLabel={proposal.beforeLabel}
-            beforeValue={proposal.beforeValue}
-            afterLabel={proposal.afterLabel}
-            afterValue={proposal.afterValue}
-          />
-          <p className="text-hm-body-small text-hm-text-secondary">
-            {proposal.meta}
-          </p>
-        </section>
-      )}
       {status === "analyzing" && (
         <Notice
           tone="neutral"
           title="검토 후 반영해요"
           body="분석 결과가 나와도 일정·할 일·질문은 바로 바뀌지 않아요."
-        />
-      )}
-      {proposal && (
-        <Notice
-          tone="neutral"
-          title="현재 일정은 그대로예요"
-          body={
-            owner
-              ? "제안을 검토한 뒤 소유자가 최종 반영해요."
-              : "제안을 검토해 반영을 요청할 수 있어요. 최종 반영은 소유자가 진행해요."
-          }
         />
       )}
       {onDelete && (owner || record.author.self) && (

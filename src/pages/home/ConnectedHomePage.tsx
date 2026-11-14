@@ -67,7 +67,6 @@ export function ConnectedHomePage() {
         />
       )}
       <HomeContent
-        connected
         space={{ ...toSpaceView(space, members.data), empty }}
         data={toHomeView(dashboard.data, news.data)}
         state={

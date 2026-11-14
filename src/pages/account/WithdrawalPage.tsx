@@ -44,7 +44,6 @@ export function WithdrawalPage() {
 
   return (
     <AccountPageLayout
-      connected
       title="회원 탈퇴"
       onBack={cancel}
       actions={

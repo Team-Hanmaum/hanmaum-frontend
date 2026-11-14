@@ -52,7 +52,6 @@ export function ConnectedProposalListPage() {
   const back = useBackNavigation(withReturn(spacePath(space.spaceId, "news")));
   return (
     <ProposalPageLayout
-      connected
       title="확인할 내용"
       spaceId={space.spaceId}
       onBack={back}

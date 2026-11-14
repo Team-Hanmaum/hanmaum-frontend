@@ -95,7 +95,6 @@ export function ConnectedFamilyDeletePage() {
   const forbidden = !!space && space.role !== "OWNER";
   return (
     <FamilyPageLayout
-      connected
       title="공간 삭제"
       spaceId={spaceId}
       onBack={back}

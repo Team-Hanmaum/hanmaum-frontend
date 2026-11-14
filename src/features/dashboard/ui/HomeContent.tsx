@@ -31,7 +31,6 @@ export function HomeContent({
   onHistory,
   onChange,
   onRetry,
-  connected = false,
 }: {
   space: CareSpaceView;
   data: HomeView;
@@ -46,7 +45,6 @@ export function HomeContent({
   onHistory: () => void;
   onChange: (id: string) => void;
   onRetry: () => void;
-  connected?: boolean;
 }) {
   const empty = state === "empty" || state === "created";
   const newsSection = (
@@ -131,11 +129,7 @@ export function HomeContent({
           ) : (
             <EmptyState
               title="아직 남긴 소식이 없어요"
-              body={
-                connected
-                  ? "가족의 소식이 등록되면 여기에서 확인할 수 있어요."
-                  : "병원에서 들은 이야기나\n오늘의 작은 변화를 남겨보세요."
-              }
+              body="가족의 소식이 등록되면 여기에서 확인할 수 있어요."
               className="rounded-hm-16"
             />
           )}
@@ -146,9 +140,7 @@ export function HomeContent({
                 아직 등록된 일정이 없어요.
               </p>
               <p className="text-hm-body-small text-hm-text-secondary">
-                {connected
-                  ? "등록된 돌봄 정보가 있으면 여기에서 확인할 수 있어요."
-                  : "돌봄 탭에서 일정·할 일·질문을 추가해 보세요."}
+                등록된 돌봄 정보가 있으면 여기에서 확인할 수 있어요.
               </p>
               <Button
                 variant="secondary"
@@ -283,7 +275,7 @@ export function HomeContent({
             <SectionHeader
               title="최근 확정된 변경"
               action={{
-                label: connected ? "반영 결과 보기" : "이력 보기",
+                label: "반영 결과 보기",
                 onClick: onHistory,
               }}
             />

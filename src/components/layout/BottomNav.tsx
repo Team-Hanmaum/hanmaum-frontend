@@ -51,7 +51,6 @@ export function BottomNav({
 }: BottomNavProps) {
   return (
     <FixedBottomArea
-      exampleNotice={false}
       position={position}
       className={className}
     >

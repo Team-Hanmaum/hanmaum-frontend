@@ -98,7 +98,6 @@ export function CareReconfirmationForm({
           onBack={timeScreen.close}
           renderLayout={({ content, actions }) => (
             <ProposalPageLayout
-              connected
               title="시간 선택"
               spaceId={space.spaceId}
               onBack={timeScreen.close}
@@ -113,7 +112,6 @@ export function CareReconfirmationForm({
     );
   return (
     <ProposalPageLayout
-      connected
       title={form.review ? "반영 전 확인" : "다시 확인하기"}
       spaceId={space.spaceId}
       onBack={back}

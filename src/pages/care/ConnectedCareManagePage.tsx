@@ -24,7 +24,6 @@ export function ConnectedCareManagePage() {
   const back = () => void navigate(withReturn(base), { motion: "back" });
   return (
     <ProposalPageLayout
-      connected
       title="항목 관리"
       spaceId={space.spaceId}
       onBack={back}

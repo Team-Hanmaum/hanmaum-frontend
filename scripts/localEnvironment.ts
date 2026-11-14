@@ -7,7 +7,6 @@ import { localDevelopment } from "../src/lib/localDevelopment.ts";
 export const developmentValues = {
   HANMAUM_LOCAL_HTTPS: "true",
   VITE_API_BASE_URL: localDevelopment.apiOrigin,
-  VITE_ENABLE_MOCK_PREVIEW: "false",
   VITE_ENABLE_QA_TOOLS: "true",
 };
 

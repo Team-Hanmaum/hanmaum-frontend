@@ -51,7 +51,6 @@ export function CareSharePage() {
         title="공유 미리보기"
         spaceId={space.spaceId}
         onBack={back}
-        connected
       >
         <ReviewQueryState
           error={query.error}
@@ -69,7 +68,7 @@ export function CareSharePage() {
         title="공유"
         spaceId={space.spaceId}
         onBack={back}
-        connected
+
         actions={<Button onClick={back}>항목으로 돌아가기</Button>}
       >
         <Notice
@@ -116,7 +115,7 @@ function ShareContent({
         title="공유 미리보기"
         spaceId={item.spaceId}
         onBack={onBack}
-        connected
+
         actions={
           card ? (
             <>

@@ -1,16 +1,6 @@
-// 화면 검증용 모델. 공개 API의 필드·상태 계약과 구분한다.
+// 폼과 탭에서 사용하는 표시용 타입. 서버 DTO는 api/*Types.ts에서 관리한다.
 export type CareItemKind =
   "schedule" | "task" | "question" | "observation" | "guidance";
-// 화면 확인용 상태. BE enum과 별도로 관리한다.
-export type CareItemStatus =
-  | "scheduled"
-  | "completed"
-  | "cancelled"
-  | "not-started"
-  | "in-progress"
-  | "unconfirmed"
-  | "confirmed"
-  | "recorded";
 export type CareItemFields = {
   title: string;
   content: string;
@@ -20,41 +10,6 @@ export type CareItemFields = {
   assigneeId: string;
   dueDate: string;
   note: string;
-};
-export type CareEvidence = {
-  id: string;
-  recordId?: string;
-  author: string;
-  createdAt: number;
-  // 직접 확인한 독립 근거만 내용 보유. 소식 근거의 원문은 record에서 조회한다.
-  directContent?: string;
-  fields: CareItemFields;
-  dependsOnRecordIds?: readonly string[];
-};
-export type CareReconfirmation = {
-  id: string;
-  itemId: string;
-  actor: string;
-  createdAt: number;
-  fields: CareItemFields;
-  evidence: string;
-};
-export type CareItemView = {
-  id: string;
-  kind: CareItemKind;
-  // 현재 항목이 처음 반영된 시각. 수정·근거 추가 시에도 유지한다.
-  createdAt: number;
-  status: CareItemStatus;
-  statusChangedAt?: number;
-  answer?: { content: string; confirmedBy: string };
-  title: string;
-  value: string;
-  meta: string;
-  version: number;
-  fields: CareItemFields;
-  evidence: readonly CareEvidence[];
-  needsReconfirmation?: boolean;
-  deletedAt?: number;
 };
 export const careKindLabels: Record<CareItemKind, string> = {
   schedule: "일정",

@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router";
 import { PageLayout } from "@/components/layout";
 import { ErrorState, LoadingState } from "@/components/feedback";
 import { resetCsrfToken } from "@/lib/api";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { useSession } from "@/features/auth/model/useSession";
 import {
   clearLoginReturn,
@@ -16,17 +14,6 @@ import { useAppNavigate } from "@/routes/useAppNavigate";
 import { publishSessionChange } from "@/features/auth/model/sessionChanges";
 
 export function AuthCallbackPage() {
-  return isMockPreviewEnabled ? (
-    <Navigate
-      to={paths.spaces}
-      replace
-    />
-  ) : (
-    <AuthCallback />
-  );
-}
-
-function AuthCallback() {
   const session = useSession();
   const navigate = useAppNavigate();
   const [ready, setReady] = useState(false);

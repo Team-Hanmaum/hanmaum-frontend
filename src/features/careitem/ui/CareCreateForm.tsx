@@ -139,7 +139,6 @@ export function CareCreateForm({
           onBack={timeScreen.close}
           renderLayout={({ content, actions }) => (
             <ProposalPageLayout
-              connected
               title="시간 선택"
               spaceId={space.spaceId}
               onBack={timeScreen.close}
@@ -154,7 +153,6 @@ export function CareCreateForm({
     );
   return (
     <ProposalPageLayout
-      connected
       title={review ? "내용 확인" : `${itemLabels[type]} 추가`}
       spaceId={space.spaceId}
       onBack={back}

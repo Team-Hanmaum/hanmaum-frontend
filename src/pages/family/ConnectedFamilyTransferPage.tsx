@@ -48,7 +48,6 @@ function TransferSelection() {
   const ready = loaded && allowed && !data.error && !data.refreshing;
   return (
     <FamilyPageLayout
-      connected
       title="소유권 이전"
       spaceId={spaceId}
       tabs={ready && !candidates.length && !withdrawing}

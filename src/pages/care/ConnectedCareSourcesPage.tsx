@@ -21,7 +21,6 @@ export function ConnectedCareSourcesPage() {
   );
   return (
     <ProposalPageLayout
-      connected
       title="근거 보기"
       spaceId={space.spaceId}
       onBack={back}

@@ -23,7 +23,6 @@ export function ConnectedNewsDeletionResultPage() {
     });
   return (
     <ProposalPageLayout
-      connected
       title="소식 삭제"
       spaceId={space.spaceId}
       onBack={list}
