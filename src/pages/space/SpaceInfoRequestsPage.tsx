@@ -12,7 +12,7 @@ import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
 import { spaceInfoPath, spaceInfoRequestPath } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useBackNavigation } from "@/routes/useBackNavigation";
-import { useConnectedSpace } from "@/routes/useConnectedSpace";
+import { useSpaceContext } from "@/routes/useSpaceContext";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 const tabs = [
@@ -24,7 +24,7 @@ const tabs = [
 ] as const;
 
 export function SpaceInfoRequestsPage() {
-  const { space } = useConnectedSpace();
+  const { space } = useSpaceContext();
   const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const [params, setParams] = useSearchParams();

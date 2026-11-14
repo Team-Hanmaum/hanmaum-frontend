@@ -11,11 +11,11 @@ import {
 } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useBackNavigation } from "@/routes/useBackNavigation";
-import { useConnectedSpace } from "@/routes/useConnectedSpace";
+import { useSpaceContext } from "@/routes/useSpaceContext";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 export function SpaceInfoPage() {
-  const { space } = useConnectedSpace();
+  const { space } = useSpaceContext();
   const query = useSpaceDetail(space.spaceId);
   const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();

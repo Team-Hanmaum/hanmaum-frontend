@@ -23,11 +23,11 @@ import { ApiError } from "@/lib/api";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import { careItemPath, careListPath } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
-import { useConnectedSpace } from "@/routes/useConnectedSpace";
+import { useSpaceContext } from "@/routes/useSpaceContext";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 export function CareSharePage() {
-  const { space } = useConnectedSpace();
+  const { space } = useSpaceContext();
   const { itemId = "" } = useParams();
   const query = useCareItem(space.spaceId, itemId);
   const navigate = useAppNavigate();
