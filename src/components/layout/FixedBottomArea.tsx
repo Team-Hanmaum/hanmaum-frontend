@@ -1,18 +1,14 @@
 import { useLayoutEffect, useRef, type ReactNode } from "react";
-import { useExampleContext } from "@/components/feedback/exampleContext";
 export type FixedBottomAreaProps = {
   children: ReactNode;
   position?: "static" | "fixed";
   className?: string;
-  exampleNotice?: boolean;
 };
 export function FixedBottomArea({
   children,
   position = "static",
   className = "",
-  exampleNotice = true,
 }: FixedBottomAreaProps) {
-  const example = useExampleContext();
   const ref = useRef<HTMLDivElement>(null);
   const spacer = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
@@ -41,11 +37,6 @@ export function FixedBottomArea({
         ref={ref}
         className={`${position === "fixed" ? "fixed inset-x-0 bottom-0 z-20 mx-auto w-full max-w-lg" : "w-full"} ${className}`}
       >
-        {example && exampleNotice && (
-          <p className="bg-hm-bg-surface px-hm-20 pt-hm-8 text-center text-hm-caption-default text-hm-text-secondary">
-            예시 동작 · 실제로 저장되지 않아요
-          </p>
-        )}
         {children}
       </div>
     </>

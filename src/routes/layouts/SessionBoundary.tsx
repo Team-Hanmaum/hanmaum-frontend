@@ -3,8 +3,6 @@ import { Navigate, useLocation } from "react-router";
 import { useSession } from "@/features/auth/model/useSession";
 import { saveLoginReturn } from "@/features/auth/model/loginReturn";
 import { SessionStatus } from "@/features/auth/ui/SessionStatus";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
-import { MockAccountBoundary } from "./MockAccountBoundary";
 import { paths } from "../paths";
 import { SessionRevalidationNotice } from "@/features/auth/ui/SessionRevalidationNotice";
 
@@ -24,8 +22,6 @@ function LoginRedirect({ reason }: { reason: string }) {
 export function SessionBoundary({ children }: { children: ReactNode }) {
   const session = useSession();
   const { pathname } = useLocation();
-  if (isMockPreviewEnabled)
-    return <MockAccountBoundary>{children}</MockAccountBoundary>;
   if (session.status === "withdrawn")
     return pathname === paths.withdrawalComplete ? (
       children

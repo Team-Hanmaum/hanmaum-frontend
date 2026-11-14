@@ -1,195 +1,258 @@
-import { useAppNavigate } from "@/routes/useAppNavigate";
-import { useOutletContext, useParams, useSearchParams } from "react-router";
+import { useRef, useState } from "react";
+import { useParams } from "react-router";
 import { DetailLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
-import { ErrorState } from "@/components/feedback";
-import { MockStateSelect } from "@/components/feedback/MockStateSelect";
+import { ErrorState, LoadingState, Notice } from "@/components/feedback";
 import { Button, TextAction } from "@/components/ui";
-import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
-import { useMockRecords } from "@/features/record/model/useMockRecords";
-import { useMockRecordAnalysis } from "@/features/record/model/useMockRecordAnalysis";
-import { newsDetailStates } from "@/features/record/model/newsScreenStates";
-import { useMockProposals } from "@/features/proposal/model/useMockProposals";
-import { getRecordsWithProposals } from "@/features/proposal/model/proposalSelectors";
+import {
+  useRecordAnalysis,
+  useRecordDetail,
+} from "@/features/record/model/useRecords";
+import { useRetryRecordAnalysis } from "@/features/record/model/useRecordMutations";
+import { toRecordView } from "@/features/record/model/recordView";
+import type { RecordDetail } from "@/features/record/api/recordReadTypes";
 import { NewsDetail } from "@/features/record/ui/NewsDetail";
+import { ApiError } from "@/lib/api";
 import { SpaceBottomNavigation } from "@/routes/layouts/SpaceBottomNavigation";
 import {
+  paths,
   spacePath,
-  proposalListPath,
-  proposalRequestPath,
-  proposalResultPath,
   proposalReviewPath,
   newsDeletePath,
 } from "@/routes/paths";
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useBackNavigation } from "@/routes/useBackNavigation";
-import { useMockScreenState } from "@/routes/useMockScreenState";
+import { useSpaceContext } from "@/routes/useSpaceContext";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
-import {
-  newsPageSize,
-  readNewsVisibleCount,
-} from "@/features/record/model/newsPagination";
+
+type RetryNotice = { title: string; body: string };
+
+function describeRetryError(error: ApiError): RetryNotice {
+  if (
+    error.code === "VERSION_CONFLICT" ||
+    error.code === "ANALYSIS_STATE_CONFLICT"
+  )
+    return {
+      title: "소식 상태가 바뀌었어요",
+      body: "최신 분석 상태를 다시 불러왔어요. 상태를 확인해 주세요.",
+    };
+  return {
+    title: "분석을 다시 요청하지 못했어요",
+    body: "남긴 소식은 그대로 있어요. 잠시 후 다시 시도해 주세요.",
+  };
+}
 
 export function NewsDetailPage() {
   const { withdrawing, withReturn, returnToWithdrawal } = useWithdrawalReturn();
-  const space = useOutletContext<CareSpaceView>();
+  const { space } = useSpaceContext();
   const { recordId = "" } = useParams();
-  const records = useMockRecords(space);
-  const proposals = useMockProposals(space);
-  const deleted = proposals.deletions?.some(
-    (entry) => entry.recordId === recordId,
-  );
-  const record = getRecordsWithProposals(records, proposals).find(
-    (item) => item.id === recordId,
-  );
   const navigate = useAppNavigate();
-  const [params] = useSearchParams();
-  const visibleCount = readNewsVisibleCount(
-    params.get("shown"),
-    records.length,
-  );
-  const listPath = withReturn(
-    spacePath(space.id, "news") +
-      (visibleCount > newsPageSize ? `?shown=${visibleCount}` : ""),
-  );
+  const listPath = withReturn(spacePath(space.spaceId, "news"));
   const onBack = useBackNavigation(listPath);
-  const options = record?.proposal
-    ? newsDetailStates
-    : newsDetailStates.filter((item) => item.value !== "review");
-  const [state, setState] = useMockScreenState(options, "default");
-  const { pending, retry } = useMockRecordAnalysis(space, recordId, () =>
-    setState("default"),
+  const detail = useRecordDetail(space.spaceId, recordId);
+  const analysis = useRecordAnalysis(
+    space.spaceId,
+    recordId,
+    detail.data?.latestAnalysis,
   );
-  const status =
-    state === "default" || state === "withdrawn-author"
-      ? (record?.proposalSummary?.status ?? record?.analysisStatus)
-      : state;
-  const hasProposal = Boolean(record?.proposalSummary);
-  const hasSecondary =
-    hasProposal || status === "review" || status === "failed";
+  const retry = useRetryRecordAnalysis(space.spaceId, recordId);
+  const [retryNotice, setRetryNotice] = useState<RetryNotice>();
+  // 같은 실패 실행의 재시도 재전송에는 같은 요청 ID를 사용한다.
+  const retryAttempt = useRef<{ failedId: string; id: string } | null>(null);
   const onList = () => void navigate(listPath, { motion: "back" });
-  function onProposals() {
-    const related = proposals.proposals.filter(
-      (item) => item.recordId === recordId,
-    );
-    const requested = related.find((item) => item.status === "requested");
-    const result = related.find((item) => item.resultId);
-    const destination = related.some((item) => item.status === "review")
-      ? proposalReviewPath(space.id, recordId)
-      : requested?.requestId
-        ? proposalRequestPath(space.id, requested.requestId)
-        : result?.resultId
-          ? proposalResultPath(space.id, result.resultId)
-          : proposalListPath(space.id);
-    void navigate(withReturn(destination));
-  }
-  return (
-    <>
-      <DetailLayout
-        title="소식 상세"
-        onBack={onBack}
-        notice={
-          <MockStateSelect
-            message="상세 UI 예시 · 실제 분석·돌봄 정보 변경 없음"
-            value={state}
-            options={options}
-            onChange={setState}
-          />
+
+  // 상세보다 분석 조회가 먼저 끝난 경우 최신 분석 상태와 제안 ID를 우선 표시한다.
+  const record: RecordDetail | undefined =
+    detail.data &&
+    analysis.data &&
+    detail.data.latestAnalysis?.analysisId === analysis.data.analysisId
+      ? {
+          ...detail.data,
+          latestAnalysis: {
+            analysisId: analysis.data.analysisId,
+            status: analysis.data.status,
+          },
+          proposalIds:
+            analysis.data.status === "COMPLETED"
+              ? analysis.data.proposalIds
+              : detail.data.proposalIds,
         }
-        footer={
-          <FixedBottomArea position="fixed">
-            {record && (
-              <div className="flex flex-col gap-hm-12 bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-24">
-                <Button
-                  className="w-full"
-                  onClick={
-                    status === "failed"
-                      ? retry
-                      : hasProposal || status === "review"
-                        ? onProposals
-                        : onList
-                  }
-                  loading={pending}
-                  loadingLabel="분석을 다시 준비하고 있어요"
-                >
-                  {status === "failed"
-                    ? "분석 다시 시도"
-                    : hasProposal || status === "review"
-                      ? status === "pending"
-                        ? "요청 상태 보기"
-                        : status === "applied" || status === "rejected"
-                          ? "처리 결과 보기"
-                          : "확인할 내용 보기"
-                      : "소식 목록으로"}
-                </Button>
-                {hasSecondary && (
+      : detail.data;
+  const view = record ? toRecordView(record, space.spaceId) : undefined;
+  const latest = record?.latestAnalysis;
+  const canRetry =
+    latest?.status === "FAILED" &&
+    analysis.data?.analysisId === latest.analysisId &&
+    analysis.data.canRetry;
+
+  function retryAnalysis() {
+    if (!record || !latest || retry.isPending) return;
+    if (retryAttempt.current?.failedId !== latest.analysisId)
+      retryAttempt.current = {
+        failedId: latest.analysisId,
+        id: crypto.randomUUID(),
+      };
+    setRetryNotice(undefined);
+    retry.mutate(
+      {
+        failedAnalysisId: latest.analysisId,
+        expectedRecordVersion: record.version,
+        clientRequestId: retryAttempt.current.id,
+      },
+      {
+        onSuccess: () => {
+          retryAttempt.current = null;
+        },
+        onError: (error) => {
+          if (
+            error.code === "VERSION_CONFLICT" ||
+            error.code === "ANALYSIS_STATE_CONFLICT" ||
+            error.code === "IDEMPOTENCY_KEY_REUSED"
+          )
+            retryAttempt.current = null;
+          setRetryNotice(describeRetryError(error));
+        },
+      },
+    );
+  }
+
+  const failure = detail.error;
+  const missing = failure instanceof ApiError && failure.status === 404;
+  const denied = failure instanceof ApiError && failure.status === 403;
+  return (
+    <DetailLayout
+      title="소식 상세"
+      onBack={onBack}
+      footer={
+        <FixedBottomArea position="fixed">
+          {view && (
+            <div className="flex flex-col gap-hm-12 bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-24">
+              {canRetry ? (
+                <>
+                  <Button
+                    className="w-full"
+                    onClick={retryAnalysis}
+                    loading={retry.isPending}
+                    loadingLabel="분석을 다시 요청하고 있어요"
+                  >
+                    분석 다시 시도
+                  </Button>
                   <TextAction
                     className="w-full"
                     onClick={onList}
                   >
                     소식 목록으로
                   </TextAction>
-                )}
-              </div>
-            )}
-            {withdrawing && (
-              <TextAction
-                className="w-full bg-hm-bg-surface pb-hm-20"
-                onClick={returnToWithdrawal}
-              >
-                탈퇴 절차로 돌아가기
-              </TextAction>
-            )}
-            <SpaceBottomNavigation
-              spaceId={space.id}
-              active="news"
+                </>
+              ) : (
+                <Button
+                  className="w-full"
+                  onClick={onList}
+                >
+                  소식 목록으로
+                </Button>
+              )}
+            </div>
+          )}
+          {withdrawing && (
+            <TextAction
+              className="w-full bg-hm-bg-surface pb-hm-20"
+              onClick={returnToWithdrawal}
+            >
+              탈퇴 절차로 돌아가기
+            </TextAction>
+          )}
+          <SpaceBottomNavigation
+            spaceId={space.spaceId}
+            active="news"
+          />
+        </FixedBottomArea>
+      }
+    >
+      {view ? (
+        <>
+          {retryNotice && (
+            <Notice
+              tone="error"
+              role="alert"
+              title={retryNotice.title}
+              body={retryNotice.body}
             />
-          </FixedBottomArea>
-        }
-      >
-        {record && status ? (
+          )}
+          {analysis.isError && latest && latest.status !== "COMPLETED" && (
+            <Notice
+              tone="error"
+              role="alert"
+              title="분석 상태를 확인하지 못했어요"
+              body="남긴 소식은 그대로 있어요. 잠시 후 다시 확인해 주세요."
+              action={{
+                label: "다시 확인하기",
+                onClick: () => void analysis.refetch(),
+              }}
+            />
+          )}
           <NewsDetail
-            record={
-              state === "withdrawn-author"
-                ? {
-                    ...record,
-                    author: {
-                      id: "mock-withdrawn-author",
-                      name: "탈퇴한 사용자",
-                      self: false,
-                    },
-                  }
-                : record
-            }
-            status={status}
-            owner={space.role === "owner"}
+            record={view}
+            status={view.analysisStatus}
+            owner={space.role === "OWNER"}
             onDelete={
-              state === "withdrawn-author"
-                ? undefined
-                : () =>
+              record?.canDelete
+                ? () =>
                     void navigate(
-                      withReturn(newsDeletePath(space.id, recordId)),
+                      withReturn(newsDeletePath(space.spaceId, recordId)),
                     )
+                : undefined
             }
           />
-        ) : (
-          <>
-            <h1 className="sr-only">소식 상세</h1>
+          {view.proposalSummary && (
+            <Notice
+              tone="neutral"
+              title="분석으로 만들어진 제안을 확인해 주세요"
+              body="제안의 근거와 현재 돌봄 정보를 비교한 뒤 반영하거나 소유자에게 요청할 수 있어요."
+              action={{
+                label: "제안 검토하기",
+                onClick: () =>
+                  void navigate(
+                    withReturn(proposalReviewPath(space.spaceId, recordId)),
+                  ),
+              }}
+            />
+          )}
+        </>
+      ) : detail.isPending ? (
+        <LoadingState label="소식을 불러오고 있어요" />
+      ) : (
+        <>
+          <h1 className="sr-only">소식 상세</h1>
+          {missing ? (
             <ErrorState
               reason="load-error"
-              title={
-                deleted ? "이미 삭제된 소식이에요" : "화면 확인용 소식이 없어요"
-              }
-              body={
-                deleted
-                  ? "삭제된 원문과 인용 내용은 다시 표시하지 않아요."
-                  : "새로고침하면 직접 남긴 Mock 소식은 초기화돼요. 목록에서 소식을 다시 선택해 주세요."
-              }
+              title="소식을 찾을 수 없어요"
+              body="삭제됐거나 이 공간의 소식이 아니에요."
               actionLabel="소식 목록으로"
               onAction={onList}
             />
-          </>
-        )}
-      </DetailLayout>
-    </>
+          ) : denied ? (
+            <ErrorState
+              reason="no-permission"
+              title="이 공간에 접근할 수 없어요"
+              actionLabel="참여 공간 선택"
+              onAction={() => void navigate(paths.spaces)}
+            />
+          ) : (
+            <ErrorState
+              reason={
+                failure instanceof ApiError && failure.kind === "network"
+                  ? "offline"
+                  : "load-error"
+              }
+              title="소식을 불러오지 못했어요"
+              loading={detail.isFetching}
+              onAction={() => void detail.refetch()}
+            />
+          )}
+        </>
+      )}
+    </DetailLayout>
   );
 }

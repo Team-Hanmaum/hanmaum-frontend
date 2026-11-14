@@ -14,11 +14,11 @@ import {
   spaceInfoRequestsPath,
 } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
-import { useConnectedSpace } from "@/routes/useConnectedSpace";
+import { useSpaceContext } from "@/routes/useSpaceContext";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 export function SpaceInfoEditPage() {
-  const { space } = useConnectedSpace();
+  const { space } = useSpaceContext();
   const editor = useSpaceInfoEditor(space);
   const { action, confirming, baseline, query } = editor;
   const owner = baseline.role === "OWNER";
@@ -39,7 +39,6 @@ export function SpaceInfoEditPage() {
   const result = action.result;
   return (
     <AccountPageLayout
-      connected
       title={
         result
           ? "공간 정보 처리 결과"

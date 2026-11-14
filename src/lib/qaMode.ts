@@ -1,6 +1,6 @@
 const storageKey = "hanmaum:qa-mode";
 
-// QA 도구 허용 여부와 Mock 데이터/동작 활성화는 별도 설정이다.
+// QA 도구는 실제 데이터와 인증 상태를 변경하지 않는다.
 export const isQaToolsAllowed =
   import.meta.env.VITE_ENABLE_QA_TOOLS === "true" ||
   (import.meta.env.DEV && import.meta.env.VITE_ENABLE_QA_TOOLS === undefined);

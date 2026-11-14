@@ -1,38 +1,54 @@
-import { useAppNavigate } from "@/routes/useAppNavigate";
-import { useOutletContext } from "react-router";
-import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
-import { useMockRecords } from "@/features/record/model/useMockRecords";
-import { newsListStates } from "@/features/record/model/newsScreenStates";
+import { ErrorState, Notice } from "@/components/feedback";
+import { TextAction, MenuRow } from "@/components/ui";
+import { useRecordList } from "@/features/record/model/useRecords";
+import { toRecordView } from "@/features/record/model/recordView";
+import type { NewsListState } from "@/features/record/model/newsScreenStates";
 import { NewsList } from "@/features/record/ui/NewsList";
-import { useMockProposals } from "@/features/proposal/model/useMockProposals";
-import {
-  getPendingProposalCount,
-  getRecordsWithProposals,
-} from "@/features/proposal/model/proposalSelectors";
-import { useMockScreenState } from "@/routes/useMockScreenState";
-import { useNewsListPagination } from "@/routes/useNewsListPagination";
-import { newsPageSize } from "@/features/record/model/newsPagination";
+import { ApiError } from "@/lib/api";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useSpaceContext } from "@/routes/useSpaceContext";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import {
   newsCreatePath,
   newsDetailPath,
+  paths,
   proposalListPath,
 } from "@/routes/paths";
-import { TextAction } from "@/components/ui";
-import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
-import {
-  pendingSpaceInfoCount,
-  useMockSpaceInfoChanges,
-} from "@/features/carespace/model/mockSpaceInfoChanges";
 
 export function NewsPage() {
   const { withdrawing, withReturn, returnToWithdrawal } = useWithdrawalReturn();
-  const space = useOutletContext<CareSpaceView>();
+  const { space } = useSpaceContext();
   const navigate = useAppNavigate();
-  const records = useMockRecords(space);
-  const { visibleCount, showMore } = useNewsListPagination(records.length);
-  const proposals = useMockProposals(space);
-  const spaceChanges = useMockSpaceInfoChanges(space.id);
-  const [state, setState] = useMockScreenState(newsListStates, "default");
+  const list = useRecordList(space.spaceId);
+  const denied =
+    list.error instanceof ApiError &&
+    [403, 404].includes(list.error.status ?? 0);
+  if (denied)
+    return (
+      <ErrorState
+        reason="no-permission"
+        title="이 공간에 접근할 수 없어요"
+        actionLabel={withdrawing ? "탈퇴 절차로 돌아가기" : "참여 공간 선택"}
+        onAction={
+          withdrawing ? returnToWithdrawal : () => void navigate(paths.spaces)
+        }
+      />
+    );
+  // 커서 사이에 같은 소식이 다시 내려와도 한 번만 표시한다.
+  const seen = new Set<string>();
+  const records = (list.data?.pages ?? [])
+    .flatMap((page) => page.items)
+    .filter((item) => !seen.has(item.recordId) && seen.add(item.recordId))
+    .map((item) => toRecordView(item, space.spaceId));
+  const state: NewsListState = list.isPending
+    ? "loading"
+    : !list.data
+      ? "error"
+      : list.isFetchNextPageError
+        ? "more-error"
+        : records.length
+          ? "default"
+          : "empty";
   return (
     <>
       {withdrawing && (
@@ -40,28 +56,45 @@ export function NewsPage() {
           탈퇴 절차로 돌아가기
         </TextAction>
       )}
+      {list.isRefetchError && (
+        <Notice
+          tone="error"
+          title="최신 소식을 불러오지 못했어요"
+          body="마지막으로 확인한 소식을 표시하고 있어요."
+          action={{
+            label: "다시 불러오기",
+            onClick: () => void list.refetch(),
+          }}
+        />
+      )}
       <NewsList
-        records={getRecordsWithProposals(records, proposals)}
-        visibleCount={visibleCount}
-        onMore={showMore}
-        pendingCount={
-          getPendingProposalCount(proposals, space) +
-          pendingSpaceInfoCount(spaceChanges, space)
-        }
+        records={records}
         state={state}
-        onCreate={() => void navigate(newsCreatePath(space.id))}
-        onOpen={(id) => {
-          const detail = newsDetailPath(space.id, id);
-          void navigate(
-            withReturn(
-              visibleCount > newsPageSize
-                ? `${detail}?shown=${visibleCount}`
-                : detail,
-            ),
-          );
+        visibleCount={records.length}
+        paging={{
+          hasNext: list.hasNextPage,
+          loading: list.isFetchingNextPage,
         }}
-        onReview={() => void navigate(withReturn(proposalListPath(space.id)))}
-        onRetry={() => setState("default")}
+        onMore={() => void list.fetchNextPage()}
+        pendingCount={0}
+        onCreate={() =>
+          void navigate(withReturn(newsCreatePath(space.spaceId)))
+        }
+        onOpen={(id) =>
+          void navigate(withReturn(newsDetailPath(space.spaceId, id)))
+        }
+        onReview={() =>
+          void navigate(withReturn(proposalListPath(space.spaceId)))
+        }
+        onRetry={() => void list.refetch()}
+      />
+      <MenuRow
+        icon="news-brand"
+        title="제안·가족 요청 확인"
+        description="소식 분석으로 만들어진 제안과 요청 상태"
+        onClick={() =>
+          void navigate(withReturn(proposalListPath(space.spaceId)))
+        }
       />
     </>
   );

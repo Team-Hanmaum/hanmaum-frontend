@@ -1,7 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { onUnauthenticated } from "@/lib/api";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { createSessionController } from "../model/sessionController";
 import { SessionContext } from "../model/sessionContext";
 import { registerSessionGuard } from "@/lib/api/apiSession";
@@ -11,7 +10,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [session] = useState(() => createSessionController(queryClient));
   useEffect(() => {
-    if (isMockPreviewEnabled) return;
     const removeGuard = registerSessionGuard(session.ensureIdentity);
     const unsubscribe = onUnauthenticated(session.expire);
     void session.check();

@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
 import { DetailLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
-import { MockNotice } from "@/components/feedback/MockNotice";
-import { MockStateSelect } from "@/components/feedback/MockStateSelect";
 import { SpaceBottomNavigation } from "./SpaceBottomNavigation";
 
 export function FamilyPageLayout({
@@ -12,8 +10,6 @@ export function FamilyPageLayout({
   children,
   actions,
   tabs = false,
-  preview,
-  connected = false,
 }: {
   title: string;
   spaceId: string;
@@ -21,29 +17,11 @@ export function FamilyPageLayout({
   children: ReactNode;
   actions?: ReactNode;
   tabs?: boolean;
-  connected?: boolean;
-  preview?: {
-    value: string;
-    options: readonly { value: string; label: string }[];
-    onChange: (value: string) => void;
-  };
 }) {
-  const message =
-    "가족 관리 Mock · 실제 참여·권한 변경 없음 · 새로고침 시 초기화";
   return (
     <DetailLayout
       title={title}
       onBack={onBack}
-      notice={
-        connected ? undefined : preview ? (
-          <MockStateSelect
-            message={message}
-            {...preview}
-          />
-        ) : (
-          <MockNotice message={message} />
-        )
-      }
       footer={
         (actions || tabs) && (
           <FixedBottomArea position="fixed">

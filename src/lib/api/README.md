@@ -8,13 +8,12 @@ Axios는 HTTP, TanStack Query는 서버 상태와 메모리 캐시를 담당한�
 
 ```dotenv
 VITE_API_BASE_URL=http://localhost:8080
-VITE_ENABLE_MOCK_PREVIEW=false
 ```
 
 - `VITE_API_BASE_URL`은 `/api` 없이 서버 Origin만 지정한다. 미설정·잘못된 주소는 configuration 오류이며 localhost 기본값으로 대체하지 않는다.
 - `VITE_*`는 공개 빌드 설정이다. OAuth 비밀키·세션·CSRF 토큰을 넣지 않는다.
-- 앱 시작 시 `/api/users/me`로 실제 세션을 확인한다. 미연동 도메인의 메모리 예시와 인증 실행 모드는 별개다.
-- `.env.production`은 `https://api.hanmaum.site`, Mock/QA false다. Vercel에 같은 이름의 변수가 있으면 그 값이 우선한다.
+- 앱 시작 시 `/api/users/me`로 실제 세션을 확인한다. 모든 업무 화면은 실제 응답을 사용하며 Mock으로 대체하지 않는다.
+- `.env.production`은 `https://api.hanmaum.site`, QA false다. Vercel에 같은 이름의 변수가 있으면 그 값이 우선한다.
 - 운영 BE의 기존 허용 Origin은 `https://hanmaum.site`다. 로컬 배포 API 연동은 [개발 환경 설정](../../../docs/local-development.md)을 따르며 BE의 개발 Origin·OAuth 복귀 지원이 필요하다. localhost·Vercel 임시 주소를 임의로 허용하지 않는다. CORS 외에도 Secure/SameSite 쿠키 조건을 맞춰야 한다.
 
 ## 책임과 사용 위치
@@ -134,7 +133,7 @@ BE의 HttpOnly `HANMAUM_SESSION`을 브라우저가 credentials 요청에 포함
 
 로그인 후 우선순위는 저장된 복귀 경로 → 공간 한 곳이면 해당 홈 → 0곳 또는 여러 곳이면 공간 선택이다. 공간 조회 실패는 빈 목록으로 대체하지 않고 재시도한다. #48의 useCareSpaces와 DTO를 재사용한다. 초대 주소에는 복귀만 하며 자동 가입하지 않는다.
 
-공간 생성은 #48의 구현을 사용하고, 생성 직후 실제 홈으로 이동한다. 공간 상세·구성원·현황판·최근 소식을 조회하며 새 조회 키에는 accountId와 spaceId를 포함한다. 현황판에 합산 제안/요청 건수가 없어 숫자를 추정하지 않는다. 그 외 미연동 업무 화면은 기존 UI와 메모리 예시를 명시적으로 표시한다. 로그인·공간·홈·가족 조회 캐시와 예시 저장소를 분리하고, 예시 변경은 네트워크 요청이나 실제 Query 무효화를 하지 않는다. 실제 세션 정리 시 예시 저장소도 비운다. API 연동을 완료한 도메인은 실제 DTO/Query로 교체하고 해당 예시 표시를 제거한다.
+공간 생성 직후 실제 홈으로 이동한다. 공간 상세·구성원·현황판·최근 소식을 조회하며 조회 키에는 계정과 공간 범위를 반영한다. 현황판에 합산 제안/요청 건수가 없으면 숫자를 추정하지 않는다. 소식·분석·제안·승인 요청·돌봄 변경·근거 재확인·가족 및 공간 관리·공유·탈퇴는 각 도메인의 실제 DTO/Query를 사용한다. 변경 후 관련 캐시를 갱신하고 계정 전환 시 이전 계정의 조회·초안·진행 중 요청을 정리한다. 업무용 Mock 저장소와 API 실패 시 예시 데이터를 반환하는 우회 경로는 두지 않는다.
 
 BE 후속 설정: 성공 FE 복귀 URL을 `https://hanmaum.site/auth/callback`으로 변경해야 한다. 공급자에 등록된 BE callback(`/login/oauth2/code/...`)은 그대로다. 현재 BE의 OAuth 실패는 JSON 응답이며 FE 실패 복귀를 원하면 별도 BE 리다이렉트 계약이 필요하다. [배포 설정](../../../docs/deployment.md)을 함께 확인한다.
 

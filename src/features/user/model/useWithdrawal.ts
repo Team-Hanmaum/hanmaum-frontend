@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiError, normalizeApiError } from "@/lib/api";
 import { useSession } from "@/features/auth/model/useSession";
 import { getCareSpaces } from "@/features/carespace/api/careSpaceApi";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { careSpaceKeys } from "@/features/carespace/model/careSpaceKeys";
 
 export function useWithdrawal() {
@@ -17,11 +16,6 @@ export function useWithdrawal() {
     },
     mutationFn: async () => {
       try {
-        if (isMockPreviewEnabled)
-          throw new ApiError({
-            kind: "configuration",
-            message: "예시 화면에서는 실제 계정을 삭제할 수 없어요.",
-          });
         // Recheck ownership immediately before submission, rather than trusting
         // a space list cached before a transfer or another tab's action.
         const spaces = await getCareSpaces();

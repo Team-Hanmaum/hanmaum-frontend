@@ -1,133 +1,100 @@
-import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useRef } from "react";
-import { useParams } from "react-router";
 import { DetailLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
-import {
-  BottomSheet,
-  ErrorState,
-  LoadingState,
-  Notice,
-} from "@/components/feedback";
-import { MockStateSelect } from "@/components/feedback/MockStateSelect";
+import { BottomSheet, LoadingState, Notice } from "@/components/feedback";
 import { Button, Field, TextAction } from "@/components/ui";
+import { careSpaceName } from "@/features/carespace/model/careSpaceViewTypes";
+import { useInvitationLink } from "@/features/carespace/model/useInvitationLink";
 import { InvitationLinkCard } from "@/features/carespace/ui/InvitationLinkCard";
-import {
-  careSpaceName,
-  type CareSpaceView,
-} from "@/features/carespace/model/careSpaceViewTypes";
-import { useMockCareSpaces } from "@/features/carespace/model/useMockCareSpaces";
-import { useMockInvitationLink } from "@/features/carespace/model/useMockInvitationLink";
-import { invitationScreenStates } from "@/features/carespace/model/invitationScreenStates";
-import { isExamplePreviewEnabled } from "@/lib/examplePreview";
-import { invitationPath, paths, spacePath } from "@/routes/paths";
+import { ApiError } from "@/lib/api";
 import { SpaceBottomNavigation } from "@/routes/layouts/SpaceBottomNavigation";
+import { spacePath } from "@/routes/paths";
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useBackNavigation } from "@/routes/useBackNavigation";
-import { useMockScreenState } from "@/routes/useMockScreenState";
-import { SpaceAccessState } from "@/routes/layouts/SpaceAccessState";
+import { useSpaceContext } from "@/routes/useSpaceContext";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
-function invitationUrl(token: string) {
-  return new URL(invitationPath(token), window.location.origin).href;
-}
 export function SpaceInvitePage() {
-  const { careSpaceId } = useParams();
-  const { spaces, ended } = useMockCareSpaces();
-  const navigate = useAppNavigate();
-  const onBack = useBackNavigation(paths.spaces);
-  const space = spaces.find((item) => item.id === careSpaceId);
-  if (careSpaceId && ended[careSpaceId]) return <SpaceAccessState />;
-  if (!space)
-    return (
-      <DetailLayout
-        title="가족 초대"
-        onBack={onBack}
-      >
-        <h1 className="sr-only">가족 초대</h1>
-        <ErrorState
-          reason="load-error"
-          title="화면 확인용 공간이 없어요"
-          body="새로고침으로 초기화된 Mock 공간은 다시 선택해 주세요."
-          onAction={() => void navigate(paths.spaces)}
-          actionLabel="공간 선택"
-        />
-      </DetailLayout>
-    );
+  const { space } = useSpaceContext();
   return (
-    <SpaceInvitePreview
-      key={space.id}
-      space={space}
+    <SpaceInviteContent
+      key={space.spaceId}
+      spaceId={space.spaceId}
+      subjectLabel={space.subjectLabel}
+      memberCount={space.memberCount}
     />
   );
 }
-function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
+
+function SpaceInviteContent({
+  spaceId,
+  subjectLabel,
+  memberCount,
+}: {
+  spaceId: string;
+  subjectLabel: string;
+  memberCount: number;
+}) {
   const { withdrawing, returnToWithdrawal } = useWithdrawalReturn();
   const navigate = useAppNavigate();
-  const onBack = useBackNavigation(spacePath(space.id));
-  const [state, setState] = useMockScreenState(
-    invitationScreenStates,
-    "default",
-  );
+  const onBack = useBackNavigation(spacePath(spaceId));
+  const invitation = useInvitationLink(spaceId);
   const {
-    url,
-    expiresAt,
-    failed,
+    link,
     expired,
     loading,
+    failed,
+    copied,
     sharing,
-    unavailable,
     fallbackOpen,
     setFallbackOpen,
     feedback,
-    changeState,
-    reissue,
-    copy,
-    share,
-  } = useMockInvitationLink({
-    spaceId: space.id,
-    state,
-    onStateChange: setState,
-    createUrl: invitationUrl,
-  });
+  } = invitation;
+  // 404는 발급할 수 없는 공간이다. 403은 CSRF 실패일 수 있어 다시 시도할 수 있게 둔다.
+  const denied =
+    invitation.error instanceof ApiError && invitation.error.status === 404;
   const field = useRef<HTMLInputElement>(null);
   return (
     <>
       <DetailLayout
         title="가족 초대"
         onBack={withdrawing ? returnToWithdrawal : onBack}
-        notice={
-          <MockStateSelect
-            message="화면 확인용 링크 · 실제 발급·참여 없음 · 새로고침 시 초기화"
-            value={state}
-            options={invitationScreenStates}
-            onChange={changeState}
-          />
-        }
         footer={
           <FixedBottomArea position="fixed">
             <div className="flex flex-col gap-hm-12 bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-24">
               <Button
                 className="w-full"
-                disabled={!isExamplePreviewEnabled || state === "loading"}
+                disabled={denied}
                 loading={loading || sharing}
-                onClick={failed || expired ? reissue : () => void copy()}
+                loadingLabel={
+                  loading
+                    ? "초대 링크를 준비하고 있어요"
+                    : "링크를 복사하고 있어요"
+                }
+                onClick={
+                  failed
+                    ? invitation.retry
+                    : expired
+                      ? invitation.reissue
+                      : () => void invitation.copy()
+                }
               >
                 {failed
                   ? "다시 시도"
                   : expired
                     ? "새 초대 링크 만들기"
-                    : state === "copied"
+                    : copied
                       ? "초대 링크 다시 복사"
                       : "초대 링크 복사"}
               </Button>
               {!expired && (
                 <TextAction
                   className="w-full"
-                  disabled={!isExamplePreviewEnabled || loading || sharing}
+                  disabled={loading || sharing}
                   onClick={
                     failed
-                      ? () => void navigate(spacePath(space.id, "family"))
-                      : () => void share()
+                      ? () => void navigate(spacePath(spaceId, "family"))
+                      : () => void invitation.share()
                   }
                 >
                   {failed ? "가족 화면으로" : "링크 공유"}
@@ -143,14 +110,14 @@ function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
               </TextAction>
             )}
             <SpaceBottomNavigation
-              spaceId={space.id}
+              spaceId={spaceId}
               active="family"
             />
           </FixedBottomArea>
         }
       >
         <Notice
-          visible={state === "copied"}
+          visible={copied}
           role="status"
           title="초대 링크를 복사했어요"
           body="가족과 대화하는 곳에 붙여넣어 보내 주세요."
@@ -178,7 +145,9 @@ function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
         </h1>
         <p className="text-hm-body-default text-hm-text-secondary">
           {failed
-            ? "연결 상태를 확인한 뒤 다시 시도해 주세요."
+            ? denied
+              ? "이 공간에서 초대 링크를 만들 수 없어요. 참여 중인 공간인지 확인해 주세요."
+              : "연결 상태를 확인한 뒤 다시 시도해 주세요."
             : expired
               ? "다시 초대하려면 새 링크를 만들어 보내 주세요."
               : "링크를 받은 가족은 로그인한 뒤 같은 돌봄 공간에 참여할 수 있어요."}
@@ -188,34 +157,28 @@ function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
             초대할 공간
           </p>
           <p className="text-hm-body-default wrap-anywhere">
-            {careSpaceName(space)}
-            {!failed && ` · 함께하는 가족 ${space.members.length}명`}
+            {careSpaceName({ subjectLabel })}
+            {!failed && ` · 함께하는 가족 ${memberCount}명`}
           </p>
         </div>
-        {loading ? (
+        {loading && !link ? (
           <LoadingState label="초대 링크를 준비하고 있어요" />
         ) : (
-          !failed && (
+          link && (
             <InvitationLinkCard
-              expiresAt={expiresAt}
+              expiresAt={Date.parse(link.expiresAt)}
               expired={expired}
             />
           )
         )}
         <Notice
-          tone={
-            failed
-              ? "error"
-              : expired || state === "copied"
-                ? "neutral"
-                : "info"
-          }
+          tone={failed ? "error" : expired || copied ? "neutral" : "info"}
           title={
             failed
               ? "새 링크가 준비되면 공유할 수 있어요"
               : expired
                 ? "이 링크로는 참여할 수 없어요"
-                : state === "copied"
+                : copied
                   ? "가족이 참여하면"
                   : "참여하면 함께 볼 수 있어요"
           }
@@ -224,7 +187,7 @@ function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
               ? "새 초대 링크를 준비한 뒤 복사하거나 공유해 주세요."
               : expired
                 ? "새 링크를 받은 가족이 로그인하고 참여하면 가족 목록에서 확인할 수 있어요."
-                : state === "copied"
+                : copied
                   ? "가족 탭의 목록에서 새 구성원을 확인할 수 있어요."
                   : "가족은 이 공간의 소식·돌봄 항목·근거와 이력을 확인하고 소식을 남길 수 있어요."
           }
@@ -237,22 +200,17 @@ function SpaceInvitePreview({ space }: { space: CareSpaceView }) {
             {feedback}
           </p>
         )}
-        {!unavailable && (
-          <TextAction onClick={() => void navigate(new URL(url).pathname)}>
-            Mock 초대받은 화면 보기
-          </TextAction>
-        )}
       </DetailLayout>
       <BottomSheet
         open={fallbackOpen}
         onOpenChange={setFallbackOpen}
-        title="Mock 초대 링크 복사"
+        title="초대 링크 복사"
       >
         <p className="text-hm-body-small text-hm-text-secondary">{feedback}</p>
         <Field
           ref={field}
-          label="화면 확인용 링크"
-          value={url}
+          label="초대 링크"
+          value={link?.invitationUrl ?? ""}
           readOnly
           onFocus={(event) => event.target.select()}
         />

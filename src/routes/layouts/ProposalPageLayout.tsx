@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
 import { DetailLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
-import { MockStateSelect } from "@/components/feedback/MockStateSelect";
-import { MockNotice } from "@/components/feedback/MockNotice";
 import { SpaceBottomNavigation } from "./SpaceBottomNavigation";
 import type { SpaceTab } from "../paths";
 import { TextAction } from "@/components/ui";
@@ -16,8 +14,6 @@ export function ProposalPageLayout({
   actions,
   tabs = false,
   activeTab = "news",
-  preview,
-  connected = false,
 }: {
   title: string;
   spaceId: string;
@@ -26,29 +22,12 @@ export function ProposalPageLayout({
   actions?: ReactNode;
   tabs?: boolean;
   activeTab?: SpaceTab;
-  preview?: {
-    value: string;
-    options: readonly { value: string; label: string }[];
-    onChange: (value: string) => void;
-  };
-  connected?: boolean;
 }) {
   const { withdrawing, returnToWithdrawal } = useWithdrawalReturn();
-  const message = "소식·돌봄 UI 예시 · 실제 요청·돌봄 정보 변경 없음";
   return (
     <DetailLayout
       title={title}
       onBack={onBack}
-      notice={
-        connected ? undefined : preview ? (
-          <MockStateSelect
-            message={message}
-            {...preview}
-          />
-        ) : (
-          <MockNotice message={message} />
-        )
-      }
       footer={
         (actions || tabs) && (
           <FixedBottomArea position="fixed">

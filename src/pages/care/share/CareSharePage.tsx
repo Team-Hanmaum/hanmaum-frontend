@@ -23,11 +23,11 @@ import { ApiError } from "@/lib/api";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import { careItemPath, careListPath } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
-import { useConnectedSpace } from "@/routes/useConnectedSpace";
+import { useSpaceContext } from "@/routes/useSpaceContext";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 export function CareSharePage() {
-  const { space } = useConnectedSpace();
+  const { space } = useSpaceContext();
   const { itemId = "" } = useParams();
   const query = useCareItem(space.spaceId, itemId);
   const navigate = useAppNavigate();
@@ -51,7 +51,6 @@ export function CareSharePage() {
         title="공유 미리보기"
         spaceId={space.spaceId}
         onBack={back}
-        connected
       >
         <ReviewQueryState
           error={query.error}
@@ -69,7 +68,7 @@ export function CareSharePage() {
         title="공유"
         spaceId={space.spaceId}
         onBack={back}
-        connected
+
         actions={<Button onClick={back}>항목으로 돌아가기</Button>}
       >
         <Notice
@@ -116,7 +115,7 @@ function ShareContent({
         title="공유 미리보기"
         spaceId={item.spaceId}
         onBack={onBack}
-        connected
+
         actions={
           card ? (
             <>

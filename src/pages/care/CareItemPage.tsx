@@ -1,158 +1,167 @@
-import { useAppNavigate } from "@/routes/useAppNavigate";
-import { useOutletContext, useParams } from "react-router";
-import { EmptyState } from "@/components/feedback";
-import { MenuRow } from "@/components/ui";
-import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
-import { useMockProposals } from "@/features/proposal/model/useMockProposals";
-import { getCarePendingProposals } from "@/features/proposal/model/proposalSelectors";
-import { CarePendingNotice } from "@/features/proposal/ui/CarePendingNotice";
-import { careKindLabels } from "@/features/careitem/model/careItemViewTypes";
-import { careItemListFilter } from "@/features/careitem/model/careItemSelectors";
-import { isConfirmedQuestion } from "@/features/careitem/model/careItemStatus";
-import { useCareNow } from "@/features/careitem/model/useCareNow";
-import { CareItemContent } from "@/features/careitem/ui/CareItemContent";
-import { CareItemActions } from "@/features/careitem/ui/CareItemActions";
-import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
+import { useParams } from "react-router";
+import { Button, Badge, MenuRow } from "@/components/ui";
+import { Notice } from "@/components/feedback";
+import { useCareItem } from "@/features/careitem/model/useCareQueries";
+import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
+import { CareValuesView } from "@/features/careitem/ui/CareValuesView";
 import {
-  careHistoryPath,
-  careSourcesPath,
-  careReconfirmPath,
-  newsCreatePath,
-  careListPath,
-  careManagePath,
-  careItemPath,
-  careRequestsPath,
-} from "@/routes/paths";
+  fieldLabels,
+  itemLabels,
+} from "@/features/careitem/model/careReadView";
+import { careTypeTabs } from "@/features/careitem/model/careItemSelectors";
+import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
+import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
+import { useSpaceContext } from "@/routes/useSpaceContext";
 import { useBackNavigation } from "@/routes/useBackNavigation";
-import { useCareProposalNavigation } from "@/routes/useCareProposalNavigation";
-
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
+import {
+  careSourcesPath,
+  careSharePath,
+  careHistoryPath,
+  careListPath,
+  careItemPath,
+  careReconfirmPath,
+  proposalListPath,
+} from "@/routes/paths";
 export function CareItemPage() {
-  const space = useOutletContext<CareSpaceView>();
-  const { itemId } = useParams();
-  const data = useMockProposals(space);
-  const item = data.items.find((entry) => entry.id === itemId);
+  const { space } = useSpaceContext();
+  const { itemId = "" } = useParams();
   const navigate = useAppNavigate();
-  const now = useCareNow();
-  const onBack = useBackNavigation(
-    careListPath(space.id, item ? careItemListFilter(item, now) : undefined),
+  const { withReturn } = useWithdrawalReturn();
+  const query = useCareItem(space.spaceId, itemId);
+  const members = useSpaceMembers(space.spaceId);
+  const item = query.data;
+  const listPath = withReturn(
+    careListPath(space.spaceId, {
+      type:
+        careTypeTabs.find((tab) => tab.value.toUpperCase() === item?.itemType)
+          ?.value ?? "schedule",
+    }),
   );
-  const onProposal = useCareProposalNavigation(space.id);
-  const label = item ? careKindLabels[item.kind] : "돌봄";
-  const locked = isConfirmedQuestion(item);
-  const hasActions =
-    item &&
-    !item.deletedAt &&
-    !locked &&
-    (item.needsReconfirmation
-      ? space.role === "owner"
-      : item.kind === "task" ||
-        (item.kind === "schedule" && item.status === "scheduled") ||
-        (item.kind === "question" && item.status === "unconfirmed"));
+  const back = useBackNavigation(listPath);
   return (
     <ProposalPageLayout
-      title={`${label} 상세`}
-      spaceId={space.id}
-      onBack={onBack}
-      tabs
+      title="돌봄 상세"
+      spaceId={space.spaceId}
+      onBack={back}
       activeTab="care"
+      tabs
       actions={
-        hasActions ? (
-          <CareItemActions
-            item={item}
-            space={space}
-            onAction={(action, next) =>
-              void navigate(
-                `${careItemPath(space.id, item.id)}/${action}${action === "status" && next ? `?next=${next}` : ""}`,
-              )
-            }
-            onReconfirm={() =>
-              void navigate(careReconfirmPath(space.id, item.id))
-            }
-          />
-        ) : undefined
+        <Button
+          variant="secondary"
+          onClick={() => void navigate(listPath)}
+        >
+          돌봄 목록으로
+        </Button>
       }
     >
-      {!item || item.deletedAt ? (
-        <>
-          <EmptyState
-            title={
-              item?.deletedAt
-                ? "삭제된 항목이에요"
-                : "돌봄 항목을 확인할 수 없어요"
-            }
-            body="현재 목록에서 제외된 항목이에요. 일반 삭제의 변경 이력은 유지돼요."
-            action={{
-              label: "돌봄 목록 보기",
-              onClick: () => void navigate(careListPath(space.id)),
-            }}
-          />
-          {item?.deletedAt && (
-            <MenuRow
-              icon="clock-brand"
-              title="변경 이력 보기"
-              onClick={() => void navigate(careHistoryPath(space.id, item.id))}
-            />
-          )}
-        </>
+      {!item || query.isError ? (
+        <ReviewQueryState
+          error={query.error}
+          retry={() => void query.refetch()}
+        />
       ) : (
         <>
-          <CareItemContent
-            item={item}
-            space={space}
-          />
-          {!item.needsReconfirmation && (
-            <CarePendingNotice
-              proposals={getCarePendingProposals(data, item.id, space)}
-              onOpen={onProposal}
+          <Badge label={itemLabels[item.itemType]} />
+          <h1 className="text-hm-title-page">
+            {item.title ?? "내용이 제거된 항목"}
+          </h1>
+          {(item.needsReconfirmation || item.needsConflictReview) && (
+            <Notice
+              title={
+                item.needsReconfirmation
+                  ? "원본 변경으로 다시 확인이 필요해요"
+                  : "서로 다른 내용이 있어요"
+              }
+              body="근거와 제안을 확인해 주세요. 현재 정보를 임의로 확정하지 않아요."
             />
           )}
-          <div className="divide-y divide-hm-divider-default overflow-hidden rounded-hm-16 bg-hm-bg-surface">
-            {data.careChanges?.some(
-              (change) =>
-                change.draft.itemId === item.id &&
-                change.status === "requested" &&
-                (space.role === "owner" ||
-                  change.author.id ===
-                    space.members.find((member) => member.self)?.id),
-            ) && (
-              <MenuRow
-                icon="news-brand"
-                title="확인 중인 요청 보기"
+          {item.needsReconfirmation &&
+            item.visibility !== "DELETED" &&
+            (space.role === "OWNER" ? (
+              <Button
                 onClick={() =>
                   void navigate(
-                    `${careRequestsPath(space.id)}?item=${encodeURIComponent(item.id)}`,
+                    withReturn(careReconfirmPath(space.spaceId, itemId)),
+                  )
+                }
+              >
+                다시 확인하기
+              </Button>
+            ) : (
+              <Notice
+                title="소유자의 재확인이 필요해요"
+                body="소유자가 현재 값과 유효한 근거를 다시 확인해야 해요."
+              />
+            ))}
+          <section className="rounded-hm-14 bg-hm-bg-surface p-hm-20">
+            <CareValuesView
+              values={{ ...item, fields: item.fields }}
+              keys={Object.keys(fieldLabels).filter(
+                (key) =>
+                  key !== "confirmedAnswer" || item.itemType === "QUESTION",
+              )}
+              members={members.data}
+            />
+          </section>
+          {item.answers.length > 0 && (
+            <section className="flex flex-col gap-hm-12">
+              <h2 className="text-hm-heading-section">가족이 남긴 답변</h2>
+              {item.answers.map((answer) => (
+                <Notice
+                  key={answer.answerId}
+                  title={answer.answer ?? "내용이 제거된 답변"}
+                  body={answer.basis ?? "근거 내용 없음"}
+                />
+              ))}
+            </section>
+          )}
+          <MenuRow
+            icon="news-brand"
+            title="근거 보기"
+            onClick={() =>
+              void navigate(withReturn(careSourcesPath(space.spaceId, itemId)))
+            }
+          />
+          <MenuRow
+            icon="news-brand"
+            title="변경 이력 보기"
+            onClick={() =>
+              void navigate(withReturn(careHistoryPath(space.spaceId, itemId)))
+            }
+          />
+          <MenuRow
+            icon="news-brand"
+            title="제안·요청 확인"
+            onClick={() =>
+              void navigate(withReturn(proposalListPath(space.spaceId)))
+            }
+          />
+          {!item.needsReconfirmation &&
+            item.visibility !== "DELETED" &&
+            !item.redactedFields.length && (
+              <MenuRow
+                icon="link-brand"
+                title="공유"
+                description="카카오톡 또는 링크로 가족에게 알리기"
+                onClick={() =>
+                  void navigate(
+                    withReturn(careSharePath(space.spaceId, itemId)),
                   )
                 }
               />
             )}
-            <MenuRow
-              icon="link-brand"
-              title="근거 보기"
-              description="소식 원문과 직접 확인한 근거"
-              onClick={() => void navigate(careSourcesPath(space.id, item.id))}
-            />
-            <MenuRow
-              icon="clock-brand"
-              title="변경 이력"
-              description="확정된 변경을 확인해요"
-              onClick={() => void navigate(careHistoryPath(space.id, item.id))}
-            />
-            {!item.needsReconfirmation && (
-              <MenuRow
-                icon="edit"
-                title={`${label} 관리`}
-                description={locked ? "공유 · 삭제" : "내용 변경 · 공유 · 삭제"}
-                onClick={() => void navigate(careManagePath(space.id, item.id))}
-              />
-            )}
-          </div>
-          {item.needsReconfirmation && (
-            <MenuRow
-              icon="news-brand"
-              title="새 소식 남기기"
-              onClick={() => void navigate(newsCreatePath(space.id))}
-            />
-          )}
+          <MenuRow
+            icon="edit"
+            title="항목 관리"
+            description="내용·담당자·상태 변경, 답변과 삭제"
+            onClick={() =>
+              void navigate(
+                withReturn(`${careItemPath(space.spaceId, itemId)}/manage`),
+              )
+            }
+          />
         </>
       )}
     </ProposalPageLayout>

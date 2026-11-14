@@ -9,7 +9,7 @@
 
 개발 도메인은 각 PC의 `127.0.0.1`을 가리킨다. 공용 DNS 등록이나 Vercel 배포는 필요 없다. 팀원마다 자기 코드가 표시되며 API·DB는 공유한다. 실제 데이터가 변경되므로 테스트 계정·공간을 사용한다. `SameSite=Lax` 쿠키를 유지하기 위해 FE도 같은 사이트의 **HTTPS** 주소로 실행한다. CORS는 별도로 정확한 Origin을 허용해야 한다.
 
-**BE 선행 조건:** 현재 확인한 BE는 로그인 성공 주소가 하나로 고정되어 있다. 아래 [BE 전달 사항](#be-전달-사항)을 반영해야 로컬 로그인과 인증 API를 끝까지 사용할 수 있다. FE 설정 성공은 BE 배포 완료를 뜻하지 않는다.
+**BE 선행 조건:** 아래 [BE 전달 사항](#be-전달-사항)의 개발 Origin CORS와 `frontend=local` 로그인 복귀 분기를 지원하는 BE 배포가 필요하다. FE 설정 스크립트는 BE 설정을 변경하지 않는다.
 
 ## 최초 1회 준비
 
@@ -76,12 +76,11 @@ macOS·Linux에서 NSS 도구가 없으면 mkcert는 NSS 설치를 건너뛰고 
    127.0.0.1 local.hanmaum.site # Hanmaum local FE
    ```
 
-5. `.env.development.local`의 아래 네 값을 설정. 다른 키는 보존하고 기존 파일이 변경되면 `.certs/env.before-*`로 백업. 같은 폴더의 임시 파일에 작성·동기화를 마친 뒤 rename으로 교체하므로 작성 중 실패해도 기존 파일을 먼저 비우지 않음. 교체 직전 다른 편집이 감지되면 최신 내용으로 다시 병합하고, 변경이 계속되면 중단.
+5. `.env.development.local`의 아래 세 값을 설정. 다른 키는 보존하고 기존 파일이 변경되면 `.certs/env.before-*`로 백업. 같은 폴더의 임시 파일에 작성·동기화를 마친 뒤 rename으로 교체하므로 작성 중 실패해도 기존 파일을 먼저 비우지 않음. 교체 직전 다른 편집이 감지되면 최신 내용으로 다시 병합하고, 변경이 계속되면 중단.
 
    ```dotenv
    HANMAUM_LOCAL_HTTPS=true
    VITE_API_BASE_URL=https://api.hanmaum.site
-   VITE_ENABLE_MOCK_PREVIEW=false
    VITE_ENABLE_QA_TOOLS=true
    ```
 
@@ -115,9 +114,9 @@ pnpm setup:local --check
 
 - 로컬 인증서 읽기와 HTTPS 서버 설정은 `serve` + `development`에만 적용한다. `pnpm build`, `pnpm preview`, Vercel 빌드에는 로컬 인증서가 필요 없다.
 - `.env.development.local`은 개발 모드에서만 읽는다. 기존 `.env.local`은 모든 모드에 영향을 주므로 개발 전용 값을 그 파일에 추가하지 않는다. 셸에 미리 설정한 환경 변수는 파일보다 우선하므로 예상과 다르면 확인한다.
-- `.env.production`과 Vercel Production의 API·Mock/QA 설정은 그대로 유지한다. Production에서는 로컬 OAuth 복귀 표시도 추가하지 않는다.
-- 기존 HTTP localhost + 로컬 BE 방식은 `.env.development.local`의 `HANMAUM_LOCAL_HTTPS=false`, `VITE_API_BASE_URL=http://localhost:8080`, `VITE_ENABLE_MOCK_PREVIEW=false`로 변경하고 Vite를 다시 실행한다.
-- VITE_ENABLE_MOCK_PREVIEW=true로 변경해도 실제 인증/API 흐름을 사용한다. 미연동 화면은 별도 메모리 예시로 제공하며, 예시 표시와 초기화 버튼으로 구분한다. 실제 홈과 서버 데이터는 바뀌지 않는다. 공통 UI만 확인하려면 로컬 /_dev/components를 사용한다.
+- `.env.production`과 Vercel Production의 API·QA 설정은 그대로 유지한다. Production에서는 로컬 OAuth 복귀 표시도 추가하지 않는다.
+- 기존 HTTP localhost + 로컬 BE 방식은 `.env.development.local`의 `HANMAUM_LOCAL_HTTPS=false`, `VITE_API_BASE_URL=http://localhost:8080`으로 변경하고 Vite를 다시 실행한다.
+- 업무 화면은 실제 API를 사용한다. 기존 `VITE_ENABLE_MOCK_PREVIEW`는 사용하지 않으므로 개인 환경 파일에 남아 있어도 무시하며 삭제할 수 있다. 공통 UI만 확인하려면 로컬 `/_dev/components`를 사용한다.
 
 ## BE 전달 사항
 

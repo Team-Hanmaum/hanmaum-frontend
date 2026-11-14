@@ -1,154 +1,189 @@
-import { useAppNavigate } from "@/routes/useAppNavigate";
-import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
-import { useOutletContext, useParams } from "react-router";
-import { Button, TextAction } from "@/components/ui";
+import { useParams } from "react-router";
+import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui";
 import { EmptyState, Notice } from "@/components/feedback";
-import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
-import { useMockRecords } from "@/features/record/model/useMockRecords";
-import { useMockProposals } from "@/features/proposal/model/useMockProposals";
-import { useProposalRouteSelection } from "@/routes/useProposalRouteSelection";
-import { useProposalAction } from "@/features/proposal/model/useProposalAction";
-import { proposalReviewStates } from "@/features/proposal/model/proposalScreenStates";
-import { ProposalReview } from "@/features/proposal/ui/ProposalReview";
-import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
+import { useSession } from "@/features/auth/model/useSession";
 import {
-  newsDetailPath,
+  useProposalList,
+  useProposal,
+} from "@/features/proposal/model/useProposalQueries";
+import { useProposalDrafts } from "@/features/proposal/model/useProposalDrafts";
+import { initialProposalDraft } from "@/features/proposal/model/proposalDraft";
+import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
+import { ProposalCard } from "@/features/proposal/ui/ProposalCard";
+import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
+import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
+import { useSpaceContext } from "@/routes/useSpaceContext";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useBackNavigation } from "@/routes/useBackNavigation";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
+import {
   proposalConfirmPath,
-  proposalListPath,
-  proposalRequestPath,
   proposalEditPath,
   proposalTargetPath,
   proposalEvidencePath,
+  newsDetailPath,
 } from "@/routes/paths";
-import { useMockScreenState } from "@/routes/useMockScreenState";
-import { useBackNavigation } from "@/routes/useBackNavigation";
-
 export function ProposalReviewPage() {
-  const space = useOutletContext<CareSpaceView>();
+  const { space } = useSpaceContext();
   const { recordId = "" } = useParams();
-  const data = useMockProposals(space);
-  const records = useMockRecords(space);
-  const proposals = data.proposals.filter(
-    (item) =>
-      item.recordId === recordId &&
-      item.status === "review" &&
-      !item.sourceDeleted,
-  );
-  const { selected, toggle } = useProposalRouteSelection(proposals, data);
-  const { pending, failure, submit } = useProposalAction(space);
-  const [state, setState] = useMockScreenState(proposalReviewStates, "default");
-  const navigate = useAppNavigate();
+  const list = useProposalList(space.spaceId, "REVIEW_PENDING", recordId);
+  const session = useSession();
+  const client = useQueryClient();
+  const key = ["review-selection", session.accountId, space.spaceId, recordId];
+  const { data: selected = [] } = useQuery<string[]>({
+    queryKey: key,
+    queryFn: skipToken,
+    initialData: [],
+    enabled: false,
+  });
   const { withReturn } = useWithdrawalReturn();
-  const onBack = useBackNavigation(withReturn(proposalListPath(space.id)));
-  const owner = space.role === "owner";
-  const missing = !records.some((item) => item.id === recordId);
-  const empty = !proposals.length || missing;
-  const requestError = failure === "request-error";
-  function proceed() {
-    if (!selected.length) return;
-    if (owner)
-      void navigate(withReturn(proposalConfirmPath(space.id)), {
-        state: { selection: selected, recordId },
-      });
-    else {
-      if (requestError) setState("default");
-      submit(
-        selected,
-        "request",
-        (id) => void navigate(withReturn(proposalRequestPath(space.id, id))),
-        !requestError && state === "request-error"
-          ? "request-error"
-          : undefined,
-      );
-    }
-  }
+  const navigate = useAppNavigate();
+  const back = useBackNavigation(
+    withReturn(newsDetailPath(space.spaceId, recordId)),
+  );
+  const items = [
+    ...new Map(
+      (list.data?.pages ?? [])
+        .flatMap((p) => p.items)
+        .map((p) => [p.proposalId, p]),
+    ).values(),
+  ];
+  const selectedIds = selected.filter((id) =>
+    items.some((p) => p.proposalId === id && p.status === "REVIEW_PENDING"),
+  );
   return (
     <ProposalPageLayout
       title="제안 검토"
-      spaceId={space.id}
-      onBack={onBack}
-      preview={{
-        value: state,
-        options: proposalReviewStates,
-        onChange: setState,
-      }}
+      spaceId={space.spaceId}
+      onBack={back}
       actions={
-        !empty && (
-          <>
-            <Button
-              className="w-full"
-              disabled={!selected.length}
-              loading={pending}
-              onClick={proceed}
-            >
-              {owner
-                ? "반영할 내용 확인"
-                : requestError
-                  ? `선택한 ${selected.length}건 다시 요청`
-                  : selected.length
-                    ? `선택한 ${selected.length}건 반영 요청`
-                    : "반영 요청하기"}
-            </Button>
-            <TextAction
-              className="w-full"
-              onClick={() =>
-                void navigate(withReturn(proposalListPath(space.id)))
-              }
-              disabled={pending}
-            >
-              나중에 확인하기
-            </TextAction>
-          </>
-        )
+        <Button
+          disabled={!selectedIds.length || list.isError}
+          onClick={() =>
+            void navigate(
+              withReturn(
+                `${proposalConfirmPath(space.spaceId)}?ids=${selectedIds.map(encodeURIComponent).join(",")}`,
+              ),
+            )
+          }
+        >
+          {space.role === "OWNER" ? "반영할 내용 확인" : "요청할 내용 확인"} ·{" "}
+          {selectedIds.length}건
+        </Button>
       }
     >
-      {empty ? (
-        <EmptyState
-          title={missing ? "소식을 확인할 수 없어요" : "검토할 제안이 없어요"}
-          body="이미 요청하거나 처리한 내용은 확인할 내용 목록에서 다시 볼 수 있어요."
-          action={{
-            label: "확인할 내용 목록으로",
-            onClick: () =>
-              void navigate(
-                withReturn(proposalListPath(space.id, "requested")),
-              ),
-          }}
+      <h1 className="text-hm-title-page">무엇을 반영할까요?</h1>
+      <Notice
+        title={
+          space.role === "OWNER"
+            ? "확인한 내용만 반영해요"
+            : "소유자에게 반영을 요청해요"
+        }
+        body="최대 20개까지 선택할 수 있어요. 같은 돌봄 항목의 변경은 하나씩 확인해 주세요."
+      />
+      {!list.data || list.isRefetchError ? (
+        <ReviewQueryState
+          error={list.error}
+          retry={() => void list.refetch()}
         />
-      ) : (
-        <>
-          {failure && failure !== "request-error" && (
-            <Notice
-              role="alert"
-              tone="error"
-              title="다시 확인해 주세요"
-              body="제안의 상태·원본·현재 정보를 다시 확인해 주세요. 현재 정보는 변경되지 않았어요."
-            />
-          )}
-          <ProposalReview
-            subjectLabel={space.subjectLabel}
-            owner={owner}
-            proposals={proposals}
-            data={data}
-            records={records}
-            selected={selected}
-            onSelect={toggle}
-            onSource={(id) =>
-              void navigate(withReturn(newsDetailPath(space.id, id)))
-            }
-            busy={pending}
-            requestError={requestError}
-            onEdit={(id) =>
-              void navigate(withReturn(proposalEditPath(space.id, id)))
-            }
-            onTarget={(id) =>
-              void navigate(withReturn(proposalTargetPath(space.id, id)))
-            }
-            onCompare={(id) =>
-              void navigate(withReturn(proposalEvidencePath(space.id, id)))
+      ) : items.length ? (
+        items.map((p) => (
+          <ReviewCard
+            key={p.proposalId}
+            spaceId={space.spaceId}
+            id={p.proposalId}
+            selected={selectedIds.includes(p.proposalId)}
+            onSelect={(checked) =>
+              client.setQueryData<string[]>(key, (previous) =>
+                checked
+                  ? [...new Set([...(previous ?? []), p.proposalId])].slice(
+                      0,
+                      20,
+                    )
+                  : (previous ?? []).filter((id) => id !== p.proposalId),
+              )
             }
           />
-        </>
+        ))
+      ) : (
+        <EmptyState
+          title="검토할 제안이 없어요"
+          body="이미 처리되었거나 분석 결과에 반영할 제안이 없어요."
+        />
+      )}
+      {list.hasNextPage && (
+        <Button
+          variant="secondary"
+          loading={list.isFetchingNextPage}
+          onClick={() => void list.fetchNextPage()}
+        >
+          제안 더 보기
+        </Button>
+      )}
+      {list.isFetchNextPageError && (
+        <ReviewQueryState
+          error={list.error}
+          retry={() => void list.fetchNextPage()}
+        />
       )}
     </ProposalPageLayout>
+  );
+}
+function ReviewCard({
+  spaceId,
+  id,
+  selected,
+  onSelect,
+}: {
+  spaceId: string;
+  id: string;
+  selected: boolean;
+  onSelect: (checked: boolean) => void;
+}) {
+  const query = useProposal(spaceId, id);
+  const { drafts } = useProposalDrafts(spaceId);
+  const members = useSpaceMembers(spaceId);
+  const navigate = useAppNavigate();
+  const { withReturn } = useWithdrawalReturn();
+  if (!query.data || query.isError)
+    return (
+      <ReviewQueryState
+        error={query.error}
+        retry={() => void query.refetch()}
+      />
+    );
+  const proposal = query.data;
+  const saved = drafts[id];
+  const draft =
+    saved?.reviewToken === proposal.reviewToken
+      ? saved
+      : initialProposalDraft(proposal);
+  return (
+    <>
+      {saved && saved.reviewToken !== proposal.reviewToken && (
+        <Notice
+          title="제안이 바뀌어 수정 초안을 제외했어요"
+          body="최신 내용으로 다시 검토해 주세요."
+        />
+      )}
+      <ProposalCard
+        proposal={proposal}
+        draft={draft}
+        members={members.data}
+        selected={selected}
+        onSelect={onSelect}
+        onEdit={() => void navigate(withReturn(proposalEditPath(spaceId, id)))}
+        onTarget={() =>
+          void navigate(withReturn(proposalTargetPath(spaceId, id)))
+        }
+        onEvidence={() =>
+          void navigate(withReturn(proposalEvidencePath(spaceId, id)))
+        }
+        onRecord={(record) =>
+          void navigate(withReturn(newsDetailPath(spaceId, record)))
+        }
+      />
+    </>
   );
 }

@@ -1,253 +1,108 @@
-import { useAppNavigate } from "@/routes/useAppNavigate";
-import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { useState } from "react";
-import { useOutletContext, useParams, useSearchParams } from "react-router";
-import {
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  Notice,
-} from "@/components/feedback";
-import {
-  Button,
-  Comparison,
-  MenuRow,
-  SelectionRow,
-  TextAction,
-} from "@/components/ui";
-import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
-import { useMockProposals } from "@/features/proposal/model/useMockProposals";
-import { mockProposals } from "@/features/proposal/model/mockProposals";
-import {
-  retargetProposal,
-  isConfirmedQuestionChange,
-} from "@/features/proposal/model/proposalDrafts";
-import { useMockRecords } from "@/features/record/model/useMockRecords";
-import { ProposalSources } from "@/features/proposal/ui/ProposalSources";
+import { useParams } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { Button, SelectionRow } from "@/components/ui";
+import { EmptyState, Notice } from "@/components/feedback";
+import { getCareItem } from "@/features/careitem/api/careReadApi";
+import { careKeys } from "@/features/careitem/model/useCareQueries";
+import { useSession } from "@/features/auth/model/useSession";
+import { useProposal } from "@/features/proposal/model/useProposalQueries";
+import { useProposalDrafts } from "@/features/proposal/model/useProposalDrafts";
+import { initialProposalDraft } from "@/features/proposal/model/proposalDraft";
+import { reviewFailure } from "@/features/proposal/model/reviewFailure";
+import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
-import {
-  careItemPath,
-  newsDetailPath,
-  proposalListPath,
-  proposalReviewPath,
-} from "@/routes/paths";
-import { useMockScreenState } from "@/routes/useMockScreenState";
-import { useQaMode } from "@/lib/useQaMode";
-const states = [
-  { value: "default", label: "기본" },
-  { value: "empty", label: "후보 없음" },
-  { value: "loading", label: "불러오는 중" },
-  { value: "error", label: "조회 실패" },
-  { value: "invalid", label: "대상 유효하지 않음" },
-] as const;
+import { useSpaceContext } from "@/routes/useSpaceContext";
+import { useBackNavigation } from "@/routes/useBackNavigation";
+import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
+import { proposalListPath } from "@/routes/paths";
 export function ProposalTargetPage() {
-  const space = useOutletContext<CareSpaceView>();
-  const { proposalId } = useParams();
-  const data = useMockProposals(space);
-  const records = useMockRecords(space);
-  const proposal = data.proposals.find(
-    (item) =>
-      item.id === proposalId &&
-      item.status === "review" &&
-      item.operation !== "create" &&
-      !item.sourceDeleted,
-  );
-  const [params, setParams] = useSearchParams();
-  const selected = params.get("target") ?? "";
-  const compare = params.get("view") === "compare";
-  function selectTarget(id: string) {
-    void setParams(
-      (previous) => {
-        const next = new URLSearchParams(previous);
-        next.set("target", id);
-        next.delete("view");
-        return next;
-      },
-      { replace: true, preventScrollReset: true },
-    );
-  }
-  function setCompare(value: boolean) {
-    void setParams(
-      (previous) => {
-        const next = new URLSearchParams(previous);
-        if (value) next.set("view", "compare");
-        else next.delete("view");
-        return next;
-      },
-      { replace: true },
-    );
-  }
-  const [error, setError] = useState(false);
-  const [state] = useMockScreenState(states, "default");
-  const { enabled: qaEnabled } = useQaMode();
-  function setState(value: string) {
-    setError(false);
-    // 두 번 탐색하면 이전 쿼리가 비교 화면을 되살리므로 한 번에 초기화한다.
-    void setParams(
-      (previous) => {
-        const next = new URLSearchParams(previous);
-        next.set(qaEnabled ? "qaState" : "mockState", value);
-        next.delete("view");
-        return next;
-      },
-      { replace: true },
-    );
-  }
-  const navigate = useAppNavigate();
+  const { space } = useSpaceContext();
+  const { proposalId = "" } = useParams();
+  const query = useProposal(space.spaceId, proposalId);
+  const { save } = useProposalDrafts(space.spaceId);
   const { withReturn } = useWithdrawalReturn();
-  const back = () =>
-    void navigate(
-      proposal
-        ? withReturn(proposalReviewPath(space.id, proposal.recordId))
-        : withReturn(proposalListPath(space.id)),
-      { motion: "back" },
-    );
-  const candidates = data.items.filter(
-    (item) =>
-      proposal &&
-      item.kind === proposal.kind &&
-      !item.deletedAt &&
-      !item.needsReconfirmation &&
-      !isConfirmedQuestionChange(proposal, item),
-  );
-  const target = candidates.find((item) => item.id === selected);
-  const projected =
-    proposal && target ? retargetProposal(proposal, target, space) : undefined;
-  function confirm() {
-    if (!proposal || !target) return;
-    const result = mockProposals.revise(
-      space,
-      proposal.id,
-      proposal.revision ?? 0,
-      { targetId: target.id },
-    );
-    if (result.ok) back();
-    else setError(true);
+  const back = useBackNavigation(withReturn(proposalListPath(space.spaceId)));
+  const [selected, setSelected] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const client = useQueryClient();
+  const session = useSession();
+  async function choose() {
+    if (
+      !query.data ||
+      !query.data.reviewToken ||
+      busy ||
+      !query.data.candidates.some((c) => c.itemId === selected)
+    )
+      return;
+    setBusy(true);
+    setError("");
+    try {
+      const item = await getCareItem(space.spaceId, selected);
+      if (item.itemType !== query.data.itemType || item.redactedFields.length)
+        throw new Error("선택한 대상의 내용을 확인할 수 없어요.");
+      client.setQueryData(
+        careKeys.detail(session.accountId, space.spaceId, selected),
+        item,
+      );
+      save(proposalId, initialProposalDraft(query.data, item));
+      back();
+    } catch (e) {
+      setError(reviewFailure(e));
+    } finally {
+      setBusy(false);
+    }
   }
-  const ready =
-    state === "default" && proposal && !error && (!compare || target);
   return (
     <ProposalPageLayout
-      title={compare ? "연결 대상 확인" : "연결 대상 선택"}
-      spaceId={space.id}
-      onBack={() => (compare ? setCompare(false) : back())}
-      preview={{
-        value: state,
-        options: states,
-        onChange: setState,
-      }}
+      title="연결 대상 선택"
+      spaceId={space.spaceId}
+      onBack={back}
       actions={
-        ready && (
-          <>
-            <Button
-              disabled={!target}
-              onClick={() => (compare ? confirm() : setCompare(true))}
-            >
-              {compare ? "이 대상으로 검토 계속" : "선택한 대상 비교"}
-            </Button>
-            <TextAction onClick={() => (compare ? setCompare(false) : back())}>
-              {compare ? "다른 대상 고르기" : "맞는 항목이 없거나 모르겠어요"}
-            </TextAction>
-          </>
-        )
+        <Button
+          disabled={!selected || query.isError || !query.data?.reviewToken}
+          loading={busy}
+          onClick={() => void choose()}
+        >
+          이 대상으로 선택
+        </Button>
       }
     >
-      {!proposal ? (
-        <EmptyState
-          title="연결할 제안을 확인할 수 없어요"
-          body="이미 요청·처리됐거나 근거가 삭제된 제안이에요."
-          action={{ label: "확인할 내용으로", onClick: back }}
+      <h1 className="text-hm-title-page">어느 돌봄 정보에 연결할까요?</h1>
+      <Notice
+        title="제안에 포함된 후보만 선택해요"
+        body="현재 정보와 비교한 뒤 변경 내용을 다시 확인해 주세요. 대상을 바꾸면 이전 수정 초안은 초기화돼요."
+      />
+      {error && (
+        <Notice
+          tone="error"
+          title="대상을 선택하지 못했어요"
+          body={error}
         />
-      ) : state === "loading" ? (
-        <LoadingState label="연결 후보를 불러오고 있어요" />
-      ) : state === "error" ? (
-        <ErrorState
-          reason="load-error"
-          onAction={() => setState("default")}
+      )}
+      {!query.data || query.isError ? (
+        <ReviewQueryState
+          error={query.error}
+          retry={() => void query.refetch()}
         />
-      ) : state === "invalid" || error || (compare && !target) ? (
-        <EmptyState
-          title="대상을 다시 확인해 주세요"
-          body="선택한 항목을 더 이상 연결할 수 없어요. 아직 반영되지 않았어요."
-          action={{
-            label: "후보 다시 확인",
-            onClick: () => setState("default"),
-          }}
-        />
-      ) : state === "empty" || !candidates.length ? (
-        <EmptyState
-          title="연결할 후보가 없어요"
-          body="맞는 항목을 확인할 때까지 제안을 검토 대기로 남겨요."
-          action={{ label: "지금은 보류하기", onClick: back }}
-        />
-      ) : compare && target && projected ? (
-        <>
-          <h1 className="text-hm-title-page">이 항목에 대한 소식이 맞나요?</h1>
-          <section className="flex flex-col gap-hm-16 rounded-hm-16 bg-hm-bg-surface p-hm-20">
-            <h2 className="text-hm-heading-section">선택한 대상</h2>
-            <p className="text-hm-body-default">
-              {target.title}
-              <br />
-              {target.value} · {target.meta}
-            </p>
-          </section>
-          <MenuRow
-            icon="link-brand"
-            title="현재 항목의 근거·이력"
-            onClick={() =>
-              void navigate(withReturn(careItemPath(space.id, target.id)))
-            }
+      ) : query.data.candidates.length ? (
+        query.data.candidates.map((c) => (
+          <SelectionRow
+            key={c.itemId}
+            control="radio"
+            name="target"
+            label={c.title ?? "제목 없는 항목"}
+            checked={selected === c.itemId}
+            onChange={() => setSelected(c.itemId)}
+            disabled={busy || !!query.data?.targetItemId}
           />
-          <Comparison
-            beforeLabel="현재 내용"
-            beforeValue={target.value}
-            afterLabel={
-              proposal.operation === "link"
-                ? "연결 후 · 값 유지"
-                : "반영할 제안"
-            }
-            afterValue={projected.afterValue}
-          />
-          <p className="text-hm-body-small whitespace-pre-wrap text-hm-text-secondary">
-            {projected.context}
-          </p>
-          <ProposalSources
-            proposals={[proposal]}
-            records={records}
-            onSource={(id) =>
-              void navigate(withReturn(newsDetailPath(space.id, id)))
-            }
-          />
-        </>
+        ))
       ) : (
-        <>
-          <h1 className="text-hm-title-page">어떤 항목을 말하는 걸까요?</h1>
-          <p className="text-hm-body-default text-hm-text-secondary">
-            이름과 내용을 보고 하나를 골라 주세요.
-          </p>
-          <ProposalSources
-            proposals={[proposal]}
-            records={records}
-            onSource={(id) =>
-              void navigate(withReturn(newsDetailPath(space.id, id)))
-            }
-          />
-          {candidates.map((item) => (
-            <SelectionRow
-              key={item.id}
-              control="radio"
-              name="target"
-              label={item.title}
-              description={`${item.value} · ${item.meta}`}
-              checked={selected === item.id}
-              onChange={() => selectTarget(item.id)}
-            />
-          ))}
-          <Notice
-            title="선택만으로 현재 정보가 바뀌지 않아요"
-            body="대상을 고른 뒤 비교하고 검토를 계속해 주세요."
-          />
-        </>
+        <EmptyState
+          title="선택할 후보가 없어요"
+          body="대상을 임의로 만들거나 연결하지 않아요. 이 제안은 나중에 다시 확인해 주세요."
+        />
       )}
     </ProposalPageLayout>
   );

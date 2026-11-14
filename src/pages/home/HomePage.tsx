@@ -1,72 +1,98 @@
-import { useAppNavigate } from "@/routes/useAppNavigate";
-import { useOutletContext } from "react-router";
-import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
+import { ErrorState, LoadingState, Notice } from "@/components/feedback";
 import { HomeContent } from "@/features/dashboard/ui/HomeContent";
-import { homeScreenStates } from "@/features/dashboard/model/homeScreenStates";
-import { getMockHomeData } from "@/features/dashboard/model/mockHomeData";
-import { useMockRecords } from "@/features/record/model/useMockRecords";
-import { useMockProposals } from "@/features/proposal/model/useMockProposals";
-import { getRecordsWithProposals } from "@/features/proposal/model/proposalSelectors";
+import {
+  isEmptyHome,
+  toHomeView,
+  toSpaceView,
+} from "@/features/dashboard/model/homeData";
+import { useHomeData } from "@/features/dashboard/model/useHomeData";
+import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
+import { useSpaceContext } from "@/routes/useSpaceContext";
+import { useAppNavigate } from "@/routes/useAppNavigate";
+import { ApiError } from "@/lib/api";
 import {
   spacePath,
   spaceInvitePath,
-  newsDetailPath,
   proposalListPath,
-  proposalResultPath,
-  careChangePath,
+  paths,
+  careListPath,
+  newsDetailPath,
+  careItemPath,
+  careHistoryPath,
 } from "@/routes/paths";
-import { useMockScreenState } from "@/routes/useMockScreenState";
-import { careItemPath, careListPath } from "@/routes/paths";
-import { useCareNow } from "@/features/careitem/model/useCareNow";
-import {
-  pendingSpaceInfoCount,
-  useMockSpaceInfoChanges,
-} from "@/features/carespace/model/mockSpaceInfoChanges";
 
 export function HomePage() {
-  const space = useOutletContext<CareSpaceView>();
-  const records = useMockRecords(space);
-  const proposals = useMockProposals(space);
+  const { space } = useSpaceContext();
   const navigate = useAppNavigate();
-  const now = useCareNow();
-  const spaceChanges = useMockSpaceInfoChanges(space.id);
-  const data = getMockHomeData(
-    getRecordsWithProposals(records, proposals),
-    proposals,
-    space,
-    now,
+  const { dashboard, news } = useHomeData(space.spaceId);
+  const members = useSpaceMembers(space.spaceId);
+  const retry = () => {
+    void dashboard.refetch();
+    void news.refetch();
+    void members.refetch();
+  };
+  const failed = dashboard.isError || news.isError || members.isError;
+  const denied = [dashboard.error, news.error, members.error].some(
+    (error) =>
+      error instanceof ApiError && [403, 404].includes(error.status ?? 0),
   );
-  data.pendingCount =
-    (data.pendingCount ?? 0) + pendingSpaceInfoCount(spaceChanges, space);
-  const defaultState =
-    space.empty &&
-    !records.length &&
-    !proposals.items.length &&
-    !data.pendingCount
-      ? "empty"
-      : "default";
-  const [state, setState] = useMockScreenState(homeScreenStates, defaultState);
+  if (denied)
+    return (
+      <ErrorState
+        reason="no-permission"
+        title="이 공간에 접근할 수 없어요"
+        actionLabel="참여 공간 선택"
+        onAction={() => void navigate(paths.spaces)}
+      />
+    );
+  if (!dashboard.data || !news.data || !members.data)
+    return failed ? (
+      <ErrorState
+        reason="load-error"
+        title="홈을 불러오지 못했어요"
+        onAction={retry}
+      />
+    ) : (
+      <LoadingState label="홈을 불러오고 있어요" />
+    );
+  const empty = isEmptyHome(dashboard.data, news.data);
   return (
-    <HomeContent
-      space={space}
-      data={data}
-      state={state}
-      onFamily={() => void navigate(spacePath(space.id, "family"))}
-      onInvite={() => void navigate(spaceInvitePath(space.id))}
-      onNews={() => void navigate(spacePath(space.id, "news"))}
-      onOpenNews={(id) => void navigate(newsDetailPath(space.id, id))}
-      onCare={(filter) => void navigate(careListPath(space.id, filter))}
-      onOpenCare={(id) => void navigate(careItemPath(space.id, id))}
-      onPending={() => void navigate(proposalListPath(space.id))}
-      onHistory={() => void navigate(proposalListPath(space.id, "applied"))}
-      onChange={(id) =>
-        void navigate(
-          proposals.careChanges?.some((change) => change.id === id)
-            ? careChangePath(space.id, id)
-            : proposalResultPath(space.id, id),
-        )
-      }
-      onRetry={() => setState(defaultState)}
-    />
+    <>
+      {failed && (
+        <Notice
+          tone="error"
+          title="최신 정보를 불러오지 못했어요"
+          body="마지막으로 확인한 내용을 표시하고 있어요."
+          action={{ label: "다시 불러오기", onClick: retry }}
+        />
+      )}
+      <HomeContent
+        space={{ ...toSpaceView(space, members.data), empty }}
+        data={toHomeView(dashboard.data, news.data)}
+        state={
+          empty ? (members.data.length === 1 ? "created" : "empty") : "default"
+        }
+        onFamily={() => void navigate(spacePath(space.spaceId, "family"))}
+        onInvite={() => void navigate(spaceInvitePath(space.spaceId))}
+        onNews={() => void navigate(spacePath(space.spaceId, "news"))}
+        onOpenNews={(id) => void navigate(newsDetailPath(space.spaceId, id))}
+        onCare={(filter) => void navigate(careListPath(space.spaceId, filter))}
+        onOpenCare={(id) => void navigate(careItemPath(space.spaceId, id))}
+        onPending={() => void navigate(proposalListPath(space.spaceId))}
+        onHistory={() =>
+          void navigate(proposalListPath(space.spaceId, "applied"))
+        }
+        onChange={(id) => {
+          const change = dashboard.data.recentChanges.items.find(
+            (entry) => `${entry.itemId}:${entry.version}` === id,
+          );
+          if (change)
+            void navigate(
+              careHistoryPath(space.spaceId, change.itemId, change.version),
+            );
+        }}
+        onRetry={retry}
+      />
+    </>
   );
 }

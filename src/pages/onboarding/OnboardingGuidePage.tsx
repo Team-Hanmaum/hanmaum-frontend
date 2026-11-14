@@ -1,17 +1,12 @@
 import { useAppNavigate } from "@/routes/useAppNavigate";
-import { AppLink } from "@/routes/AppLink";
 
 import { ActionBar, DetailLayout } from "@/components/layout";
 import { Notice } from "@/components/feedback";
-import { MockNotice } from "@/components/feedback/MockNotice";
-import { isMockPreviewEnabled } from "@/lib/mockPreview";
 import { paths } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 
 export function OnboardingGuidePage() {
-  const onBack = useBackNavigation(
-    isMockPreviewEnabled ? paths.login : paths.spaces,
-  );
+  const onBack = useBackNavigation(paths.spaces);
   const navigate = useAppNavigate();
 
   return (
@@ -19,7 +14,6 @@ export function OnboardingGuidePage() {
       <DetailLayout
         title="시작 전 안내"
         onBack={onBack}
-        notice={<MockNotice message="실제 로그인·동의 기록 없음" />}
         footer={
           <ActionBar
             position="fixed"
@@ -53,14 +47,6 @@ export function OnboardingGuidePage() {
             "기록할 내용과 함께 볼 가족을 알리고,\n부모님의 동의를 받아 주세요."
           }
         />
-        {isMockPreviewEnabled && (
-          <AppLink
-            to={paths.spaces}
-            className="hm-focus-ring rounded-hm-8 p-hm-12 text-center text-hm-text-brand underline"
-          >
-            Mock 공간 둘러보기
-          </AppLink>
-        )}
       </DetailLayout>
     </>
   );

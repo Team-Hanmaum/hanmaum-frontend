@@ -29,7 +29,7 @@ import {
 import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
 import { spaceInfoPath, spaceInfoRequestsPath } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
-import { useConnectedSpace } from "@/routes/useConnectedSpace";
+import { useSpaceContext } from "@/routes/useSpaceContext";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 type Decision = { mode: SpaceInfoDecisionMode; entry: ChangeRequestEntry };
@@ -57,7 +57,7 @@ export function SpaceInfoRequestPage() {
 }
 
 function RequestDetail({ requestId }: { requestId: string }) {
-  const { space } = useConnectedSpace();
+  const { space } = useSpaceContext();
   const query = useChangeRequest(space.spaceId, requestId);
   const detail = useSpaceDetail(space.spaceId);
   const action = useSpaceInfoDecision(space.spaceId, requestId);
@@ -179,7 +179,6 @@ function RequestDetail({ requestId }: { requestId: string }) {
             : "공간 정보 요청";
   return (
     <AccountPageLayout
-      connected
       title="공간 정보 요청"
       onBack={() => {
         if (action.pending) return;

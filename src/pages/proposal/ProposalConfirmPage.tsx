@@ -1,170 +1,254 @@
+import { useRef } from "react";
+import { useSearchParams } from "react-router";
+import { Button, TextAction } from "@/components/ui";
+import { EmptyState, Notice } from "@/components/feedback";
+import {
+  useSelectedProposals,
+  readSelectedIds,
+} from "@/features/proposal/model/useSelectedProposals";
+import { useProposalDrafts } from "@/features/proposal/model/useProposalDrafts";
+import {
+  initialProposalDraft,
+  proposalDraftProblem,
+  proposalInputValues,
+} from "@/features/proposal/model/proposalDraft";
+import { useReviewLeases } from "@/features/careitem/model/useReviewLeases";
+import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
+import {
+  applyProposals,
+  declineProposals,
+  submitProposalRequest,
+} from "@/features/proposal/api/proposalWriteApi";
+import type {
+  ProposalApplicationBody,
+  ProposalDeclineBody,
+} from "@/features/proposal/api/proposalWriteTypes";
+import { useReviewMutation } from "@/features/proposal/model/useReviewMutation";
+import {
+  canRetryReview,
+  reviewFailure,
+} from "@/features/proposal/model/reviewFailure";
+import { ProposalCard } from "@/features/proposal/ui/ProposalCard";
+import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
+import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
+import { useSpaceContext } from "@/routes/useSpaceContext";
+import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
-import { useLocation, useOutletContext } from "react-router";
-import { EmptyState, Notice } from "@/components/feedback";
-import { Badge, Button, TextAction } from "@/components/ui";
-import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
-import { useMockRecords } from "@/features/record/model/useMockRecords";
-import { useMockProposals } from "@/features/proposal/model/useMockProposals";
-import { readProposalConfirmation } from "@/features/proposal/model/proposalConfirmation";
-import { useProposalAction } from "@/features/proposal/model/useProposalAction";
-import { proposalConfirmStates } from "@/features/proposal/model/proposalScreenStates";
-import { ProposalSummaryCard } from "@/features/proposal/ui/ProposalSummaryCard";
-import { ProposalSources } from "@/features/proposal/ui/ProposalSources";
-import { ProposalFailureView } from "@/features/proposal/ui/ProposalFailureView";
-import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import {
-  newsDetailPath,
   proposalListPath,
   proposalRequestPath,
   proposalResultPath,
-  proposalReviewPath,
 } from "@/routes/paths";
-import { useMockScreenState } from "@/routes/useMockScreenState";
-
+type Attempt = {
+  mode: "apply" | "decline";
+  body: ProposalApplicationBody | ProposalDeclineBody;
+};
 export function ProposalConfirmPage() {
-  const space = useOutletContext<CareSpaceView>();
-  const { state: historyState } = useLocation();
-  const draft = readProposalConfirmation(historyState);
-  const data = useMockProposals(space);
-  const records = useMockRecords(space);
+  const { space } = useSpaceContext();
+  const [params] = useSearchParams();
+  const ids = readSelectedIds(params.get("ids"));
+  const queries = useSelectedProposals(space.spaceId, ids);
+  const { drafts, clear } = useProposalDrafts(space.spaceId);
+  const members = useSpaceMembers(space.spaceId);
   const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
-  const [state, setState] = useMockScreenState(
-    proposalConfirmStates,
-    "default",
+  const back = useBackNavigation(withReturn(proposalListPath(space.spaceId)));
+  const attempt = useRef<Attempt | null>(null);
+  const proposals = queries.flatMap((q) => (q.data ? [q.data] : []));
+  const entries = proposals.map((p) => ({
+    proposal: p,
+    draft:
+      drafts[p.proposalId]?.reviewToken === p.reviewToken
+        ? drafts[p.proposalId]
+        : initialProposalDraft(p),
+  }));
+  const loaded =
+    ids.length > 0 &&
+    proposals.length === ids.length &&
+    queries.every((q) => !q.isError);
+  const problem = entries
+    .map(({ proposal, draft }) => proposalDraftProblem(proposal, draft))
+    .find(Boolean);
+  const targets = entries
+    .filter(
+      (e) =>
+        e.proposal.action !== "CREATE_ITEM" &&
+        e.draft.targetItemId &&
+        e.draft.targetVersion,
+    )
+    .map((e) => ({
+      itemId: e.draft.targetItemId!,
+      version: e.draft.targetVersion!,
+    }));
+  const duplicate =
+    new Set(targets.map((t) => t.itemId)).size !== targets.length;
+  const leases = useReviewLeases(
+    space.spaceId,
+    targets,
+    loaded && !problem && !duplicate,
   );
-  const { pending, failure, submit } = useProposalAction(space);
-  const request = data.requests.find((item) => item.id === draft?.requestId);
-  const proposals = data.proposals.filter(
-    (item) =>
-      !item.sourceDeleted &&
-      draft?.selection.some((selected) => selected.id === item.id) &&
-      (draft.requestId
-        ? item.requestId === draft.requestId && item.status === "requested"
-        : item.recordId === draft.recordId && item.status === "review"),
-  );
-  const valid =
-    space.role === "owner" &&
-    draft &&
-    proposals.length === draft.selection.length;
-  const reviewPath = draft?.recordId
-    ? withReturn(proposalReviewPath(space.id, draft.recordId))
-    : draft?.requestId
-      ? withReturn(proposalRequestPath(space.id, draft.requestId))
-      : withReturn(proposalListPath(space.id));
-  const onReview = () =>
-    void navigate(reviewPath, { replace: true, motion: "back" });
-  function decide(decision: "applied" | "rejected") {
-    if (!valid) return;
-    submit(
-      draft.selection,
-      decision,
-      (id) =>
+  const mutation = useReviewMutation(space.spaceId, async (value: Attempt) => {
+    if (value.mode === "decline") {
+      await declineProposals(space.spaceId, value.body as ProposalDeclineBody);
+      return { requestId: null };
+    }
+    const body = value.body as ProposalApplicationBody;
+    if (space.role === "OWNER") {
+      await applyProposals(space.spaceId, body);
+      return { requestId: null };
+    }
+    const result = await submitProposalRequest(space.spaceId, {
+      ...body,
+      entries: body.entries.map((e) => ({ ...e, sourceType: "AI_PROPOSAL" })),
+    });
+    return { requestId: result.requestId };
+  });
+  const pending = mutation.isPending;
+  function submit(mode: "apply" | "decline") {
+    if (pending || !loaded) return;
+    if (!attempt.current) {
+      if (mode === "apply" && (problem || duplicate || !leases.ensureCurrent()))
+        return;
+      if (mode === "decline" && space.role !== "OWNER") return;
+      attempt.current = {
+        mode,
+        body: {
+          clientRequestId: crypto.randomUUID(),
+          entries: entries.map(({ proposal: p, draft: d }) =>
+            mode === "decline"
+              ? { proposalId: p.proposalId, reviewToken: p.reviewToken! }
+              : {
+                  proposalId: p.proposalId,
+                  action: p.action,
+                  reviewToken: p.reviewToken!,
+                  ...(p.action !== "CREATE_ITEM" && {
+                    targetItemId: d.targetItemId!,
+                    expectedItemVersion: d.targetVersion!,
+                    leaseToken: leases.leases.find(
+                      (l) => l.itemId === d.targetItemId,
+                    )!.leaseToken,
+                  }),
+                  values: proposalInputValues(p, d),
+                },
+          ),
+        },
+      };
+    }
+    mutation.mutate(attempt.current, {
+      onSuccess: (result, submitted) => {
+        clear(submitted.body.entries.map((entry) => entry.proposalId));
         void navigate(
-          decision === "applied"
-            ? withReturn(proposalResultPath(space.id, id))
-            : withReturn(proposalListPath(space.id, "rejected")),
+          withReturn(
+            result.requestId
+              ? proposalRequestPath(space.spaceId, result.requestId)
+              : `${proposalResultPath(space.spaceId, ids[0])}?ids=${ids.join(",")}`,
+          ),
           { replace: true },
-        ),
-      state === "changed" ? "changed" : undefined,
-    );
+        );
+      },
+    });
   }
-  const blocked = failure && failure !== "request-error";
+  const blocked = !!mutation.error && !canRetryReview(mutation.error);
   return (
     <ProposalPageLayout
-      title={blocked ? "반영 결과 확인" : "반영 전 확인"}
-      spaceId={space.id}
-      onBack={onReview}
-      preview={{
-        value: state,
-        options: proposalConfirmStates,
-        onChange: setState,
-      }}
+      title="반영 전 확인"
+      spaceId={space.spaceId}
+      onBack={back}
       actions={
-        blocked ? (
-          <Button onClick={onReview}>선택 다시 하기</Button>
-        ) : (
-          valid && (
-            <>
-              <Button
-                loading={pending}
-                onClick={() => decide("applied")}
-              >
-                선택한 {proposals.length}건 반영하기
-              </Button>
+        loaded ? (
+          <>
+            <Button
+              loading={pending}
+              disabled={
+                blocked ||
+                (!mutation.variables &&
+                  (!!problem || duplicate || !leases.ready))
+              }
+              onClick={() => submit("apply")}
+            >
+              {mutation.error && canRetryReview(mutation.error)
+                ? "같은 요청으로 다시 확인"
+                : space.role === "OWNER"
+                  ? "선택한 내용 반영"
+                  : "소유자에게 반영 요청"}
+            </Button>
+            {space.role === "OWNER" && !mutation.variables && (
               <TextAction
-                tone="danger"
-                disabled={pending}
-                onClick={() => decide("rejected")}
+                disabled={pending || proposals.some((p) => !p.reviewToken)}
+                onClick={() => submit("decline")}
               >
-                선택한 {proposals.length}건 미적용 처리
+                선택한 제안 반영하지 않기
               </TextAction>
-            </>
-          )
-        )
+            )}
+            <TextAction
+              onClick={back}
+              disabled={pending}
+            >
+              검토로 돌아가기
+            </TextAction>
+          </>
+        ) : undefined
       }
     >
-      {!valid ? (
+      <h1 className="text-hm-title-page">
+        {space.role === "OWNER"
+          ? "반영 전에 한 번 더 확인해 주세요"
+          : "요청할 내용을 확인해 주세요"}
+      </h1>
+      <Notice
+        title={
+          space.role === "OWNER"
+            ? "확인한 내용만 돌봄에 반영해요"
+            : "아직 돌봄 정보는 바뀌지 않아요"
+        }
+        body={
+          space.role === "OWNER"
+            ? "선택한 내용은 함께 처리돼요. 하나라도 바뀌면 다시 검토해야 해요."
+            : "소유자가 요청을 검토하고 최종 반영해요."
+        }
+      />
+      {!ids.length ? (
         <EmptyState
-          title="반영할 내용을 다시 선택해 주세요"
-          body="선택 정보가 없거나 이미 처리됐어요. 소유자만 최종 반영할 수 있어요."
-          action={{
-            label: "확인할 내용 목록으로",
-            onClick: () =>
-              void navigate(withReturn(proposalListPath(space.id))),
-          }}
+          title="선택한 제안이 없어요"
+          body="목록에서 반영할 내용을 선택해 주세요."
         />
-      ) : blocked ? (
-        <ProposalFailureView
-          failure={failure}
-          proposals={proposals}
-          data={data}
-          onReview={onReview}
+      ) : !loaded ? (
+        <ReviewQueryState
+          error={queries.find((q) => q.error)?.error}
+          retry={() => queries.forEach((q) => void q.refetch())}
         />
       ) : (
-        <>
-          <Badge
-            label="소유자 확인"
-            tone="brand"
+        entries.map(({ proposal, draft }) => (
+          <ProposalCard
+            key={proposal.proposalId}
+            proposal={proposal}
+            draft={draft}
+            members={members.data}
+            readonly
           />
-          <h1 className="text-hm-title-page whitespace-pre-line">
-            {"이 내용으로\n반영할까요?"}
-          </h1>
-          <p className="text-hm-body-default text-hm-text-secondary">
-            {request ? `${request.author.name}님이 요청한` : "선택한"} 변경{" "}
-            {proposals.length}건이에요.
-          </p>
-          {proposals.map((proposal) => (
-            <ProposalSummaryCard
-              members={space.members}
-              key={proposal.id}
-              proposal={{
-                ...proposal,
-                beforeValue:
-                  data.items.find((item) => item.id === proposal.targetId)
-                    ?.value ?? proposal.beforeValue,
-              }}
-              label={proposal.typeLabel}
-              afterLabel="반영할 내용"
-              meta={proposal.context}
-            />
-          ))}
-          <ProposalSources
-            proposals={proposals}
-            records={records}
-            onSource={(id) =>
-              void navigate(withReturn(newsDetailPath(space.id, id)))
-            }
-          />
-          <Notice
-            title="반영하면 가족에게도 보여요"
-            body="현재 돌봄 정보가 바뀌고, 누가 언제 반영했는지 이력에 남아요."
-          />
-          <p className="text-hm-body-small text-hm-text-secondary">
-            검토한 뒤 내용이 달라졌다면 반영 전에 다시 확인하도록 안내해요.
-          </p>
-        </>
+        ))
+      )}
+      {(problem || duplicate || leases.error || mutation.error) && (
+        <Notice
+          tone="error"
+          title="다시 확인이 필요해요"
+          body={
+            mutation.error
+              ? reviewFailure(mutation.error)
+              : duplicate
+                ? "같은 돌봄 항목의 제안은 하나씩 반영해 주세요."
+                : problem || reviewFailure(leases.error)
+          }
+        />
+      )}
+      {loaded && !problem && !duplicate && !leases.ready && !leases.error && (
+        <p
+          role="status"
+          className="text-hm-body-default"
+        >
+          다른 가족의 편집 여부를 확인하고 있어요.
+        </p>
       )}
     </ProposalPageLayout>
   );

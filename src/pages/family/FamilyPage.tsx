@@ -1,149 +1,114 @@
-import { useAppNavigate } from "@/routes/useAppNavigate";
-import { useLocation, useOutletContext } from "react-router";
-import {
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  Notice,
-} from "@/components/feedback";
+import { ErrorState, LoadingState, Notice } from "@/components/feedback";
 import { Button, MenuRow } from "@/components/ui";
-import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
-import { FamilyMember } from "@/features/carespace/ui/FamilyMember";
+import { FamilyMember } from "@/features/carespace/ui";
+import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
+import { toSpaceView } from "@/features/dashboard/model/homeData";
+import { useSpaceContext } from "@/routes/useSpaceContext";
+import { useAppNavigate } from "@/routes/useAppNavigate";
 import {
-  memberTaskLabel,
-  unfinishedMemberTasks,
-} from "@/features/carespace/model/familySelectors";
-import { familyListStates } from "@/features/carespace/model/familyScreenStates";
-import { useMockProposals } from "@/features/proposal/model/useMockProposals";
-import {
-  familyMembersPath,
-  familyLeavePath,
-  familyTransferPath,
   paths,
   spaceInvitePath,
+  familyMembersPath,
+  familyTransferPath,
+  familyLeavePath,
 } from "@/routes/paths";
-import { useMockScreenState } from "@/routes/useMockScreenState";
+import { ApiError } from "@/lib/api";
+import { useLocation } from "react-router";
 
 export function FamilyPage() {
-  const space = useOutletContext<CareSpaceView>();
-  const { items } = useMockProposals(space);
-  const [state, setState] = useMockScreenState(familyListStates, "default");
+  const { space } = useSpaceContext();
+  const members = useSpaceMembers(space.spaceId);
   const navigate = useAppNavigate();
-  const location = useLocation();
+  const { state } = useLocation();
   const removal = (
-    location.state as {
-      familyRemoval?: {
-        name: string;
-        released: number;
+    state as {
+      familyAction?: {
+        kind: string;
         spaceId: string;
-        memberId: string;
       };
     } | null
-  )?.familyRemoval;
+  )?.familyAction;
+  if (
+    members.error instanceof ApiError &&
+    [403, 404].includes(members.error.status ?? 0)
+  )
+    return (
+      <ErrorState
+        reason="no-permission"
+        title="가족 정보를 확인할 수 없어요"
+        actionLabel="참여 공간 선택"
+        onAction={() => void navigate(paths.spaces)}
+      />
+    );
+  if (!members.data)
+    return members.isError ? (
+      <ErrorState
+        reason="load-error"
+        onAction={() => void members.refetch()}
+      />
+    ) : (
+      <LoadingState label="함께 돌보는 가족을 확인하고 있어요" />
+    );
   return (
     <>
-      {removal?.spaceId === space.id &&
-        !space.members.some((member) => member.id === removal.memberId) && (
-          <Notice
-            role="status"
-            title={`${removal.name}님의 참여가 종료됐어요`}
-            body={`미완료 담당 할 일 ${removal.released}개가 담당자 미지정으로 바뀌었어요.`}
-          />
-        )}
-      <h1 className="text-hm-title-page">함께하는 가족</h1>
-      {state === "loading" ? (
-        <LoadingState label="가족 목록을 불러오고 있어요" />
-      ) : state === "error" ? (
-        <ErrorState
-          reason="load-error"
-          title="가족 목록을 불러오지 못했어요"
-          onAction={() => setState("default")}
+      {removal?.kind === "removed" && removal.spaceId === space.spaceId && (
+        <Notice
+          title="구성원 내보내기를 완료했어요"
+          body="현재 함께하는 가족은 아래 목록에서 확인해 주세요."
         />
-      ) : state === "forbidden" ? (
-        <ErrorState
-          reason="no-permission"
-          onAction={() => void navigate(paths.spaces)}
+      )}
+      {members.isError && (
+        <Notice
+          tone="error"
+          title="최신 가족 정보를 불러오지 못했어요"
+          body="마지막으로 확인한 가족 목록이에요."
+          action={{
+            label: "다시 불러오기",
+            onClick: () => void members.refetch(),
+          }}
         />
-      ) : (
+      )}
+      <h1 className="text-hm-title-page">
+        함께 돌보는 가족 {members.data.length}명
+      </h1>
+      {toSpaceView(space, members.data).members.map((member) => (
+        <FamilyMember
+          key={member.id}
+          name={member.name}
+          role={member.role}
+          self={member.self}
+        />
+      ))}
+      <Button onClick={() => void navigate(spaceInvitePath(space.spaceId))}>
+        가족 초대하기
+      </Button>
+      <h2 className="text-hm-heading-section">가족 관리</h2>
+      {space.role === "OWNER" && (
         <>
-          <p className="text-hm-body-default text-hm-text-secondary">
-            {space.subjectLabel}의 돌봄 · 함께하는 가족 {space.members.length}명
-          </p>
-          {[...space.members]
-            .sort(
-              (a, b) => Number(b.role === "owner") - Number(a.role === "owner"),
-            )
-            .map((member) => (
-              <FamilyMember
-                key={member.id}
-                {...member}
-                name={`${member.name}${member.self ? " · 나" : ""}`}
-                initial={member.name[0]}
-                detail={memberTaskLabel(
-                  unfinishedMemberTasks(items, member.id).length,
-                )}
-              />
-            ))}
-          {space.members.length === 1 ? (
-            <EmptyState
-              icon="family-brand"
-              title="함께할 가족을 초대해요"
-              body={"돌봄 소식과 일정을\n가족과 한곳에서 확인해 보세요."}
-              action={{
-                label: "가족 초대하기",
-                onClick: () => void navigate(spaceInvitePath(space.id)),
-              }}
-            />
-          ) : (
-            <section className="flex flex-col gap-hm-16 rounded-hm-16 bg-hm-bg-surface p-hm-20">
-              <h2 className="text-hm-heading-section">가족과 함께 돌봐요</h2>
-              <p className="text-hm-body-default text-hm-text-secondary">
-                초대 링크는 24시간 동안 유효해요. 소유자와 구성원 모두 초대할 수
-                있어요.
-              </p>
-              <Button onClick={() => void navigate(spaceInvitePath(space.id))}>
-                가족 초대하기
-              </Button>
-            </section>
-          )}
-          <h2 className="text-hm-heading-section">
-            {space.role === "owner" ? "가족 관리" : "이 공간에서"}
-          </h2>
-          <div className="divide-y divide-hm-divider-default overflow-hidden rounded-hm-16 bg-hm-bg-surface">
-            {space.role === "owner" && (
-              <>
-                <MenuRow
-                  icon="family-brand"
-                  title="구성원 관리"
-                  description="가족의 참여 권한을 관리해요"
-                  onClick={() => void navigate(familyMembersPath(space.id))}
-                />
-                <MenuRow
-                  icon="person"
-                  title="소유권 이전"
-                  description="다른 가족에게 소유자 역할을 넘겨요"
-                  onClick={() => void navigate(familyTransferPath(space.id))}
-                />
-              </>
-            )}
-            <MenuRow
-              tone="danger"
-              title="공간 나가기"
-              description={
-                space.role === "owner"
-                  ? "소유권 이전 또는 공간 삭제 후 가능"
-                  : "내 참여를 종료해요"
-              }
-              onClick={() => void navigate(familyLeavePath(space.id))}
-            />
-          </div>
-          <Notice
-            tone="neutral"
-            title="함께하는 가족의 역할"
-            body="모두 소식을 남기고 가족을 초대해요. 맡은 할 일의 상태는 직접 바꿔요. 소유자는 승인이 필요한 변경을 최종 반영해요."
+          <MenuRow
+            icon="family-brand"
+            title="구성원 관리"
+            description="함께하는 가족의 참여 관리"
+            onClick={() => void navigate(familyMembersPath(space.spaceId))}
+          />
+          <MenuRow
+            icon="person"
+            title="소유권 이전"
+            description="가족에게 소유자 역할을 넘겨요"
+            onClick={() => void navigate(familyTransferPath(space.spaceId))}
           />
         </>
       )}
+      <MenuRow
+        tone="danger"
+        title="공간 나가기"
+        description={
+          space.role === "OWNER"
+            ? "소유권 이전 또는 공간 삭제 후 가능"
+            : "내 참여를 종료해요"
+        }
+        onClick={() => void navigate(familyLeavePath(space.spaceId))}
+      />
     </>
   );
 }

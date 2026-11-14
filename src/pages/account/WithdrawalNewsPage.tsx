@@ -18,7 +18,6 @@ export function WithdrawalNewsPage() {
   const back = () => void navigate(paths.withdrawal, { motion: "back" });
   return (
     <AccountPageLayout
-      connected
       title="탈퇴 전 소식 확인"
       onBack={back}
       actions={<Button onClick={back}>탈퇴 절차로 돌아가기</Button>}

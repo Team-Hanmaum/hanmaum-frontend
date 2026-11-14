@@ -18,20 +18,20 @@ import { SpaceSelectionPage } from "@/pages/space/SpaceSelectionPage";
 import { SpaceCreatePage } from "@/pages/space/SpaceCreatePage";
 
 // 공간 안의 화면
-import { ConnectedSpaceInvitePage } from "@/pages/space/ConnectedSpaceInvitePage";
-import { ConnectedHomePage } from "@/pages/home/ConnectedHomePage";
-import { ConnectedCarePage } from "@/pages/care/ConnectedCarePage";
-import { ConnectedReviewLayout } from "./layouts/ConnectedReviewLayout";
-import { ConnectedNewsPage } from "@/pages/news/ConnectedNewsPage";
-import { ConnectedFamilyPage } from "@/pages/family/ConnectedFamilyPage";
+import { SpaceInvitePage } from "@/pages/space/SpaceInvitePage";
+import { HomePage } from "@/pages/home/HomePage";
+import { CarePage } from "@/pages/care/CarePage";
+import { ReviewLayout } from "./layouts/ReviewLayout";
+import { NewsPage } from "@/pages/news/NewsPage";
+import { FamilyPage } from "@/pages/family/FamilyPage";
 import { AllPage } from "@/pages/all/AllPage";
 
 // 공통 오류·레이아웃·경로
 import { NotFoundPage } from "@/pages/error/NotFoundPage";
 import { RouteErrorPage } from "@/pages/error/RouteErrorPage";
-import { ConnectedTabLayout } from "./layouts/ConnectedTabLayout";
+import { TabLayout } from "./layouts/TabLayout";
 import { RecordRouteLayout } from "./layouts/RecordRouteLayout";
-import { ProposalRouteLayout } from "./layouts/ProposalRouteLayout";
+import { redirectLegacyCareRequests } from "./legacyCareRequests";
 import { SpaceSessionLayout } from "./layouts/SpaceSessionLayout";
 import { recordNavigation, navigationDirection } from "./navigationHistory";
 import { getRouteMotion } from "./routeMotion";
@@ -53,15 +53,14 @@ function redirectToSpaceHome({ params, request }: LoaderFunctionArgs) {
 
 // 소식 페이지 지연 로딩
 async function loadNewsCreatePage() {
-  const { ConnectedNewsCreatePage } =
-    await import("@/pages/news/ConnectedNewsCreatePage");
-  return { Component: ConnectedNewsCreatePage };
+  const { NewsCreatePage } = await import("@/pages/news/NewsCreatePage");
+  return { Component: NewsCreatePage };
 }
 
-// 실제 소식은 API 상세, 미연동 예시 화면의 예시 소식은 기존 예시 상세를 사용한다.
+// 소식 상세는 실제 API 응답을 사용한다.
 async function loadNewsDetailPage() {
-  const { NewsDetailRoute } = await import("@/pages/news/NewsDetailRoute");
-  return { Component: NewsDetailRoute };
+  const { NewsDetailPage } = await import("@/pages/news/NewsDetailPage");
+  return { Component: NewsDetailPage };
 }
 
 function RouteLoadingFallback() {
@@ -76,8 +75,7 @@ function RouteLoadingFallback() {
 }
 async function loadCareEditPage() {
   return {
-    Component: (await import("@/pages/care/change/CareWriteRoutes"))
-      .CareEditRoute,
+    Component: (await import("@/pages/care/change/CareEditPage")).CareEditPage,
   };
 }
 
@@ -175,22 +173,22 @@ const accountRoutes: RouteObject[] = [
 const tabRoutes: RouteObject[] = [
   {
     path: "home",
-    Component: ConnectedHomePage,
+    Component: HomePage,
     handle: { title: "홈", tab: "home" },
   },
   {
     path: "care",
-    Component: ConnectedCarePage,
+    Component: CarePage,
     handle: { title: "돌봄", tab: "care" },
   },
   {
     path: "news",
-    Component: ConnectedNewsPage,
+    Component: NewsPage,
     handle: { title: "소식", tab: "news" },
   },
   {
     path: "family",
-    Component: ConnectedFamilyPage,
+    Component: FamilyPage,
     handle: { title: "가족", tab: "family" },
   },
   {
@@ -219,16 +217,15 @@ const recordDeletionRoutes: RouteObject[] = [
   {
     path: "news/:recordId/delete",
     lazy: async () => ({
-      Component: (await import("@/pages/news/NewsDeletionRoutes"))
-        .NewsDeleteRoute,
+      Component: (await import("@/pages/news/NewsDeletePage")).NewsDeletePage,
     }),
     handle: { title: "소식 원본 삭제" },
   },
   {
     path: "news/deletions/:deletionId",
     lazy: async () => ({
-      Component: (await import("@/pages/news/NewsDeletionRoutes"))
-        .NewsDeletionResultRoute,
+      Component: (await import("@/pages/news/NewsDeletionResultPage"))
+        .NewsDeletionResultPage,
     }),
     handle: { title: "소식 삭제 결과" },
   },
@@ -260,17 +257,14 @@ const careItemRoutes: RouteObject[] = [
   },
   {
     path: "care/requests",
-    lazy: async () => ({
-      Component: (await import("@/pages/care/change/CareRequestsPage"))
-        .CareRequestsPage,
-    }),
+    loader: redirectLegacyCareRequests,
     handle: { title: "돌봄 요청·변경" },
   },
   {
     path: "care/new/:kind",
     lazy: async () => ({
-      Component: (await import("@/pages/care/change/CareWriteRoutes"))
-        .CareCreateRoute,
+      Component: (await import("@/pages/care/change/CareCreatePage"))
+        .CareCreatePage,
     }),
     handle: { title: "돌봄 추가", operation: "create" },
   },
@@ -301,129 +295,110 @@ const careItemRoutes: RouteObject[] = [
   },
   {
     path: "care/requests/:changeId",
-    lazy: async () => ({
-      Component: (await import("@/pages/care/change/CareChangeDetailPage"))
-        .CareChangeDetailPage,
-    }),
+    loader: redirectLegacyCareRequests,
     handle: { title: "돌봄 요청·결과" },
   },
   {
     path: "care/items/:itemId/manage",
     lazy: async () => ({
-      Component: (await import("@/pages/care/change/CareWriteRoutes"))
-        .CareManageRoute,
+      Component: (await import("@/pages/care/CareManagePage")).CareManagePage,
     }),
     handle: { title: "항목 관리" },
   },
   {
     path: "care/items/:itemId",
     lazy: async () => ({
-      Component: (await import("@/pages/care/CareReadRoutes")).CareItemRoute,
+      Component: (await import("@/pages/care/CareItemPage")).CareItemPage,
     }),
     handle: { title: "돌봄 상세" },
   },
   {
     path: "care/items/:itemId/sources",
     lazy: async () => ({
-      Component: (await import("@/pages/care/CareReadRoutes")).CareSourcesRoute,
+      Component: (await import("@/pages/care/CareSourcesPage")).CareSourcesPage,
     }),
     handle: { title: "근거 보기" },
   },
   {
     path: "care/items/:itemId/history/:historyId?",
     lazy: async () => ({
-      Component: (await import("@/pages/care/CareReadRoutes")).CareHistoryRoute,
+      Component: (await import("@/pages/care/CareHistoryPage")).CareHistoryPage,
     }),
     handle: { title: "변경 이력" },
   },
   {
     path: "care/items/:itemId/reconfirm",
     lazy: async () => ({
-      Component: (await import("@/pages/care/CareReadRoutes"))
-        .CareReconfirmRoute,
+      Component: (await import("@/pages/care/CareReconfirmPage"))
+        .CareReconfirmPage,
     }),
     handle: { title: "다시 확인하기" },
   },
 ];
 
 // 제안 검토·요청·결과
-const careReadPaths = [
-  "care/items/:itemId/share",
-  "care/items/:itemId/shared",
-  "care/items/:itemId/reconfirm",
-  "care/items/:itemId/answer",
-  "care/items/:itemId/delete",
-  "care/items/:itemId/edit",
-  "care/items/:itemId/assignee",
-  "care/items/:itemId/status",
-  "care/items/:itemId/manage",
-  "care/new/:kind",
-  "care/items/:itemId",
-  "care/items/:itemId/sources",
-  "care/items/:itemId/history/:historyId?",
-];
 const proposalRoutes: RouteObject[] = [
   {
     path: "proposals/:proposalId/evidence",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal/ProposalRoutes"))
-        .ProposalEvidenceRoute,
+      Component: (await import("@/pages/proposal/ProposalEvidencePage"))
+        .ProposalEvidencePage,
     }),
     handle: { title: "근거 비교" },
   },
   {
     path: "proposals/:proposalId/edit",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal/ProposalRoutes"))
-        .ProposalEditRoute,
+      Component: (await import("@/pages/proposal/ProposalEditPage"))
+        .ProposalEditPage,
     }),
     handle: { title: "제안 내용 수정" },
   },
   {
     path: "proposals/:proposalId/target",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal/ProposalRoutes"))
-        .ProposalTargetRoute,
+      Component: (await import("@/pages/proposal/ProposalTargetPage"))
+        .ProposalTargetPage,
     }),
     handle: { title: "연결 대상 선택" },
   },
   {
     path: "news/:recordId/proposals",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal/ProposalRoutes"))
-        .ProposalReviewRoute,
+      Component: (await import("@/pages/proposal/ProposalReviewPage"))
+        .ProposalReviewPage,
     }),
     handle: { title: "제안 검토" },
   },
   {
     path: "proposals/confirm",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal/ProposalRoutes"))
-        .ProposalConfirmRoute,
+      Component: (await import("@/pages/proposal/ProposalConfirmPage"))
+        .ProposalConfirmPage,
     }),
     handle: { title: "반영 전 확인" },
   },
   {
     path: "proposal-requests/:requestId",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal/ProposalRoutes"))
-        .ProposalRequestRoute,
+      Component: (await import("@/pages/proposal/ProposalRequestPage"))
+        .ProposalRequestPage,
     }),
     handle: { title: "요청 상태" },
   },
   {
     path: "proposals/results/:resultId",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal/ProposalRoutes"))
-        .ProposalResultRoute,
+      Component: (await import("@/pages/proposal/ProposalResultPage"))
+        .ProposalResultPage,
     }),
     handle: { title: "반영 결과" },
   },
   {
     path: "proposals",
     lazy: async () => ({
-      Component: (await import("@/pages/proposal/ProposalRoutes"))
-        .ProposalListRoute,
+      Component: (await import("@/pages/proposal/ProposalListPage"))
+        .ProposalListPage,
     }),
     handle: { title: "확인할 내용" },
   },
@@ -469,49 +444,48 @@ const familyRoutes: RouteObject[] = [
   {
     path: "family/leave",
     lazy: async () => ({
-      Component: (await import("@/pages/family/ConnectedFamilyLeavePage"))
-        .ConnectedFamilyLeavePage,
+      Component: (await import("@/pages/family/FamilyLeavePage"))
+        .FamilyLeavePage,
     }),
     handle: { title: "공간 나가기" },
   },
   {
     path: "family/delete",
     lazy: async () => ({
-      Component: (await import("@/pages/family/ConnectedFamilyDeletePage"))
-        .ConnectedFamilyDeletePage,
+      Component: (await import("@/pages/family/FamilyDeletePage"))
+        .FamilyDeletePage,
     }),
     handle: { title: "공간 삭제" },
   },
   {
     path: "family/transfer",
     lazy: async () => ({
-      Component: (await import("@/pages/family/ConnectedFamilyTransferPage"))
-        .ConnectedFamilyTransferPage,
+      Component: (await import("@/pages/family/FamilyTransferPage"))
+        .FamilyTransferPage,
     }),
     handle: { title: "소유권 이전" },
   },
   {
     path: "family/transfer/:memberId",
     lazy: async () => ({
-      Component: (
-        await import("@/pages/family/ConnectedFamilyTransferConfirmPage")
-      ).ConnectedFamilyTransferConfirmPage,
+      Component: (await import("@/pages/family/FamilyTransferConfirmPage"))
+        .FamilyTransferConfirmPage,
     }),
     handle: { title: "소유권 이전 확인" },
   },
   {
     path: "family/members",
     lazy: async () => ({
-      Component: (await import("@/pages/family/ConnectedFamilyMembersPage"))
-        .ConnectedFamilyMembersPage,
+      Component: (await import("@/pages/family/FamilyMembersPage"))
+        .FamilyMembersPage,
     }),
     handle: { title: "구성원 관리" },
   },
   {
     path: "family/members/:memberId/remove",
     lazy: async () => ({
-      Component: (await import("@/pages/family/ConnectedFamilyRemovePage"))
-        .ConnectedFamilyRemovePage,
+      Component: (await import("@/pages/family/FamilyRemovePage"))
+        .FamilyRemovePage,
     }),
     handle: { title: "참여 관리" },
   },
@@ -545,7 +519,7 @@ const spaceRoutes: RouteObject[] = [
     loader: redirectToSpaceHome,
   },
   {
-    Component: ConnectedTabLayout,
+    Component: TabLayout,
     children: tabRoutes,
   },
   {
@@ -553,27 +527,13 @@ const spaceRoutes: RouteObject[] = [
     children: recordRoutes,
   },
   {
-    Component: ProposalRouteLayout,
-    children: [
-      ...careItemRoutes.filter(
-        (route) => !careReadPaths.includes(route.path ?? ""),
-      ),
-    ],
-  },
-  {
-    Component: ConnectedReviewLayout,
-    children: [
-      ...recordDeletionRoutes,
-      ...proposalRoutes,
-      ...careItemRoutes.filter((route) =>
-        careReadPaths.includes(route.path ?? ""),
-      ),
-    ],
+    Component: ReviewLayout,
+    children: [...recordDeletionRoutes, ...proposalRoutes, ...careItemRoutes],
   },
   // 가족 초대 링크 발급은 실제 API에 연결된 공간을 사용한다.
   {
     path: "invite",
-    Component: ConnectedSpaceInvitePage,
+    Component: SpaceInvitePage,
     handle: { title: "가족 초대" },
   },
   {
@@ -591,6 +551,23 @@ const router = createBrowserRouter([
   {
     path: paths.landing,
     Component: App,
+    loader: ({ params }) => {
+      // 예전 예시 항목 링크를 실제 API 요청으로 전달하지 않는다.
+      const ids = [
+        params.careSpaceId,
+        params.recordId,
+        params.itemId,
+        params.proposalId,
+        params.requestId,
+        params.resultId,
+        params.historyId,
+        params.deletionId,
+        params.memberId,
+      ];
+      if (ids.some((id) => id?.startsWith("mock-")))
+        throw new Response(null, { status: 404 });
+      return null;
+    },
     ErrorBoundary: RouteErrorPage,
     HydrateFallback: RouteLoadingFallback,
     children: [
