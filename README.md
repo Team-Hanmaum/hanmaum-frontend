@@ -1,117 +1,277 @@
-# 한마음 Frontend
+<p align="center">
+  <img src="./public/icons/pwa-192.png" width="96" alt="흰 배경의 한마음 로고" />
+</p>
 
-React · TypeScript · Vite · Tailwind CSS 기반의 휴대폰 중심 웹앱.
+<h1 align="center">한마음 · Frontend</h1>
 
-## 실행
+<p align="center">
+  <strong>흩어진 소식은 하나로, 돌봄은 한마음으로</strong><br />
+  가족이 남긴 소식을 AI가 정리하고, 확인한 일정과 할 일을 함께 관리하는 모바일 웹 서비스입니다.
+</p>
 
-Node.js 24.x, pnpm 10.18.2 사용.
+<p align="center">
+  <a href="https://hanmaum.site">서비스 바로가기</a> ·
+  <a href="https://github.com/Team-Hanmaum/hanmaum-frontend">Frontend</a> ·
+  <a href="https://github.com/Team-Hanmaum/hanmaum-backend">Backend</a> ·
+  <a href="https://github.com/Team-Hanmaum/hanmaum-ai">AI</a>
+</p>
+
+---
+
+**목차**
+
+- [프로젝트 소개](#프로젝트-소개)
+- [서비스 흐름](#서비스-흐름)
+- [시스템 구성](#시스템-구성)
+- [기술 스택](#기술-스택)
+- [데이터와 상태 관리](#데이터와-상태-관리)
+- [폴더 구조](#폴더-구조)
+- [화면과 라우팅](#화면과-라우팅)
+- [로컬 실행](#로컬-실행)
+- [개발 워크플로우](#개발-워크플로우)
+- [검증과 배포](#검증과-배포)
+
+<a id="프로젝트-소개"></a>
+
+## 🌿 프로젝트 소개
+
+한마음은 가족이 함께 부모님의 돌봄을 이어갈 수 있도록, 흩어진 소식과 확인한 돌봄 정보를 한 공간에 모읍니다. 가족이 남긴 소식을 AI가 분석해 변경 사항을 제안하고, 소유자가 검토한 내용을 일정·할 일·질문 등에 반영합니다.
+
+이 저장소는 모바일 중심의 사용자 화면, 로그인·세션 처리, API 연동, 홈 화면 설치 안내를 담당합니다.
+
+| 주요 기능        | 제공하는 경험                                                        |
+| ---------------- | -------------------------------------------------------------------- |
+| 함께 돌보는 공간 | Google·카카오 로그인, 공간 생성, 초대 링크로 가족 참여               |
+| 소식과 AI 제안   | 소식 작성·분석 상태 확인, 제안 내용·근거 비교와 검토                 |
+| 돌봄 관리        | 일정·할 일·질문 등 조회, 직접 추가·수정, 상태 변경과 답변            |
+| 확인과 변경 이력 | 소유자의 최종 반영, 구성원의 승인 요청, 원본 삭제 영향과 근거 재확인 |
+| 가족·공간 관리   | 구성원 관리, 소유권 이전, 나가기, 공간 정보 수정과 삭제              |
+| 공유와 설치      | 돌봄 링크·카카오톡 공유, 권한 확인 후 조회, PWA 홈 화면 설치 안내    |
+
+<a id="서비스-흐름"></a>
+
+## 🧭 서비스 흐름
+
+```text
+로그인 → 공간 생성 또는 초대 참여 → 홈
+  └─ 소식 작성 → AI 분석 → 제안·근거 검토
+       ├─ 소유자: 최종 반영 또는 미적용
+       └─ 구성원: 승인 요청 → 소유자 검토
+
+최종 반영 → 홈·돌봄 목록·상세에서 변경된 정보 확인
+```
+
+돌봄 탭에서 직접 내용을 추가·변경할 때도 역할에 따라 최종 반영과 승인 요청을 구분합니다. AI 분석은 BE 워커가 요청하며, FE는 분석 상태와 생성된 제안을 조회합니다.
+
+<a id="시스템-구성"></a>
+
+## 🏗️ 시스템 구성
+
+![한마음 시스템 아키텍처](https://raw.githubusercontent.com/Team-Hanmaum/hanmaum-docs/main/assets/development/system-architecture.png)
+
+| 저장소                                                       | 역할                                                             |
+| ------------------------------------------------------------ | ---------------------------------------------------------------- |
+| [Frontend](https://github.com/Team-Hanmaum/hanmaum-frontend) | React 모바일 웹, 화면·라우팅·상태 관리, BE API 연동, Vercel 배포 |
+| [Backend](https://github.com/Team-Hanmaum/hanmaum-backend)   | 인증·세션·권한, 돌봄 업무 API, 데이터 저장, AI 분석 작업 실행    |
+| [AI](https://github.com/Team-Hanmaum/hanmaum-ai)             | 소식 분석과 구조화된 돌봄 제안 생성                              |
+
+FE의 API 요청 대상은 `https://api.hanmaum.site`입니다. AI 서비스와 모델 호출은 BE가 담당합니다.
+
+<a id="기술-스택"></a>
+
+## 🛠️ 기술 스택
+
+| 영역      | 기술                                                | 사용 목적                                      |
+| --------- | --------------------------------------------------- | ---------------------------------------------- |
+| UI        | React 19 · TypeScript 6                             | 컴포넌트 기반 화면과 타입 정의                 |
+| 빌드      | Vite 8                                              | 개발 서버, 번들링, 환경별 설정                 |
+| 라우팅    | React Router 8 · Data 모드                          | 중첩 라우트, 레이아웃, 로그인 복귀와 화면 전환 |
+| 서버 상태 | TanStack Query 5                                    | 조회·변경 상태, 커서 목록, 캐시 갱신           |
+| HTTP      | Axios                                               | 공통 응답·오류 처리, 세션 쿠키·CSRF 연동       |
+| 스타일    | Tailwind CSS 4 · CSS 토큰 · Noto Sans KR            | 공통 디자인과 모바일 레이아웃                  |
+| 품질 관리 | ESLint · Prettier · Husky · lint-staged             | 정적 검사, 포맷, 커밋 전 검사                  |
+| 실행·배포 | Node.js 24 · pnpm 10.18.2 · GitHub Actions · Vercel | 개발 환경과 PR 검사·배포                       |
+
+설치 기능은 Web App Manifest와 브라우저별 안내로 구성합니다. 현재 서비스 워커·오프라인 데이터 캐시·푸시 알림은 제공하지 않습니다. 자세한 동작은 [PWA 안내](docs/pwa.md)를 참고하세요.
+
+<a id="데이터와-상태-관리"></a>
+
+## 🔄 데이터와 상태 관리
+
+| 상태           | 관리 위치                        | 기준                                                      |
+| -------------- | -------------------------------- | --------------------------------------------------------- |
+| 서버 데이터    | 도메인 Query 훅 · TanStack Query | 계정·공간별 키로 조회하고, 변경 성공 후 관련 캐시 갱신    |
+| 인증·세션      | `SessionProvider` · `useSession` | BE 세션 확인, 계정 변경·로그아웃 시 이전 요청과 캐시 정리 |
+| 폼·화면 상태   | React 상태 · 도메인 훅           | 입력, 모달, 선택 상태를 필요한 화면 범위에서 관리         |
+| 제안 검토 초안 | 계정·공간별 Query 캐시           | 검토 중 초안 유지, 서버 확정 데이터·영구 저장과 구분      |
+| 탐색 상태      | URL 경로·검색 매개변수           | 목록 필터, 선택 화면, 탈퇴 정리 흐름의 복귀 위치 유지     |
+
+API 코드는 도메인별로 역할을 나눕니다.
+
+```text
+pages / features의 UI
+  → model: Query 훅 · 캐시 키 · 화면용 데이터 변환
+  → api: *Api.ts 요청 함수 + *Validators.ts 응답 검증
+  → lib/api: 공통 HTTP · 응답 · 오류 · 세션 · CSRF 처리
+
+*Types.ts: 요청·응답 DTO 정의
+```
+
+공통 계층에서 성공 HTTP 상태와 응답 구조를 검사하고, 도메인 검증기가 실제 필드와 허용 값을 확인합니다. 인증은 BE의 HttpOnly 세션 쿠키를 사용하며, 변경 요청에는 공통 계층이 CSRF 토큰을 붙입니다.
+
+탭 복귀 시 기존 화면과 입력을 유지하면서 필요한 세션 확인을 진행합니다. 업무 화면은 실제 API 결과를 사용하고 빈 상태·오류를 그대로 표시합니다. 상세 계약과 캐시 규칙은 [API·세션 규격](src/lib/api/README.md)을 따릅니다.
+
+<a id="폴더-구조"></a>
+
+## 📁 폴더 구조
+
+주요 폴더와 진입 파일을 기준으로 정리했습니다.
+
+```text
+hanmaum-frontend/
+├── .github/
+│   ├── ISSUE_TEMPLATE/         # 이슈 작성 양식
+│   ├── workflows/              # PR 검사 · Production 배포
+│   └── pull_request_template.md
+├── docs/                       # 로컬 환경 · 배포 · PWA · 개발 규칙
+├── public/                     # 매니페스트 · 설치 아이콘 · 정적 파일
+├── scripts/                    # 로컬 HTTPS 환경 설정
+├── src/
+│   ├── assets/                 # 로고 · 아이콘 · 이미지
+│   ├── components/             # 도메인에 의존하지 않는 공통 UI
+│   │   ├── ui/                 # 버튼 · 입력 · 카드
+│   │   ├── layout/             # 공통 페이지 구성
+│   │   ├── feedback/           # 안내 · 오류 · 모달
+│   │   └── pwa/                # 설치 안내 · 설치 상태 배너
+│   ├── features/               # 업무 도메인별 기능
+│   │   ├── auth/               # 로그인 · 세션 · 로그아웃
+│   │   ├── careitem/           # 돌봄 항목 · 근거 · 이력 · 변경
+│   │   ├── carespace/          # 공간 · 가족 · 초대 · 소유권
+│   │   ├── dashboard/          # 홈 현황판
+│   │   ├── proposal/           # AI 제안 · 검토 · 승인 요청
+│   │   ├── record/             # 소식 · 분석 상태 · 원본 삭제
+│   │   │   ├── api/            # 요청 함수 · DTO · 응답 검증
+│   │   │   ├── model/          # Query 훅 · 상태 · 데이터 변환
+│   │   │   └── ui/             # 소식 도메인 UI
+│   │   ├── sharing/            # 공유 링크 · 카카오톡 공유
+│   │   └── user/               # 내 정보 · 회원 탈퇴
+│   ├── pages/                  # 화면 영역별 페이지 조합
+│   │   ├── account/            # 내 계정 · 로그아웃 · 탈퇴
+│   │   ├── all/                # 전체 메뉴
+│   │   ├── care/               # 돌봄 목록 · 상세 · 근거 · 이력
+│   │   │   ├── change/         # 직접 추가 · 수정 · 상태 · 답변 · 삭제
+│   │   │   └── share/          # 공유 발급 · 공유 항목 조회
+│   │   ├── component-preview/  # 로컬 개발 전용 UI 전시
+│   │   ├── error/              # 404 · 라우트 오류
+│   │   ├── family/             # 가족 목록 · 관리
+│   │   ├── home/               # 홈 현황
+│   │   ├── landing/            # 서비스 소개
+│   │   ├── login/              # 로그인 · OAuth 복귀
+│   │   ├── news/               # 소식 작성 · 상세 · 삭제
+│   │   ├── onboarding/         # 시작 안내
+│   │   ├── proposal/           # 제안 검토 · 요청 · 결과
+│   │   └── space/              # 공간 선택 · 생성 · 정보 · 초대
+│   ├── routes/
+│   │   ├── layouts/            # 세션 · 공간 · 탭 등 라우트 경계
+│   │   ├── Router.tsx          # 경로 등록 · 페이지 지연 로딩
+│   │   └── paths.ts            # URL 생성 함수
+│   ├── lib/
+│   │   ├── api/                # 공통 API 클라이언트 · 오류 · CSRF
+│   │   ├── query/              # QueryClient · Provider
+│   │   └── pwa/                # 설치 이벤트 · 브라우저 상태
+│   ├── styles/                 # 디자인 토큰 · 전역 스타일 · 전환 효과
+│   ├── App.tsx                 # 공통 앱 화면 구성
+│   └── main.tsx                # 앱 진입점 · Provider 연결
+└── AGENTS.md                   # 코드 작성 · 작업 워크플로우 지침
+```
+
+`features`는 필요한 경우 `api / model / ui`로 나누고, `pages`는 관련 화면들을 같은 영역에 모읍니다. 공유 로직은 `features`, 범용 표현은 `components`에 둡니다. 폴더 구조가 URL을 자동으로 결정하지는 않습니다. [페이지·API 작성 규칙](AGENTS.md#코드-구조와-명명)을 참고하세요.
+
+<a id="화면과-라우팅"></a>
+
+## 🗺️ 화면과 라우팅
+
+공간 내부의 기본 경로는 `/spaces/:careSpaceId`이며, 홈·돌봄·소식·가족·전체의 다섯 탭을 공유합니다.
+
+| 영역      | 주요 URL                                         | 연결되는 화면                          |
+| --------- | ------------------------------------------------ | -------------------------------------- |
+| 시작·인증 | `/`, `/login`, `/auth/callback`                  | 소개 → 소셜 로그인 → 세션 확인·복귀    |
+| 공간      | `/spaces`, `/spaces/new`                         | 참여 공간 선택·생성 → 홈               |
+| 초대·공유 | `/invitations/:invitationToken`, `/share/:token` | 로그인·권한 확인 → 참여 또는 항목 조회 |
+| 홈        | `/spaces/:careSpaceId/home`                      | 가족·최근 소식·돌봄·변경 현황          |
+| 소식·제안 | 공간 경로 아래 `news`, `proposals`               | 작성·분석 → 검토·요청 → 반영 결과      |
+| 돌봄      | 공간 경로 아래 `care`                            | 목록·상세 → 추가·변경·근거·이력·공유   |
+| 가족·전체 | 공간 경로 아래 `family`, `all`, `info`           | 가족 관리·전체 메뉴·공간 정보          |
+| 내 계정   | `/account`                                       | 계정 확인·로그아웃·탈퇴 전 정리        |
+
+`SessionBoundary`가 인증 상태를, `SpaceSessionLayout`·`SpaceLayout`이 공간과 접근 상태를 관리합니다. `TabLayout`은 다섯 탭을 구성하며, 작성·검토 등 하위 화면은 해당 흐름의 레이아웃을 사용합니다. 나가기·삭제 후 완료 화면을 유지하는 가족 관리 경로는 별도로 구성합니다.
+
+로그인 복귀는 저장된 내부 주소를 우선합니다. 복귀 주소가 없으면 참여 공간이 한 곳일 때 홈으로, 0곳 또는 여러 곳일 때 공간 목록으로 이동합니다. 전체 경로와 뒤로가기·입력 유지·화면 전환 규칙은 [라우팅 문서](src/routes/README.md)에 정리했습니다.
+
+<a id="로컬-실행"></a>
+
+## 🚀 로컬 실행
+
+**필수 환경: Node.js 24.x · pnpm 10.18.2**
 
 ```sh
+git clone https://github.com/Team-Hanmaum/hanmaum-frontend.git
+cd hanmaum-frontend
 pnpm install --frozen-lockfile
+```
+
+배포 BE와 연동하려면 [OS별 로컬 HTTPS 설정](docs/local-development.md#최초-1회-준비)에 따라 mkcert를 설치한 뒤, 최초 한 번 다음 명령을 실행합니다. Windows에서는 같은 계정의 관리자 PowerShell이 필요합니다.
+
+```sh
+pnpm setup:local
+```
+
+이후에는 일반 터미널에서 개발 서버를 실행합니다.
+
+```sh
 pnpm dev
 ```
 
-**배포 BE와 로컬에서 연동할 팀원은 최초 1회 [로컬 HTTPS 설정](docs/local-development.md)을 진행한다.** mkcert 설치 후 `pnpm setup:local`을 실행하면 hosts·인증서·개발 환경 파일을 준비한다. 이후 기존 `pnpm dev`로 실행하고 `https://local.hanmaum.site:5173`에 접속한다. BE의 개발 Origin CORS와 로그인 복귀 분기 반영도 필요하다.
+- FE: [https://local.hanmaum.site:5173](https://local.hanmaum.site:5173)
+- API: `https://api.hanmaum.site` — 실제 데이터를 사용하므로 테스트 계정·공간에서 확인합니다.
+- `VITE_API_BASE_URL`에는 `/api`를 제외한 서버 주소를 설정합니다. 로컬 BE를 사용할 때는 [.env.example](.env.example)을 참고합니다.
+- 카카오톡 공유에는 `VITE_KAKAO_JAVASCRIPT_KEY`와 SDK 도메인 등록이 필요합니다. [설정 방법](docs/deployment.md#카카오톡-돌봄-공유-설정-71)을 참고하세요.
 
-- `/`: 랜딩 → 로그인. `/login`은 BE OAuth로 이동한다.
-- `/auth/callback`: 내 정보 확인 → 저장된 내부 주소 또는 참여 공간. 공간 한 곳이면 홈, 0곳/여러 곳이면 목록으로 이동한다.
-- `/spaces`, `/spaces/new`: 실제 참여 공간 조회·생성. 생성 후 해당 홈으로 이동한다.
-- `/spaces/:careSpaceId/home`: 실제 공간 상세·가족·현황판·최근 소식을 조합한다. 없는 데이터는 빈 상태, 실패한 조회는 오류/재시도로 표시한다.
-- `/spaces/:careSpaceId/news`, `news/new`, `news/:recordId`: 실제 소식 목록(커서 더 보기)·작성·상세를 조회한다. 작성 요청 ID는 같은 원문의 재시도 동안 유지하고, 상세는 분석 대기·진행 중일 때 상태를 다시 확인하며 최신 실패 실행은 재시도할 수 있다. 분석 후 제안 검토로 이동한다. 원본 삭제 영향 조회·삭제 결과·영향받은 돌봄의 근거 재확인도 실제 API를 사용한다.
-- `/spaces/:careSpaceId/proposals`, `news/:recordId/proposals`: 실제 제안 목록·검토·근거·수정 초안·후보 선택. 소유자는 최종 반영/미반영, 구성원은 요청 제출/취소를 진행한다. 가족 요청 탭에서 소유자가 AI 제안 요청을 승인/미반영한다. 기존 항목은 편집 잠금과 버전을 확인하고 응답 유실 시 같은 요청으로 재시도한다.
-- `/spaces/:careSpaceId/care`, `care/items/:itemId`: 실제 돌봄 목록·상세·근거·변경 이력을 조회한다. 직접 추가·수정·상태 변경·답변·삭제와 구성원 승인 요청을 처리한다. 반영 후 홈·소식·제안·요청·돌봄 캐시를 갱신한다. 결과 URL은 처리한 제안 ID로 저장된 결정을 재조회한다.
-- `/spaces/:careSpaceId/family`: 실제 구성원 목록과 역할을 조회하고 내보내기·소유권 이전·나가기·공간 삭제를 처리한다.
-- `/spaces/:careSpaceId/all`, `info`: 전체 메뉴와 공간 정보 수정·구성원 수정 요청·소유자 승인/미적용을 연결한다. `/account`에서는 실제 계정·로그아웃·탈퇴와 탈퇴 전 공간·소식 정리를 진행한다.
-- `/spaces/:careSpaceId/invite`, `/invitations/:invitationToken`: 실제 초대 링크 발급(진입 시 1회, 실패 재시도는 같은 요청 ID, 만료 후 새 링크는 새 요청 ID)과 로그인 후 초대 확인·참여. 만료(410)·사용 불가(404·403)·이미 참여 중을 구분하고 참여 성공 시 해당 공간 홈으로 이동한다. 운영 BE는 `https://hanmaum.site/invitations/{token}` 링크를 발급하므로 로컬 검증은 토큰을 로컬 주소에 붙여 확인한다.
-- `care/items/:itemId/share`, `/share/:token`: 공유 링크 발급·복사·카카오톡 공유와 로그인·참여 권한 확인 후 실제 항목 조회. 카카오 JavaScript 키 설정은 [배포 문서](docs/deployment.md#카카오톡-돌봄-공유-설정-71)를 따른다.
-- `/_dev/components`: 개발 전용 공통 컴포넌트 전시 화면. 제품 흐름과 별도로 공통 UI 상태를 확인한다.
+로컬 공통 UI는 `/_dev/components`에서 확인할 수 있습니다. QA 도구는 `VITE_ENABLE_QA_TOOLS=true`인 환경에서 `?qa=1`로 켜며, 같은 탭에서 유지됩니다. QA 종료 또는 `?qa=0`으로 끌 수 있고, Production에서는 비활성화합니다.
 
-로컬과 배포 모두 업무 화면은 실제 API를 사용한다. Mock 저장소·예시 화면 분기·미연동 배지는 제거했으며, 빈 목록과 오류는 실제 조회 결과대로 표시한다. 랜딩의 사용 예시와 로컬 공통 컴포넌트 전시용 데이터만 유지한다. `VITE_ENABLE_MOCK_PREVIEW` 설정은 제거했으므로 기존 개인 환경 파일이나 Vercel에 남은 값도 사용하지 않는다. `pnpm setup:local` 또는 로컬 BE용 `.env.example`을 참고해 API 주소를 설정한다. 개발 환경 파일은 Production 빌드에 적용되지 않는다.
+<a id="개발-워크플로우"></a>
 
-탭 복귀는 기존 화면과 입력을 유지한다. 60초 이내의 단순 복귀 확인은 생략하며, 미확인 상태의 보호 API 요청은 먼저 계정을 재검증한다. 다른 계정이면 이전 요청·캐시·화면 상태를 정리한다. 일시적 통신 실패는 작은 재시도 안내로 표시한다. 401 만료 시에는 로그인으로 이동하며 저장하지 않은 입력은 다시 입력해야 한다.
+## 🤝 개발 워크플로우
 
-React Router의 Data 모드를 사용한다. [라우팅·레이아웃 규격](src/routes/README.md), [API·세션 규격](src/lib/api/README.md), [배포 설정](docs/deployment.md) 참조.
-
-### QA 도구 표시
-
-`VITE_ENABLE_QA_TOOLS=true`인 환경에서 `?qa=1`로 도구를 켜고 같은 탭에서 유지한다. QA 종료 또는 `?qa=0`으로 종료한다. Production은 false가 기본이며 `qa=1`도 무시한다. 실제 응답·권한을 바꾸는 Mock 상태 선택기는 제공하지 않는다. 표현 상태 비교는 로컬 `/_dev/components`에서 확인한다.
-
-## 홈 화면 설치 (PWA)
-
-`public/manifest.webmanifest`와 `index.html`의 매니페스트·Apple 메타 정보를 사용한다. 설치 앱 이름은 **한마음**, 시작 주소와 범위는 `/`, 표시 모드는 `standalone`이다. 온라인 사용을 전제로 하며 서비스 워커·오프라인 데이터 캐시·푸시 알림은 포함하지 않는다. 사용자 데이터는 BE에서 조회하며 오프라인 저장을 제공하지 않는다.
-
-- 모바일의 랜딩·로그인·공간 선택·기본 탭에서 설치 안내를 자동으로 표시한다. 입력 요소에 포커스가 있거나 다른 모달이 열려 있으면 안내를 미룬다. 작성·승인·탈퇴 하위 화면에서는 자동으로 열지 않는다.
-- 설치 이벤트를 제공하는 브라우저에서는 **한마음 설치하기**를 누른 뒤 브라우저 설치 창에서 확인한다. 이벤트가 없으면 기기별 브라우저 메뉴 안내를 표시한다. iOS는 Safari의 공유 → 홈 화면에 추가 절차이며, 사이트가 OS 설치 창을 자동으로 띄우는 기능이 아니다.
-- 닫기·확인은 같은 탭에서 안내를 숨기고, **다시 보지 않기**는 해당 브라우저에 저장한다. 저장소를 사용할 수 없으면 현재 실행 중에만 숨긴다. **전체 → 한마음 설치**에서 숨김 선택과 무관하게 다시 확인할 수 있다.
-- 홈 화면 앱으로 실행 중이거나 현재 실행 중 설치를 완료한 경우 안내와 설치 메뉴를 숨긴다.
-- `getInstalledRelatedApps()` 지원 브라우저에서는 한마음 PWA가 설치됐는지 조회한다. 확인되면 기본 진입 화면과 탭의 헤더 아래에 **한마음이 이미 설치되어 있어요** 배너를 표시하고 설치 팝업·메뉴를 숨긴다. 배너를 닫으면 같은 탭의 이동·새로고침에도 숨김을 유지한다. 설치 안내의 **다시 보지 않기**와 별도 저장한다.
-- 앱 실행 중에는 배너를 표시하지 않는다. 설치 조회가 미지원·실패·시간 초과인 경우 설치됨으로 단정하지 않고 기존 안내를 유지한다. iOS의 공유 → 홈 화면에 추가 안내도 유지한다. 일반 브라우저 탭으로 돌아오면 설치 여부를 다시 조회한다.
-- 매니페스트의 `related_applications`는 현재 서비스 주소 `https://hanmaumcare.vercel.app/`의 앱 ID와 매니페스트를 가리킨다. 데스크톱 조회에는 절대 앱 ID가 필요하므로 서비스 도메인을 변경하면 이 값도 변경한다. 로컬·Preview에서의 실제 설치 감지는 플랫폼별로 다를 수 있으며 배너 동작 검증과 실제 설치 감지를 구분한다. [브라우저 지원 및 매니페스트 설정](https://developer.chrome.com/docs/capabilities/get-installed-related-apps)
-- 아이콘은 기존 `public/hanmaum-favicon.svg`에서 생성한 192·512px PNG, 512px 마스커블, 180px Apple 아이콘이다. 일반·Apple 아이콘은 원본 viewBox의 `150 150 700 700` 영역, 마스커블은 원본 전체 여백을 유지하며 모두 흰색 불투명 배경을 사용한다.
-
-설치 검증은 HTTPS 배포 주소 또는 localhost에서 진행한다. 같은 Wi-Fi의 HTTP PC 주소에서는 설치 기능이 제한될 수 있다. Android Chrome·iOS Safari 실제 기기에서 홈 화면 아이콘, 앱 실행, 안전 영역, 외부 링크 복귀를 최종 확인한다. 브라우저 설치 조건에 따라 네이티브 설치 버튼의 노출 시점은 달라질 수 있다.
-
-## 공통 API와 서버 상태
-
-Axios와 TanStack Query 기반을 사용한다. `.env.example`은 로컬 BE 연결 예시이며 `.env.development.local`로 복사한다. 배포 BE 연결은 [로컬 HTTPS 설정](docs/local-development.md)을 따른다. `VITE_API_BASE_URL`에는 서버 주소만 지정하고 `/api`는 도메인 요청 함수에 포함한다. 앱 실행 시 실제 세션을 확인하므로 API 주소 설정이 필요하다.
-
-공통 응답은 최신 BE의 `success/code/message/data/errors/timestamp` 규격을 따른다. 도메인 API 함수는 `features/{domain}/api/`, 조회·변경 훅과 캐시 키는 `model/`에 둔다. 내 정보·로그아웃·세션 가드를 연결했으며 로그인 상태는 `useSession`에서 공통 관리한다. 로그인 성공 복귀 URL은 BE에서도 `/auth/callback`으로 설정해야 한다. [설정·호출 예시·CSRF·오류·캐시 규칙](src/lib/api/README.md) 참조.
-
-도메인 `api/` 안에서는 같은 기능 접두사의 `*Types.ts`(DTO), `*Validators.ts`(응답 검증), `*Api.ts`(요청 함수)로 분리한다. Query 훅·키·화면용 변환은 `model/`에서 관리한다. 신규 연동 시 [API 파일 규칙](AGENTS.md#api-파일-규칙)을 따른다.
-
-## 파일·폴더 이름
-
-애플리케이션 소스와 직접 관리하는 자산에는 다음 규칙을 적용한다.
-
-| 구분               | 규칙                             | 예시                                        |
-| ------------------ | -------------------------------- | ------------------------------------------- |
-| 컴포넌트·페이지    | PascalCase, 컴포넌트 이름과 일치 | `Button.tsx`, `LoginPage.tsx`, `Router.tsx` |
-| 커스텀 훅          | camelCase, `use` 접두사          | `useSession.ts`, `useCareSpace.ts`          |
-| 유틸리티·API 파일  | camelCase                        | `formatDate.ts`, `authApi.ts`               |
-| CSS 파일           | kebab-case                       | `button.css`, `social-login-button.css`     |
-| 이미지·아이콘      | kebab-case                       | `chevron-left.svg`, `hanmaum-favicon.svg`   |
-| 폴더               | 소문자, 여러 단어는 kebab-case   | `auth/`, `component-preview/`               |
-| 진입·내보내기 파일 | 고정 이름                        | `main.tsx`, `index.ts`                      |
-
-BE와 맞춘 도메인 이름 `carespace`, `careitem`은 하나의 도메인 식별자로 유지한다. `README.md`, `.gitkeep`, 도구 설정·GitHub 템플릿과 외부 라이선스 문서는 위 소스 이름 규칙으로 일괄 변경하지 않는다.
-
-## 페이지 구성
-
-`src/pages/`는 화면 영역별로 묶고, 관련된 페이지 파일을 같은 폴더에 둔다. 예를 들어 `care/`에는 돌봄 목록·상세·근거·이력 페이지를 두며, 변경 요청과 공유 흐름은 각각 `care/change/`, `care/share/`로 묶는다. `news/`, `proposal/`, `space/`도 각 영역의 페이지를 모은다.
-
-여러 페이지에서 재사용하는 도메인 UI와 상태는 `features/`, 범용 UI는 `components/`에 둔다. 시간 선택 UI는 `features/careitem/ui/CareTimeSelection.tsx`에서 공유하며, 호출 화면이 레이아웃과 이동을 연결한다. `features`와 `components`는 `pages`를 가져오지 않는다.
-
-폴더 경로는 URL을 결정하지 않는다. 기존 주소는 `src/routes/Router.tsx`와 `src/routes/paths.ts`에서 관리한다. 새 페이지를 추가할 때는 [AGENTS.md의 페이지 폴더 규칙](AGENTS.md#페이지-폴더-규칙)을 따른다.
-
-업무 페이지 이름은 `HomePage`, `CarePage`처럼 사용한다. API 연동 구분용 `Connected` 접두사와 페이지별 Mock/실제 `*Routes.tsx` 분기를 제거했으며 라우터에서 실제 페이지를 직접 연결한다. 계정·공간·소식별 상태를 초기화하는 레이아웃과 초대 페이지의 key는 유지한다.
-
-## 검증 명령
-
-```sh
-pnpm check
-pnpm build
+```text
+이슈 생성 → 최신 dev에서 작업 브랜치 생성 → 구현·검증·커밋
+  → dev 대상 PR → 코드 리뷰·필수 검사 → 머지 → Production 배포
 ```
 
-`check`는 ESLint, Prettier, TypeScript를 검증한다. 화면 검증 절차와 컴포넌트 API는 [공통 컴포넌트 규격](src/components/README.md), 토큰·폰트는 [공통 스타일 규격](src/styles/README.md), 벡터 출처는 [자산 목록](src/assets/README.md) 참조.
+| 항목   | 규칙                                  | 예시                              |
+| ------ | ------------------------------------- | --------------------------------- |
+| 이슈   | `[Type] 작업 내용` · 담당자·라벨 지정 | `[Feat] 소식 작성 연동`           |
+| 브랜치 | `type/이슈번호-영문-작업명`           | `feat/123-record-create`          |
+| 커밋   | `type: 작업 내용 (#이슈번호)`         | `feat: 소식 작성 API 연동 (#123)` |
+| PR     | `Type(#이슈번호): 핵심 작업 내용`     | `Feat(#123): 소식 작성 API 연동`  |
 
-## PR 검사
+작업 타입은 `feat`, `fix`, `chore`, `docs`, `refactor`, `style`을 사용합니다. `dev`·`main`에 직접 커밋하지 않고, 검증을 마친 의미 있는 단위로 커밋합니다. PR은 [템플릿](.github/pull_request_template.md)에 관련 이슈·변경 내용·검증 결과를 기록하며, `dev` 머지는 팀원 1명 이상의 승인과 필수 검사를 기준으로 합니다.
 
-`.github/workflows/ci.yml`은 base 브랜치 제한 없이 일반 PR과 스택 PR을 동일하게 검사한다. PR 생성(`opened`), 작업 브랜치에 새 커밋 push(`synchronize`), 다시 열기(`reopened`) 시 검사한다. 제목·본문 수정이나 라벨·담당자 변경으로는 CI 실행 기록을 생성하지 않는다.
+스택 PR의 base는 합의한 부모 브랜치를 사용합니다. 상세 협업 규칙은 [AGENTS.md](AGENTS.md), 파일 이름과 CI 운영 방법은 [개발 규칙](docs/development-workflow.md)을 참고하세요.
 
-base 브랜치 변경만으로는 CI가 실행되지 않는다. 스택 PR의 base를 변경한 뒤에는 작업 브랜치에 새 커밋을 push하거나 PR을 닫았다 다시 열어 새 base와의 조합을 검사한다. 이전 실행의 재실행은 당시 커밋을 사용하므로 새 base 기준 검사를 대신하지 않는다.
+<a id="검증과-배포"></a>
 
-PR이 없는 작업 브랜치의 push나 로컬 커밋만으로는 GitHub CI가 실행되지 않는다. 로컬 Husky·lint-staged는 유지하며, CI에서는 `package.json`의 Node.js·pnpm 버전으로 `pnpm install --frozen-lockfile` → `pnpm check` → `pnpm build`를 실행한다. CI 전용 Secret이나 배포 권한은 사용하지 않는다.
+## ✅ 검증과 배포
 
-검사 이름은 **Lint and build**다. 같은 PR에 새 CI 실행이 생기면 진행 중인 이전 CI를 취소하고 최신 변경을 검사한다. 서로 다른 PR의 실행은 취소하지 않는다. 기본 checkout으로 PR을 base에 합친 임시 결과를 검사하므로, 스택 PR도 해당 부모 브랜치와의 조합을 검증한다.
+```sh
+pnpm check   # ESLint · Prettier · TypeScript 검사
+pnpm build   # 타입 검사 · Production 번들 생성
+```
 
-CI 실행과 머지 차단은 별도 설정이다. 첫 PR에서 **Lint and build** 실행 결과를 확인한 뒤 GitHub의 **Settings → Rules → Rulesets**에서 `dev`·`main`에 적용되는 규칙의 **Require status checks to pass**에 해당 검사를 추가한다. 기존 리뷰 승인 조건은 유지한다. 다른 작업 브랜치를 base로 하는 스택 PR은 CI가 실행되더라도, 필수 검사 규칙이 없다면 실패 시 머지가 자동으로 차단되지는 않는다.
+![한마음 CI/CD 파이프라인](https://raw.githubusercontent.com/Team-Hanmaum/hanmaum-docs/main/assets/development/ci-cd.png)
 
-CI 설정 도입 전에 분기한 스택 브랜치에서도 검사하려면 해당 PR의 코드에 `ci.yml`이 포함되도록 최신 설정을 반영한다. `dev`에 머지된 뒤의 검사·빌드·Production 배포는 기존 `deploy.yml`이 담당한다.
-
-## 배포
-
-[배포 화면 열기](https://hanmaum.site/) — 실제 인증 연결은 BE 성공 복귀 URL과 Vercel 환경 변수 설정을 함께 확인한다.
-
-작업 브랜치는 Vercel Git 연동으로 Preview를 빌드·배포한다. `dev`는 `.github/workflows/deploy.yml`에서 검사와 빌드를 실행한 뒤 Vercel Production으로 배포하며, 빌드·배포 로그는 GitHub Actions에서 확인한다. 이 설정이 `dev`에 반영된 이후부터 적용한다.
-
-`vercel.json`에 빌드·출력 경로와 SPA rewrite, `dev`의 Git 자동 배포 제외 설정을 정의한다. Node.js 24.x와 pnpm 10.18.2를 유지하며, Vercel에는 `ENABLE_EXPERIMENTAL_COREPACK=1` 설정이 필요하다. Actions에는 Vercel Secrets 3개를 등록하고, Discord 알림은 기존 GitHub 저장소 웹훅을 사용한다. [배포 설정과 검증 절차](docs/deployment.md) 참조.
+| 시점                      | 실행 내용                                                                      |
+| ------------------------- | ------------------------------------------------------------------------------ |
+| PR 생성·새 커밋·다시 열기 | GitHub Actions의 **Lint and build**: 의존성 설치 → `pnpm check` → `pnpm build` |
+| 작업 브랜치 push          | Vercel Git 연동으로 Preview 배포                                               |
+| `dev` push·PR 머지        | GitHub Actions에서 검사 → Vercel Production 빌드 → 빌드 결과 배포              |
