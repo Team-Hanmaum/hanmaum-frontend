@@ -16,7 +16,7 @@ export function AccountPage() {
       title="내 계정"
       onBack={onBack}
     >
-      <h1 className="text-hm-title-page">내 계정</h1>
+      <h1 className="sr-only">내 계정</h1>
       <AccountInfoCard>
         <dl className="flex flex-col gap-hm-20">
           <div>
@@ -45,16 +45,13 @@ export function AccountPage() {
         onClick={() => void navigate(paths.spaces)}
       />
       <MenuRow
-        tone="danger"
-        icon="logout-error"
+        icon="logout"
         title="로그아웃"
-        description="계정과 돌봄 기록은 유지돼요"
         onClick={() => void navigate(paths.logout)}
       />
       <MenuRow
         tone="danger"
         title="회원 탈퇴"
-        description="계정 정보 삭제와 모든 참여 공간의 접근 종료"
         onClick={() => void navigate(paths.withdrawal)}
       />
     </DetailLayout>
