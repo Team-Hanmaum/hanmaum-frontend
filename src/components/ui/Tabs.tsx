@@ -1,5 +1,18 @@
 import { useId, type ReactNode } from "react";
 import { TabItem } from "./TabItem";
+
+const tabStyles = {
+  default: { list: "gap-hm-8", item: "flex-1" },
+  underline: {
+    list: "border-b border-hm-divider-default",
+    item: "-mb-px flex-1 rounded-none border-0 border-b-2 border-transparent bg-transparent px-hm-4 data-[selected=true]:border-hm-action-primary data-[selected=true]:bg-transparent data-[selected=true]:font-bold",
+  },
+  pill: {
+    list: "gap-hm-8",
+    item: "rounded-hm-full data-[selected=true]:text-hm-body-small data-[selected=true]:font-bold",
+  },
+} as const;
+
 export type TabsProps = {
   label: string;
   value: string;
@@ -12,6 +25,7 @@ export type TabsProps = {
   }[];
   className?: string;
   tabClassName?: string;
+  variant?: keyof typeof tabStyles;
 };
 export function Tabs({
   label,
@@ -20,8 +34,10 @@ export function Tabs({
   items,
   className = "",
   tabClassName = "",
+  variant = "default",
 }: TabsProps) {
   const id = useId();
+  const style = tabStyles[variant];
   const active =
     items.find((item) => item.value === value && !item.disabled)?.value ??
     items.find((item) => !item.disabled)?.value;
@@ -30,7 +46,7 @@ export function Tabs({
       <div
         role="tablist"
         aria-label={label}
-        className="flex flex-wrap gap-hm-8"
+        className={`flex flex-wrap ${style.list}`}
       >
         {items.map((item, index) => (
           <TabItem
@@ -67,7 +83,7 @@ export function Tabs({
               document.getElementById(`${id}-tab-${nextIndex}`)?.focus();
               onValueChange(next.value);
             }}
-            className={`min-w-0 flex-1 ${tabClassName}`}
+            className={`min-w-0 ${style.item} ${tabClassName}`}
           >
             {item.label}
           </TabItem>

@@ -1,14 +1,12 @@
-import { Badge, MenuRow, Tabs } from "@/components/ui";
+import { MenuRow, Tabs, TextAction } from "@/components/ui";
 import { EmptyState } from "@/components/feedback";
 import { useCareItems } from "@/features/careitem/model/useCareQueries";
 import {
   careStatusTabs,
   careTypeTabs,
+  type CareListStatus,
 } from "@/features/careitem/model/careItemSelectors";
-import {
-  displayCareValue,
-  itemLabels,
-} from "@/features/careitem/model/careReadView";
+import { displayCareValue } from "@/features/careitem/model/careReadView";
 import type {
   ItemType,
   CareSummary,
@@ -26,6 +24,47 @@ const types: Record<string, ItemType> = {
   observation: "OBSERVATION",
   guidance: "GUIDANCE",
 };
+
+function careListDescription(item: CareSummary, filterStatus?: CareListStatus) {
+  const field = (key: string) => {
+    const value = item.fields?.[key];
+    return typeof value === "string" ? value.trim() : undefined;
+  };
+  const status = item.status
+    ? displayCareValue("status", item.status)
+    : undefined;
+
+  switch (item.itemType) {
+    case "SCHEDULE":
+      return [
+        field("scheduledDate"),
+        field("scheduledTime"),
+        field("location"),
+        filterStatus === "closed" ? status : undefined,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+    case "TASK":
+      return [
+        item.assigneeDisplayName || "담당자 미지정",
+        field("dueDate"),
+        filterStatus === "remaining" ? status : undefined,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+    case "OBSERVATION":
+      return [field("observedDate"), field("observedTimeText")]
+        .filter(Boolean)
+        .join(" · ");
+    case "GUIDANCE":
+      return [field("receivedDate"), field("sourceName")]
+        .filter(Boolean)
+        .join(" · ");
+    case "QUESTION":
+      return undefined;
+  }
+}
+
 export function CarePage() {
   const { space } = useSpaceContext();
   const navigate = useAppNavigate();
@@ -39,7 +78,8 @@ export function CarePage() {
   const row = (item: CareSummary) => (
     <MenuRow
       key={item.itemId}
-      icon="care-brand"
+      icon={null}
+      className="min-h-hm-touch-min! rounded-none py-hm-12 first:rounded-t-hm-16 last:rounded-b-hm-16 hover:bg-hm-bg-subtle focus-visible:z-10"
       title={item.title ?? "내용이 제거된 항목"}
       badge={
         item.needsReconfirmation
@@ -48,19 +88,16 @@ export function CarePage() {
             ? "내용 확인 필요"
             : undefined
       }
-      description={[
-        itemLabels[item.itemType],
-        displayCareValue("status", item.status),
-        item.itemType === "TASK"
-          ? item.assigneeDisplayName || "담당자 미지정"
-          : item.fields?.scheduledDate,
-      ]
-        .filter((v) => typeof v === "string")
-        .join(" · ")}
+      description={careListDescription(item, filter.status)}
       onClick={() =>
         void navigate(withReturn(careItemPath(space.spaceId, item.itemId)))
       }
     />
+  );
+  const renderList = (items: CareSummary[]) => (
+    <div className="divide-y divide-hm-divider-default rounded-hm-16 bg-hm-bg-surface">
+      {items.map(row)}
+    </div>
   );
   const content =
     !query.data || query.isError ? (
@@ -71,13 +108,15 @@ export function CarePage() {
     ) : (
       <div className="flex flex-col gap-hm-16">
         {query.data.reconfirmationItems.length > 0 && (
-          <section className="flex flex-col gap-hm-12">
-            <Badge label="다시 확인할 내용" />
-            {query.data.reconfirmationItems.map(row)}
+          <section className="flex flex-col gap-hm-8">
+            <h2 className="text-hm-body-emphasis text-hm-text-brand">
+              다시 확인할 내용
+            </h2>
+            {renderList(query.data.reconfirmationItems)}
           </section>
         )}
         {query.data.items.length ? (
-          query.data.items.map(row)
+          renderList(query.data.items)
         ) : !query.data.reconfirmationItems.length ? (
           <EmptyState
             title="아직 표시할 돌봄 정보가 없어요"
@@ -89,17 +128,20 @@ export function CarePage() {
   const statusTabs = careStatusTabs[filter.type];
   return (
     <>
-      <MenuRow
-        title="제안·가족 요청 확인"
-        icon="news-brand"
-        description="검토할 내용과 처리 결과"
-        onClick={() =>
-          void navigate(withReturn(proposalListPath(space.spaceId)))
-        }
-      />
-      <h1 className="text-hm-title-page">돌봄</h1>
+      <div className="flex items-center justify-between gap-hm-12">
+        <h1 className="text-hm-title-page">돌봄</h1>
+        <TextAction
+          className="shrink-0 px-hm-12 font-bold text-hm-text-brand"
+          onClick={() =>
+            void navigate(withReturn(proposalListPath(space.spaceId)))
+          }
+        >
+          제안·요청
+        </TextAction>
+      </div>
       <Tabs
         label="돌봄 종류"
+        variant="underline"
         value={filter.type}
         onValueChange={setType}
         items={careTypeTabs.map((tab) => ({
@@ -109,6 +151,7 @@ export function CarePage() {
               statusTabs.length ? (
                 <Tabs
                   label="돌봄 상태"
+                  variant="pill"
                   value={filter.status ?? ""}
                   onValueChange={setStatus}
                   items={statusTabs.map((status) => ({

@@ -8,7 +8,7 @@ export type MenuRowProps = Omit<
 > & {
   title: string;
   description?: string;
-  icon?: IconName;
+  icon?: IconName | null;
   tone?: "default" | "danger" | "brand";
   badge?: string;
 };
@@ -28,7 +28,7 @@ export function MenuRow({
       type={type}
       className={`hm-focus-ring flex min-h-18 w-full items-center gap-hm-12 rounded-hm-12 p-hm-16 text-left disabled:cursor-not-allowed disabled:opacity-40 ${tone === "brand" ? "bg-hm-bg-brand-subtle" : "bg-hm-bg-surface"} ${className}`}
     >
-      <Icon name={icon} />
+      {icon && <Icon name={icon} />}
       <span className="flex min-w-0 flex-1 flex-col gap-hm-4 wrap-anywhere">
         <span
           className={`text-hm-body-emphasis ${tone === "danger" ? "text-hm-feedback-error-text" : tone === "brand" ? "text-hm-text-brand" : "text-hm-text-primary"}`}
