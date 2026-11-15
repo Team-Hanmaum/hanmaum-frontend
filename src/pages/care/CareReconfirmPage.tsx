@@ -7,7 +7,7 @@ import { CareReconfirmationForm } from "@/features/careitem/ui/CareReconfirmatio
 import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import { useSpaceContext } from "@/routes/useSpaceContext";
-import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { careItemPath } from "@/routes/paths";
 
@@ -16,12 +16,10 @@ export function CareReconfirmPage() {
   const { itemId = "" } = useParams();
   const query = useCareItem(space.spaceId, itemId);
   const [revision, setRevision] = useState(0);
-  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
-  const back = () =>
-    void navigate(withReturn(careItemPath(space.spaceId, itemId)), {
-      motion: "back",
-    });
+  const back = useBackNavigation(
+    withReturn(careItemPath(space.spaceId, itemId)),
+  );
   if (space.role === "OWNER" && query.data)
     return (
       <ReconfirmationEntry
@@ -59,7 +57,7 @@ export function CareReconfirmPage() {
   );
 }
 function ReconfirmationEntry(
-  props: ComponentProps<typeof CareReconfirmationForm> & { onBack: () => void },
+  props: ComponentProps<typeof CareReconfirmationForm>,
 ) {
   const eligible =
     props.item.needsReconfirmation && props.item.visibility !== "DELETED";
