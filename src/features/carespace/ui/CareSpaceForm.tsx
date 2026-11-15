@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Button, Field } from "@/components/ui";
 import { Notice } from "@/components/feedback";
 
@@ -7,6 +8,9 @@ const defaultFailure: CareSpaceFormFailure = {
   title: "공간을 만들지 못했어요",
   body: "입력한 내용은 그대로예요.\n연결 상태를 확인한 뒤 다시 시도해 주세요.",
 };
+
+const quickInputButtonClass =
+  "min-h-hm-touch-min rounded-hm-full border border-transparent px-hm-16 py-hm-8";
 
 export function CareSpaceForm({
   id,
@@ -25,6 +29,7 @@ export function CareSpaceForm({
   failed?: boolean | CareSpaceFormFailure;
   disabled?: boolean;
 }) {
+  const input = useRef<HTMLInputElement>(null);
   const name = value.trim();
   const failure = failed === true ? defaultFailure : failed || undefined;
   return (
@@ -53,6 +58,7 @@ export function CareSpaceForm({
       )}
       <div className="flex flex-col gap-hm-12">
         <Field
+          ref={input}
           label="이름 또는 호칭"
           placeholder="예: 엄마"
           helper={name ? `공간 이름: ${name}의 돌봄` : undefined}
@@ -71,7 +77,7 @@ export function CareSpaceForm({
             <Button
               key={label}
               variant={name === label ? "secondary" : "outline"}
-              className="min-h-hm-touch-min rounded-hm-full border border-transparent px-hm-16 py-hm-8"
+              className={quickInputButtonClass}
               aria-pressed={name === label}
               disabled={disabled}
               onClick={() => onChange(label)}
@@ -79,6 +85,17 @@ export function CareSpaceForm({
               {label}
             </Button>
           ))}
+          <Button
+            variant="outline"
+            className={quickInputButtonClass}
+            disabled={disabled}
+            onClick={() => {
+              input.current?.focus();
+              input.current?.select();
+            }}
+          >
+            직접 입력
+          </Button>
         </div>
       </div>
       <p className="text-hm-body-small break-keep text-hm-text-secondary">
