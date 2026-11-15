@@ -54,6 +54,7 @@ export function HomeContent({
           key={news.id}
           title={news.title}
           author={news.author}
+          authorImageUrl={news.profileImageUrl}
           body={news.body}
           previewBody
           status={news.status}

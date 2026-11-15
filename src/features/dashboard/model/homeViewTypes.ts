@@ -21,6 +21,7 @@ export type HomeView = {
     id: string;
     title: string;
     author: string;
+    profileImageUrl?: string | null;
     body: string;
     status: NewsStatus;
     statusMessage?: string;

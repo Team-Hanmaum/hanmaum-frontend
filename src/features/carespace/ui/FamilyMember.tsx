@@ -5,6 +5,7 @@ export type FamilyMemberProps = {
   detail?: string;
   self?: boolean;
   initial?: string;
+  profileImageUrl?: string | null;
   className?: string;
 };
 export function FamilyMember({
@@ -13,6 +14,7 @@ export function FamilyMember({
   detail,
   self = false,
   initial,
+  profileImageUrl,
   className = "",
 }: FamilyMemberProps) {
   return (
@@ -22,6 +24,7 @@ export function FamilyMember({
       <Avatar
         name={name}
         initial={initial}
+        profileImageUrl={profileImageUrl}
         emphasis={self ? "self" : "default"}
         decorative
       />

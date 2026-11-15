@@ -1,5 +1,5 @@
 import { DetailLayout } from "@/components/layout";
-import { MenuRow } from "@/components/ui";
+import { Avatar, MenuRow } from "@/components/ui";
 import { useSession } from "@/features/auth/model/useSession";
 import { AccountInfoCard } from "@/features/user/ui/AccountInfoCard";
 import { paths } from "@/routes/paths";
@@ -11,6 +11,7 @@ export function AccountPage() {
   const navigate = useAppNavigate();
   const onBack = useBackNavigation(paths.spaces);
   if (session.status !== "authenticated") return null;
+  const displayName = session.user.displayName ?? "이름 미등록";
   return (
     <DetailLayout
       title="내 계정"
@@ -21,8 +22,14 @@ export function AccountPage() {
         <dl className="flex flex-col gap-hm-20">
           <div>
             <dt className="text-hm-body-small text-hm-text-secondary">이름</dt>
-            <dd className="mt-hm-8 text-hm-body-default">
-              {session.user.displayName ?? "이름 미등록"}
+            <dd className="mt-hm-8 flex items-center gap-hm-12 text-hm-body-default">
+              <Avatar
+                name={displayName}
+                profileImageUrl={session.user.profileImageUrl}
+                emphasis="self"
+                decorative
+              />
+              {displayName}
             </dd>
           </div>
           <div>

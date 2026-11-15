@@ -46,6 +46,9 @@ export function toRecordView(
     author: {
       id: record.author.membershipId ?? `withdrawn:${record.recordId}`,
       name: recordAuthorName(record.author, record.isMine),
+      profileImageUrl: record.author.withdrawn
+        ? null
+        : (record.author.profileImageUrl ?? null),
       self: record.isMine,
     },
     createdAt: Date.parse(record.recordedAt),

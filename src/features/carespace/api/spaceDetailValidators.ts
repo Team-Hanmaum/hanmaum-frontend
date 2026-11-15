@@ -28,6 +28,7 @@ export function isSpaceMemberListResponse(
         isObject(item) &&
         typeof item.membershipId === "string" &&
         isNullableString(item.displayName) &&
+        isNullableString(item.profileImageUrl ?? null) &&
         (item.role === "OWNER" || item.role === "MEMBER") &&
         typeof item.isMe === "boolean",
     )
