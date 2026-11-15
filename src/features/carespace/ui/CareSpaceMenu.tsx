@@ -83,7 +83,7 @@ export function CareSpaceMenu({
           tabIndex={-1}
           role="region"
           aria-label="돌봄 공간 전환"
-          className="absolute top-full right-hm-20 mt-hm-4 flex max-h-[60svh] w-60 max-w-[calc(100%-40px)] flex-col gap-hm-2 overflow-y-auto rounded-hm-12 border border-hm-border-default bg-hm-bg-surface p-hm-4 shadow-sm outline-none"
+          className="absolute top-full right-hm-20 mt-hm-4 flex max-h-[60svh] w-50 max-w-[calc(100%-40px)] flex-col gap-hm-2 overflow-y-auto rounded-hm-12 border border-hm-border-default bg-hm-bg-surface p-hm-4 shadow-sm outline-none"
         >
           {switchingId ? (
             <div className="p-hm-16">
@@ -125,7 +125,6 @@ export function CareSpaceMenu({
                 <span className="min-w-0 flex-1 wrap-anywhere">
                   {careSpaceName(item)}
                 </span>
-                {item.id === space.id && <Icon name="check" />}
               </button>
             ))
           )}

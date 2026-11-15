@@ -1,16 +1,36 @@
+import type { ReactNode } from "react";
 import { EmptyState, Notice } from "@/components/feedback";
 import { SectionHeader } from "@/components/layout";
-import { Button, MenuRow } from "@/components/ui";
+import { Badge, Button, Icon, MenuRow } from "@/components/ui";
 import {
   careSpaceName,
   type CareSpaceView,
 } from "@/features/carespace/model/careSpaceViewTypes";
-import { NewsCard } from "@/features/record/ui";
-import { CareCard } from "@/features/careitem/ui";
 import type { HomeScreenState } from "../model/homeScreenStates";
 import type { HomeView } from "../model/homeViewTypes";
 import { HomeFamilySection } from "./HomeFamilySection";
 import type { CareListFilter } from "@/features/careitem/model/careItemSelectors";
+
+function HomePreviewRow({
+  children,
+  onClick,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className="hm-focus-ring flex w-full min-w-0 items-center gap-hm-12 px-hm-16 py-hm-12 text-left first:rounded-t-hm-16 last:rounded-b-hm-16 hover:bg-hm-bg-subtle focus-visible:z-10"
+      onClick={onClick}
+    >
+      <span className="flex min-w-0 flex-1 flex-col gap-hm-4 wrap-anywhere">
+        {children}
+      </span>
+      <Icon name="chevron-right-secondary" />
+    </button>
+  );
+}
 
 export function HomeContent({
   space,
@@ -49,20 +69,26 @@ export function HomeContent({
           onClick: onNews,
         }}
       />
-      {data.recentNews.map((news) => (
-        <NewsCard
-          key={news.id}
-          title={news.title}
-          author={news.author}
-          body={news.body}
-          previewBody
-          status={news.status}
-          statusMessage={news.statusMessage}
-          actionLabel="소식 자세히 보기"
-          onAction={() => onOpenNews(news.id)}
-        />
-      ))}
-      {!data.recentNews.length && (
+      {data.recentNews.length ? (
+        <div className="divide-y divide-hm-divider-default rounded-hm-16 bg-hm-bg-surface">
+          {data.recentNews.map((news) => (
+            <HomePreviewRow
+              key={news.id}
+              onClick={() => onOpenNews(news.id)}
+            >
+              <span className="text-hm-caption-default text-hm-text-secondary">
+                {news.author}
+              </span>
+              {news.title && (
+                <span className="text-hm-body-emphasis">{news.title}</span>
+              )}
+              <span className="line-clamp-2 text-hm-body-default whitespace-pre-line">
+                {news.body}
+              </span>
+            </HomePreviewRow>
+          ))}
+        </div>
+      ) : (
         <EmptyState
           title="아직 남긴 소식이 없어요"
           body="가족의 소식이 등록되면 여기에서 확인할 수 있어요."
@@ -125,7 +151,6 @@ export function HomeContent({
             tone="brand"
             onClick={onPending}
           />
-          {newsSection}
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
               title="다가오는 일정"
@@ -134,33 +159,37 @@ export function HomeContent({
                 onClick: () => onCare({ type: "schedule", status: "upcoming" }),
               }}
             />
-            {!data.upcomingSchedules.length && (
+            {data.upcomingSchedules.length ? (
+              <div className="divide-y divide-hm-divider-default rounded-hm-16 bg-hm-bg-surface">
+                {data.upcomingSchedules.map((schedule) => (
+                  <HomePreviewRow
+                    key={schedule.id}
+                    onClick={() => onOpenCare(schedule.id)}
+                  >
+                    <span className="flex flex-wrap items-center gap-x-hm-8 gap-y-hm-4">
+                      <span className="min-w-0 text-hm-body-emphasis">
+                        {schedule.title}
+                      </span>
+                      {schedule.statusLabel && (
+                        <Badge
+                          label={schedule.statusLabel}
+                          tone="neutral"
+                        />
+                      )}
+                    </span>
+                    <span className="text-hm-caption-default text-hm-text-secondary">
+                      {schedule.meta} · {schedule.body}
+                    </span>
+                  </HomePreviewRow>
+                ))}
+              </div>
+            ) : (
               <p className="text-hm-body-default text-hm-text-secondary">
                 다가오는 일정이 없어요.
               </p>
             )}
-            {data.upcomingSchedules.map((schedule) => (
-              <CareCard
-                key={schedule.id}
-                title={schedule.title}
-                statusLabel={schedule.statusLabel}
-                meta={schedule.meta}
-                body={schedule.body}
-                bodyTone="hint"
-                action={{
-                  label: "일정 자세히 보기",
-                  onClick: () => onOpenCare(schedule.id),
-                }}
-              />
-            ))}
-            <MenuRow
-              icon="clock"
-
-              title={`지난 일정 ${data.pastScheduleCount}건`}
-              description="날짜가 지났지만 아직 예정으로 남아 있어요."
-              onClick={() => onCare({ type: "schedule", status: "past" })}
-            />
           </section>
+          {newsSection}
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
               title={`남은 할 일 ${data.totalCounts.tasks}`}

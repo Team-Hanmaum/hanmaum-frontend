@@ -4,7 +4,6 @@ import type {
 } from "@/features/carespace/api/spaceDetailTypes";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import type { RecordListResponse } from "@/features/record/api/recordReadTypes";
-import type { NewsStatus } from "@/features/record/ui/NewsCard";
 import type { DashboardResponse, DashboardItem } from "../api/dashboardTypes";
 import type { HomeView } from "./homeViewTypes";
 import { homePreviewLimits as limits } from "./homePreviewLimits";
@@ -21,13 +20,6 @@ const textField = (item: DashboardItem, key: string, fallback: string) =>
     : fallback;
 const title = (item: DashboardItem) =>
   item.title?.trim() || "제목 없는 돌봄 항목";
-const analysisStatuses: Record<string, NewsStatus> = {
-  QUEUED: "analyzing",
-  RUNNING: "analyzing",
-  COMPLETED: "analysis-completed",
-  FAILED: "failed",
-  DISCARDED: "analysis-discarded",
-};
 
 export function toSpaceView(
   space: SpaceDetail,
@@ -63,9 +55,6 @@ export function toHomeView(
       id: record.recordId,
       author: `${record.author.withdrawn ? "탈퇴한 사용자" : record.author.displayName?.trim() || "이름 미설정"} · ${formattedTime(record.recordedAt)}`,
       body: record.content,
-      status: record.latestAnalysis
-        ? analysisStatuses[record.latestAnalysis.status]
-        : "recorded",
     })),
     upcomingSchedules: data.upcomingSchedules.items
       .slice(0, limits.upcomingSchedules)
@@ -76,11 +65,10 @@ export function toHomeView(
           ? "재확인 필요"
           : item.needsConflictReview
             ? "내용 확인 필요"
-            : "예정",
+            : undefined,
         meta: `${textField(item, "scheduledDate", "날짜 미정")} · ${textField(item, "scheduledTime", "시간 미정")}`,
         body: textField(item, "location", "장소 미정"),
       })),
-    pastScheduleCount: data.pastScheduleCount,
     tasks: data.remainingTasks.items.slice(0, limits.tasks).map((item) => ({
       id: item.itemId,
       title: title(item),

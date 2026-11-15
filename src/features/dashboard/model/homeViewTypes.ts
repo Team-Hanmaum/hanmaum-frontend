@@ -1,5 +1,3 @@
-import type { NewsStatus } from "@/features/record/ui/NewsCard";
-
 type HomeSummaryItem = {
   id: string;
   title: string;
@@ -22,17 +20,14 @@ export type HomeView = {
     title?: string;
     author: string;
     body: string;
-    status: NewsStatus;
-    statusMessage?: string;
   }[];
   upcomingSchedules: {
     id: string;
     title: string;
-    statusLabel: string;
+    statusLabel?: string;
     meta: string;
     body: string;
   }[];
-  pastScheduleCount: number;
   tasks: HomeSummaryItem[];
   questions: HomeSummaryItem[];
   recentChanges: HomeSummaryItem[];
