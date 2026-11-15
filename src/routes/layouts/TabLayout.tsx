@@ -67,6 +67,7 @@ export function TabLayout() {
               }
             >
               <Button
+                aria-label={active === "home" ? "소식 남기기" : undefined}
                 icon={
                   active === "home" ? <Icon name="plus-inverse" /> : undefined
                 }
@@ -79,7 +80,7 @@ export function TabLayout() {
                   void navigate(withReturn(newsCreatePath(space.spaceId)))
                 }
               >
-                소식 남기기
+                {active === "home" ? "소식" : "소식 남기기"}
               </Button>
             </div>
           )}

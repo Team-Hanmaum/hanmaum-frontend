@@ -66,7 +66,7 @@ const statuses: Record<
   },
 };
 export type NewsCardProps = {
-  title: string;
+  title?: string;
   author: string;
   body: string;
   previewBody?: boolean;
@@ -97,7 +97,7 @@ export function NewsCard({
       <p className="w-full text-hm-caption-default text-hm-text-secondary">
         {author}
       </p>
-      <h3 className="w-full text-hm-heading-section">{title}</h3>
+      {title && <h3 className="w-full text-hm-heading-section">{title}</h3>}
       <p
         className={`w-full text-hm-body-reading whitespace-pre-wrap ${previewBody ? "line-clamp-3" : ""}`}
       >

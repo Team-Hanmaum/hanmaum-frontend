@@ -61,7 +61,6 @@ export function toHomeView(
     },
     recentNews: records.items.slice(0, limits.recentNews).map((record) => ({
       id: record.recordId,
-      title: "가족 소식",
       author: `${record.author.withdrawn ? "탈퇴한 사용자" : record.author.displayName?.trim() || "이름 미설정"} · ${formattedTime(record.recordedAt)}`,
       body: record.content,
       status: record.latestAnalysis

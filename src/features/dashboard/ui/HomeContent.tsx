@@ -118,14 +118,9 @@ export function HomeContent({
           <MenuRow
             icon="news-brand"
             title={
-              data.pendingCount === undefined
-                ? "제안·요청 확인"
-                : `확인할 내용 ${data.pendingCount}건`
-            }
-            description={
-              space.role === "owner"
-                ? "제안과 가족의 요청을 확인해요."
-                : "제안과 요청 상태를 확인해요. 최종 반영은 소유자가 진행해요."
+              data.pendingCount
+                ? `확인할 내용 ${data.pendingCount}건`
+                : "제안·요청 확인"
             }
             tone="brand"
             onClick={onPending}

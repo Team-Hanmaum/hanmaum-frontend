@@ -19,7 +19,7 @@ export type HomeView = {
   };
   recentNews: {
     id: string;
-    title: string;
+    title?: string;
     author: string;
     body: string;
     status: NewsStatus;
