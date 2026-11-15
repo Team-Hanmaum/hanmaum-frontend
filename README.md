@@ -13,7 +13,8 @@
   <a href="https://hanmaum.site">서비스 바로가기</a> ·
   <a href="https://github.com/Team-Hanmaum/hanmaum-frontend">Frontend</a> ·
   <a href="https://github.com/Team-Hanmaum/hanmaum-backend">Backend</a> ·
-  <a href="https://github.com/Team-Hanmaum/hanmaum-ai">AI</a>
+  <a href="https://github.com/Team-Hanmaum/hanmaum-ai">AI</a> ·
+  <a href="https://github.com/Team-Hanmaum/hanmaum-docs">Docs</a>
 </p>
 
 ---
