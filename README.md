@@ -133,7 +133,7 @@ hanmaum-frontend/
 │   ├── ISSUE_TEMPLATE/         # 이슈 작성 양식
 │   ├── workflows/              # PR 검사 · Production 배포
 │   └── pull_request_template.md
-├── docs/                       # 로컬 환경 · 배포 · PWA · 개발 규칙
+├── docs/                       # 로컬 환경 · 배포 · PWA 안내
 ├── public/                     # 매니페스트 · 설치 아이콘 · 정적 파일
 ├── scripts/                    # 로컬 HTTPS 환경 설정
 ├── src/
@@ -235,7 +235,7 @@ pnpm dev
 - FE: [https://local.hanmaum.site:5173](https://local.hanmaum.site:5173)
 - API: `https://api.hanmaum.site` — 실제 데이터를 사용하므로 테스트 계정·공간에서 확인합니다.
 - `VITE_API_BASE_URL`에는 `/api`를 제외한 서버 주소를 설정합니다. 로컬 BE를 사용할 때는 [.env.example](.env.example)을 참고합니다.
-- 카카오톡 공유에는 `VITE_KAKAO_JAVASCRIPT_KEY`와 SDK 도메인 등록이 필요합니다. [설정 방법](docs/deployment.md#카카오톡-돌봄-공유-설정-71)을 참고하세요.
+- 카카오톡 공유에는 `VITE_KAKAO_JAVASCRIPT_KEY`와 SDK 도메인 등록이 필요합니다. [설정 방법](docs/deployment.md#카카오톡-공유)을 참고하세요.
 
 로컬 공통 UI는 `/_dev/components`에서 확인할 수 있습니다. QA 도구는 `VITE_ENABLE_QA_TOOLS=true`인 환경에서 `?qa=1`로 켜며, 같은 탭에서 유지됩니다. QA 종료 또는 `?qa=0`으로 끌 수 있고, Production에서는 비활성화합니다.
 
@@ -260,7 +260,7 @@ pnpm dev
 
 작업 타입은 `feat`, `fix`, `chore`, `docs`, `refactor`, `style`을 사용합니다. `dev`·`main`에 직접 커밋하지 않고, 검증을 마친 의미 있는 단위로 커밋합니다. PR은 [템플릿](.github/pull_request_template.md)에 관련 이슈·변경 내용·검증 결과를 기록하며, `dev` 머지는 팀원 1명 이상의 승인과 필수 검사를 기준으로 합니다.
 
-스택 PR의 base는 합의한 부모 브랜치를 사용합니다. 상세 협업 규칙은 [AGENTS.md](AGENTS.md), 파일 이름과 CI 운영 방법은 [개발 규칙](docs/development-workflow.md)을 참고하세요.
+스택 PR의 base는 합의한 부모 브랜치를 사용합니다. 파일 명명·협업 규칙은 [AGENTS.md](AGENTS.md), CI 운영 방법은 [배포 문서](docs/deployment.md#ci와-배포)를 참고하세요.
 
 <a id="검증과-배포"></a>
 

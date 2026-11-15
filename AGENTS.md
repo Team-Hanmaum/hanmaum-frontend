@@ -61,6 +61,7 @@
 ## 이슈와 브랜치
 
 - 코드 변경 작업은 관련 이슈를 확인하고 이슈 단위 브랜치에서 진행한다.
+- 이슈 생성 시 `.github/ISSUE_TEMPLATE/`의 이슈 템플릿을 사용한다.
 - 관련 이슈가 있으면 재사용하며 같은 작업의 이슈를 중복 생성하지 않는다.
 - 단순 질문이나 읽기 전용 조사에는 이슈와 브랜치 생성을 강제하지 않는다.
 - 이슈와 PR의 Assignee는 대상 저장소의 GitHub 호스트에 GitHub CLI(gh)로 로그인된 활성 계정으로 설정한다.
@@ -124,5 +125,5 @@
 - UI 작업은 FIGMA.md와 해당 Figma 상세 화면을 확인한다.
 - 기능과 정책 작업은 FEATURES.md, DECISIONS.md, sources/notion-policy.md의 관련 부분을 확인한다.
 - 위 문서명은 ../docs/handoff/ 기준이며 작업에 필요한 부분만 읽는다.
-- 현재 레포의 구현과 공통 규격은 README.md, src/components/README.md, src/routes/README.md, src/styles/README.md, src/assets/README.md도 함께 참고한다. 이 경로들은 현재 레포 루트 기준이다.
+- 현재 레포의 구현과 공통 규격은 README.md, src/components/README.md, src/routes/README.md, src/styles/README.md도 함께 참고한다. 이 경로들은 현재 레포 루트 기준이다.
 - 공통 handoff에는 개발 초기 상태가 포함될 수 있으므로, 현재 구현 상태는 실제 코드와 현재 레포 문서로 재확인한다.
