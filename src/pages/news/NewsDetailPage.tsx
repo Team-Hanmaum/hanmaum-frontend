@@ -12,12 +12,16 @@ import { useRetryRecordAnalysis } from "@/features/record/model/useRecordMutatio
 import { toRecordView } from "@/features/record/model/recordView";
 import type { RecordDetail } from "@/features/record/api/recordReadTypes";
 import { NewsDetail } from "@/features/record/ui/NewsDetail";
+import { useProposalList } from "@/features/proposal/model/useProposalQueries";
+import { readSelectedIds } from "@/features/proposal/model/useSelectedProposals";
 import { ApiError } from "@/lib/api";
 import { SpaceBottomNavigation } from "@/routes/layouts/SpaceBottomNavigation";
 import {
   paths,
   spacePath,
   proposalReviewPath,
+  proposalListPath,
+  proposalResultPath,
   newsDeletePath,
 } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
@@ -79,6 +83,29 @@ export function NewsDetailPage() {
         }
       : detail.data;
   const view = record ? toRecordView(record, space.spaceId) : undefined;
+  const proposalCount = view?.proposalSummary?.count ?? 0;
+  const pendingProposals = useProposalList(
+    space.spaceId,
+    "REVIEW_PENDING",
+    recordId,
+    proposalCount > 0,
+  );
+  const showResults =
+    pendingProposals.isSuccess &&
+    !pendingProposals.hasNextPage &&
+    pendingProposals.data.pages.every((page) => !page.items.length);
+  function openProposals() {
+    if (!showResults) {
+      void navigate(withReturn(proposalReviewPath(space.spaceId, recordId)));
+      return;
+    }
+    const ids = readSelectedIds(record?.proposalIds.join(",") ?? null);
+    const resultPath =
+      ids.length === proposalCount && ids.length > 0
+        ? `${proposalResultPath(space.spaceId, ids[0])}?ids=${ids.join(",")}&fromTab=news`
+        : proposalListPath(space.spaceId, "applied");
+    void navigate(withReturn(resultPath));
+  }
   const latest = record?.latestAnalysis;
   const canRetry =
     latest?.status === "FAILED" &&
@@ -125,33 +152,16 @@ export function NewsDetailPage() {
       onBack={onBack}
       footer={
         <FixedBottomArea position="fixed">
-          {view && (
+          {view && canRetry && (
             <div className="flex flex-col gap-hm-12 bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-24">
-              {canRetry ? (
-                <>
-                  <Button
-                    className="w-full"
-                    onClick={retryAnalysis}
-                    loading={retry.isPending}
-                    loadingLabel="분석을 다시 요청하고 있어요"
-                  >
-                    분석 다시 시도
-                  </Button>
-                  <TextAction
-                    className="w-full"
-                    onClick={onList}
-                  >
-                    소식 목록으로
-                  </TextAction>
-                </>
-              ) : (
-                <Button
-                  className="w-full"
-                  onClick={onList}
-                >
-                  소식 목록으로
-                </Button>
-              )}
+              <Button
+                className="w-full"
+                onClick={retryAnalysis}
+                loading={retry.isPending}
+                loadingLabel="분석을 다시 요청하고 있어요"
+              >
+                분석 다시 시도
+              </Button>
             </div>
           )}
           {withdrawing && (
@@ -195,6 +205,17 @@ export function NewsDetailPage() {
             record={view}
             status={view.analysisStatus}
             owner={space.role === "OWNER"}
+            proposalAction={
+              proposalCount > 0
+                ? {
+                    label: showResults
+                      ? `제안 결과 ${proposalCount}건 보기`
+                      : "제안 검토하기",
+                    onClick: openProposals,
+                    disabled: pendingProposals.isPending,
+                  }
+                : undefined
+            }
             onDelete={
               record?.canDelete
                 ? () =>
@@ -204,20 +225,6 @@ export function NewsDetailPage() {
                 : undefined
             }
           />
-          {view.proposalSummary && (
-            <Notice
-              tone="neutral"
-              title="분석으로 만들어진 제안을 확인해 주세요"
-              body="제안의 근거와 현재 돌봄 정보를 비교한 뒤 반영하거나 소유자에게 요청할 수 있어요."
-              action={{
-                label: "제안 검토하기",
-                onClick: () =>
-                  void navigate(
-                    withReturn(proposalReviewPath(space.spaceId, recordId)),
-                  ),
-              }}
-            />
-          )}
         </>
       ) : detail.isPending ? (
         <LoadingState label="소식을 불러오고 있어요" />

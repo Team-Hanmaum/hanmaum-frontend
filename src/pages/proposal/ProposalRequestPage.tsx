@@ -28,6 +28,7 @@ import { ChangeRequestValues } from "@/features/proposal/ui/ChangeRequestValues"
 import {
   authorName,
   formatServerTime,
+  readCareText,
 } from "@/features/careitem/model/careReadView";
 import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
 import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
@@ -51,6 +52,18 @@ type Attempt =
   | { mode: "apply"; body: RequestApplicationBody }
   | { mode: "decline"; body: RequestDecisionBody }
   | { mode: "cancel"; body: RequestCancellationBody };
+
+function requestEntryTitle(entry: ChangeRequestEntry) {
+  if (entry.status === "INVALIDATED" || entry.redactedFields.length)
+    return "내용이 가려진 요청";
+  return (
+    readCareText(entry.decision?.appliedValues?.title) ??
+    readCareText(entry.currentValues?.title) ??
+    readCareText(entry.requestedValues?.title) ??
+    actionLabels[entry.action]
+  );
+}
+
 export function ProposalRequestPage() {
   const { space } = useSpaceContext();
   const { requestId = "" } = useParams();
@@ -251,7 +264,18 @@ export function ProposalRequestPage() {
       }}
       actions={
         decision ? (
-          <>
+          <div className="grid grid-cols-2 gap-hm-12">
+            <Button
+              variant="outline"
+              disabled={mutation.isPending}
+              onClick={() => {
+                setDecision(null);
+                mutation.reset();
+                attempt.current = null;
+              }}
+            >
+              돌아가기
+            </Button>
             <Button
               loading={mutation.isPending}
               disabled={
@@ -265,39 +289,30 @@ export function ProposalRequestPage() {
               {mutation.error && canRetryReview(mutation.error)
                 ? "같은 요청으로 다시 확인"
                 : decision.mode === "apply"
-                  ? "선택한 요청 반영"
+                  ? "요청 반영"
                   : decision.mode === "decline"
                     ? "반영하지 않기"
                     : "요청 취소"}
             </Button>
-            <TextAction
-              disabled={mutation.isPending}
-              onClick={() => {
-                setDecision(null);
-                mutation.reset();
-                attempt.current = null;
-              }}
-            >
-              요청 검토로 돌아가기
-            </TextAction>
-          </>
+          </div>
         ) : query.data ? (
           <>
             {owner && (
-              <>
+              <div className="grid grid-cols-2 gap-hm-12">
+                <Button
+                  variant="outline"
+                  disabled={disabled || !selectedPending.length}
+                  onClick={() => prepare("decline")}
+                >
+                  반영하지 않기
+                </Button>
                 <Button
                   disabled={disabled || !selectedPending.length}
                   onClick={() => prepare("apply")}
                 >
-                  선택한 요청 확인
+                  반영 전 확인
                 </Button>
-                <TextAction
-                  disabled={disabled || !selectedPending.length}
-                  onClick={() => prepare("decline")}
-                >
-                  선택한 요청 반영하지 않기
-                </TextAction>
-              </>
+              </div>
             )}
             {mine && (
               <Button
@@ -319,59 +334,78 @@ export function ProposalRequestPage() {
         />
       ) : (
         <>
-          <h1 className="text-hm-title-page">
-            {authorName(query.data.submittedBy)}님의 요청
-          </h1>
-          <p className="text-hm-body-small">
-            {formatServerTime(query.data.submittedAt)}
-          </p>
-          <Notice
-            title={decision ? title : "요청만으로 돌봄 정보는 바뀌지 않아요"}
-            body={
-              decision?.mode === "apply"
+          <div className="flex flex-col gap-hm-4">
+            <h1 className="text-hm-title-page wrap-anywhere">
+              {authorName(query.data.submittedBy)}님의 요청
+            </h1>
+            <time
+              dateTime={query.data.submittedAt}
+              className="text-hm-body-small text-hm-text-secondary"
+            >
+              {formatServerTime(query.data.submittedAt)}
+            </time>
+          </div>
+          {decision && (
+            <p className="text-hm-body-small text-hm-text-secondary">
+              {decision?.mode === "apply"
                 ? "요청에 저장된 내용 그대로 반영해요. 최신 정보와 다르면 반영할 수 없어요."
                 : decision?.mode === "cancel"
                   ? "다시 요청하려면 해당 항목의 입력 화면이나 제안 검토에서 새 요청을 제출해 주세요."
-                  : "소유자가 최종 확인한 결과를 여기에서 볼 수 있어요."
-            }
-          />
-          {(decision?.entries ?? query.data.entries).map((e) => (
-            <article
-              key={e.requestEntryId}
-              className="flex flex-col gap-hm-16 rounded-hm-14 bg-hm-bg-surface p-hm-20"
-            >
-              <Badge label={requestStatusLabels[e.status]} />
-              {!decision &&
-              e.action !== "UPDATE_SPACE" &&
-              e.status === "PENDING" &&
-              (owner || mine) ? (
-                <SelectionRow
-                  label={actionLabels[e.action]}
-                  checked={selected.includes(e.requestEntryId)}
-                  onChange={(event) =>
-                    setSelected((old) =>
-                      event.target.checked
-                        ? [...new Set([...old, e.requestEntryId])].slice(0, 20)
-                        : old.filter((id) => id !== e.requestEntryId),
-                    )
-                  }
+                  : "선택한 요청을 미반영 상태로 처리해요."}
+            </p>
+          )}
+          {(decision?.entries ?? query.data.entries).map((e) => {
+            const entryTitle = requestEntryTitle(e);
+            return (
+              <article
+                key={e.requestEntryId}
+                className="flex flex-col gap-hm-8 rounded-hm-16 bg-hm-bg-surface p-hm-16"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-hm-8">
+                  {entryTitle !== actionLabels[e.action] && (
+                    <span className="text-hm-caption-default text-hm-text-secondary">
+                      {actionLabels[e.action]}
+                    </span>
+                  )}
+                  <Badge
+                    label={requestStatusLabels[e.status]}
+                    tone={
+                      e.status === "PENDING" || e.status === "APPLIED"
+                        ? "brand"
+                        : "neutral"
+                    }
+                  />
+                </div>
+                {!decision &&
+                e.action !== "UPDATE_SPACE" &&
+                e.status === "PENDING" &&
+                (owner || mine) ? (
+                  <SelectionRow
+                    label={entryTitle}
+                    className="p-hm-12"
+                    checked={selected.includes(e.requestEntryId)}
+                    onChange={(event) =>
+                      setSelected((old) =>
+                        event.target.checked
+                          ? [...new Set([...old, e.requestEntryId])].slice(
+                              0,
+                              20,
+                            )
+                          : old.filter((id) => id !== e.requestEntryId),
+                      )
+                    }
+                  />
+                ) : (
+                  <h2 className="text-hm-heading-section">{entryTitle}</h2>
+                )}
+                <ChangeRequestValues
+                  entry={e}
+                  members={members.data}
+                  title={entryTitle}
                 />
-              ) : (
-                <h2 className="text-hm-heading-section">
-                  {actionLabels[e.action]}
-                </h2>
-              )}
-              {e.targetItemId && (
-                <div className="flex flex-col gap-hm-8">
-                  <p className="text-hm-body-emphasis">
-                    {e.redactedFields.length || e.status === "INVALIDATED"
-                      ? "내용이 가려진 돌봄 항목"
-                      : typeof e.currentValues?.title === "string" &&
-                          e.currentValues.title.trim()
-                        ? e.currentValues.title
-                        : "대상 돌봄 항목 확인 필요"}
-                  </p>
+                {e.targetItemId && (
                   <TextAction
+                    className="self-start text-hm-text-brand"
                     onClick={() =>
                       void navigate(
                         withReturn(
@@ -382,76 +416,72 @@ export function ProposalRequestPage() {
                   >
                     대상 돌봄 항목 보기
                   </TextAction>
-                </div>
-              )}
-              <ChangeRequestValues
-                entry={e}
-                members={members.data}
-              />
-              {e.action === "UPDATE_SPACE" && (
-                <Button
-                  variant="secondary"
-                  onClick={() =>
-                    void navigate(
-                      withReturn(
-                        spaceInfoRequestPath(space.spaceId, requestId),
-                      ),
-                    )
-                  }
-                >
-                  공간 정보 요청 확인
-                </Button>
-              )}
-              {e.proposalId &&
-                e.status !== "INVALIDATED" &&
-                !e.redactedFields.length && (
-                  <TextAction
-                    onClick={() =>
-                      void navigate(
-                        withReturn(
-                          proposalEvidencePath(space.spaceId, e.proposalId!),
-                        ),
-                      )
-                    }
-                  >
-                    제안 근거 보기
-                  </TextAction>
                 )}
-              {e.decision?.itemId && (
-                <>
+                {e.action === "UPDATE_SPACE" && (
                   <Button
                     variant="secondary"
                     onClick={() =>
                       void navigate(
                         withReturn(
-                          careItemPath(space.spaceId, e.decision!.itemId!),
+                          spaceInfoRequestPath(space.spaceId, requestId),
                         ),
                       )
                     }
                   >
-                    돌봄에서 결과 확인
+                    공간 정보 요청 확인
                   </Button>
-                  {e.decision.itemVersion && (
+                )}
+                {e.proposalId &&
+                  e.status !== "INVALIDATED" &&
+                  !e.redactedFields.length && (
                     <TextAction
                       onClick={() =>
                         void navigate(
                           withReturn(
-                            careHistoryPath(
-                              space.spaceId,
-                              e.decision!.itemId!,
-                              e.decision!.itemVersion!,
-                            ),
+                            proposalEvidencePath(space.spaceId, e.proposalId!),
                           ),
                         )
                       }
                     >
-                      이 변경 이력 보기
+                      제안 근거 보기
                     </TextAction>
                   )}
-                </>
-              )}
-            </article>
-          ))}
+                {e.decision?.itemId && (
+                  <>
+                    <Button
+                      variant="secondary"
+                      onClick={() =>
+                        void navigate(
+                          withReturn(
+                            careItemPath(space.spaceId, e.decision!.itemId!),
+                          ),
+                        )
+                      }
+                    >
+                      돌봄에서 결과 확인
+                    </Button>
+                    {e.decision.itemVersion && (
+                      <TextAction
+                        onClick={() =>
+                          void navigate(
+                            withReturn(
+                              careHistoryPath(
+                                space.spaceId,
+                                e.decision!.itemId!,
+                                e.decision!.itemVersion!,
+                              ),
+                            ),
+                          )
+                        }
+                      >
+                        이 변경 이력 보기
+                      </TextAction>
+                    )}
+                  </>
+                )}
+              </article>
+            );
+          })}
         </>
       )}
       {message && (

@@ -21,3 +21,11 @@ export const requestStatusLabels: Record<RequestStatus, string> = {
   CANCELED: "요청 취소",
   INVALIDATED: "확인할 수 없음",
 };
+
+export const requestFilterLabels: Record<RequestStatus, string> = {
+  PENDING: "대기",
+  APPLIED: "반영",
+  DECLINED: "미반영",
+  CANCELED: "취소",
+  INVALIDATED: "무효",
+};

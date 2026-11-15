@@ -1,127 +1,71 @@
 import { LoadingState, Notice } from "@/components/feedback";
-import { Badge, TextAction } from "@/components/ui";
+import { Button, MenuRow } from "@/components/ui";
 import type { RecordView } from "../model/recordViewTypes";
 import type { NewsStatus } from "./NewsCard";
 import { RecordOriginalCard } from "./RecordOriginalCard";
 
-const presentations = {
-  recorded: {
-    badge: "소식 저장",
-    title: "소식을 저장했어요",
-    description: "가족이 남긴 소식을 확인해 보세요.",
-  },
-  "analysis-completed": {
-    badge: "분석 완료",
-    title: "소식 분석을 마쳤어요",
-    description: "제안의 검토와 반영 여부는 제안 화면에서 확인해 주세요.",
-  },
-  "analysis-discarded": {
-    badge: "분석 종료",
-    title: "이 소식의 분석이 종료됐어요",
-    description: "저장된 소식은 아래에서 확인할 수 있어요.",
-  },
-  analyzing: {
-    badge: "소식 저장 완료",
-    title: "소식을 저장했어요",
-    description:
-      "이 소식에서 돌봄 정보를 정리하고 있어요. 결과는 나중에 확인해도 괜찮아요.",
-  },
-  review: {
-    badge: "분석 완료",
-    title: "확인할 제안이\n1건 있어요",
-    description: "제안은 아직 돌봄 정보에 반영되지 않았어요.",
-  },
-  "no-change": {
-    badge: "분석 완료",
-    title: "추가로 확인할\n제안이 없어요",
-    description: "남긴 소식은 가족과 계속 함께 볼 수 있어요.",
-  },
-  failed: {
-    badge: "소식 저장 완료",
-    title: "분석을 마치지\n못했어요",
-    description: "남긴 소식은 그대로 있어요.",
-  },
-  applied: {
-    badge: "반영",
-    title: "제안 검토를\n마쳤어요",
-    description: "남긴 소식은 가족과 계속 함께 볼 수 있어요.",
-  },
-  pending: {
-    badge: "승인 요청",
-    title: "소유자의 확인을\n기다리고 있어요",
-    description: "요청만으로 현재 돌봄 정보는 바뀌지 않아요.",
-  },
-  rejected: {
-    badge: "미적용",
-    title: "제안을\n미적용 처리했어요",
-    description: "현재 돌봄 정보는 바뀌지 않았어요.",
-  },
-} satisfies Record<
-  NewsStatus,
-  { badge: string; title: string; description: string }
->;
+const statusLabels: Partial<Record<NewsStatus, string>> = {
+  "analysis-discarded": "이 소식의 분석이 종료됐어요.",
+  "no-change": "추가로 확인할 제안이 없어요.",
+  pending: "소유자의 확인을 기다리고 있어요.",
+  applied: "제안 검토를 마쳤어요.",
+  rejected: "제안을 반영하지 않았어요.",
+};
 
 export function NewsDetail({
   record,
   status,
   owner,
   onDelete,
+  proposalAction,
 }: {
   record: RecordView;
   status: NewsStatus;
   owner: boolean;
   onDelete?: () => void;
+  proposalAction?: { label: string; onClick: () => void; disabled?: boolean };
 }) {
-  const presentation = presentations[status];
+  const statusLabel = statusLabels[status];
   return (
     <>
-      <div className="flex flex-col items-start gap-hm-12">
-        <Badge
-          label={presentation.badge}
+      <h1 className="sr-only">소식 상세</h1>
+      <RecordOriginalCard record={record} />
+      {proposalAction && (
+        <MenuRow
           tone="brand"
+          icon="news-brand"
+          className="min-h-hm-touch-min py-hm-12"
+          title={proposalAction.label}
+          onClick={proposalAction.onClick}
+          disabled={proposalAction.disabled}
         />
-        <h1 className="text-hm-title-page whitespace-pre-line">
-          {status === "review"
-            ? `확인할 제안이\n${record.proposalSummary?.count ?? 1}건 있어요`
-            : presentation.title}
-        </h1>
-        <p className="text-hm-body-default text-hm-text-secondary">
-          {presentation.description}
+      )}
+      {statusLabel && (
+        <p className="text-hm-body-small text-hm-text-secondary">
+          {statusLabel}
         </p>
-        {record.proposalSummary && (
-          <p className="text-hm-body-small text-hm-text-secondary">
-            {record.proposalSummary.message}
-          </p>
-        )}
-      </div>
+      )}
       {status === "analyzing" && (
         <LoadingState
           variant="more"
-          label="분석 중이에요"
+          label="소식에서 돌봄 정보를 정리하고 있어요"
         />
       )}
       {status === "failed" && (
         <Notice
           tone="error"
-          title="분석을 다시 시도해 주세요"
-          body="기존 돌봄 정보는 바뀌지 않았어요."
-        />
-      )}
-      <RecordOriginalCard record={record} />
-      {status === "analyzing" && (
-        <Notice
-          tone="neutral"
-          title="검토 후 반영해요"
-          body="분석 결과가 나와도 일정·할 일·질문은 바로 바뀌지 않아요."
+          title="소식 분석을 마치지 못했어요"
+          body="남긴 소식은 계속 볼 수 있어요."
         />
       )}
       {onDelete && (owner || record.author.self) && (
-        <TextAction
-          tone="danger"
+        <Button
+          variant="outline"
+          className="min-h-hm-touch-min self-start border-hm-feedback-error-text px-hm-16 py-hm-8 text-hm-feedback-error-text hover:bg-hm-feedback-error-bg"
           onClick={onDelete}
         >
           소식 원본 삭제
-        </TextAction>
+        </Button>
       )}
     </>
   );

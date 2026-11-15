@@ -12,6 +12,7 @@ export function useProposalList(
   spaceId: string,
   status: ProposalStatus = "REVIEW_PENDING",
   recordId?: string,
+  enabled = true,
 ) {
   const session = useSession();
   return useInfiniteQuery({
@@ -26,7 +27,7 @@ export function useProposalList(
     initialPageParam: null as string | null,
     getNextPageParam: (last) =>
       last.hasNext && last.nextCursor ? last.nextCursor : undefined,
-    enabled: session.status === "authenticated",
+    enabled: enabled && session.status === "authenticated",
   });
 }
 export function useProposal(spaceId: string, proposalId: string) {
