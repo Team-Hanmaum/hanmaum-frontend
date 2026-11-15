@@ -47,7 +47,7 @@ export function Button({
           {icon}
         </span>
       ) : null}
-      <span className="min-w-0 flex-1">
+      <span className={busy ? "min-w-0" : "min-w-0 flex-1"}>
         {children}
         {busy && <span className="sr-only"> · {loadingLabel}</span>}
       </span>
