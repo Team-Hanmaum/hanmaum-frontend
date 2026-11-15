@@ -47,13 +47,13 @@ React Router Data 모드를 사용한다. URL과 레이아웃은 `Router.tsx`, �
 - `care/requests`와 `care/requests/:changeId`는 실제 가족 요청 목록 `proposals?status=requests`로 보낸다. 기존 requested/applied/rejected는 PENDING/APPLIED/DECLINED 필터로 연결한다. 이전 개별 Mock 변경 ID나 항목 필터를 실제 요청 ID로 해석하지 않는다. 탈퇴 복귀 표시와 해시는 유지한다.
 - 항목 기반 `care/items/:itemId/shared` 주소는 기존대로 보호된 항목 상세로 보낸다. 실제 공유 조회는 `/share/:token`이다.
 - 랜딩의 사용 예시와 로컬 컴포넌트 전시의 예시 값은 유지한다. 전시 경로와 코드는 Production 빌드에 포함하지 않는다.
-- `VITE_ENABLE_QA_TOOLS=true` 환경의 `qa=1`·같은 탭 유지·QA 종료는 유지한다. 업무 데이터를 가짜 값으로 바꾸는 상태 선택기는 없다. Production은 QA false다.
+- QA 도구를 켜고 끄는 방법은 [로컬 실행 안내](../../README.md#로컬-실행)를 참고한다.
 
 ## 데이터·입력·이동 유지
 
 - 업무 데이터는 각 도메인 model의 Query 훅에서 가져온다. Types·Validators·Api 분리 및 세션·CSRF 처리는 [공통 API 규격](../lib/api/README.md)을 따른다. 빈 목록·로딩·오류는 실제 응답 상태로 표시한다.
-- 돌봄 목록은 `type`과 `status` 필터 및 서버 커서·정렬을 사용한다. 일부 페이지만 받은 뒤 FE 정렬로 전체 순서를 대체하지 않는다. 상세 직접 진입 후 목록 이동은 항목 유형을 유지한다.
-- 소식 목록은 본문 3줄 미리보기와 실제 서버 커서 더 보기를 사용한다. 조회 크기는 `recordPageSize`(현재 20)이며 예전 Mock의 `shown` 쿼리 방식은 사용하지 않는다. 더 보기 후 새 카드로 포커스를 이동하고 추가 조회 실패 시 기존 목록을 유지한다.
+- 돌봄 목록의 URL `type`·`status` 필터는 API의 `itemType`·`view`로 전달한다. 서버는 선택한 유형과 목록 구분에 맞는 전체 항목을 정렬해 반환한다. 상세에 직접 진입한 뒤 목록으로 이동할 때는 항목 유형을 유지한다.
+- 소식 목록은 본문 3줄 미리보기를 제공하며, 서버 커서로 `recordPageSize`(20건)씩 더 불러온다. 더 보기 후 새 카드로 포커스를 이동하고 추가 조회 실패 시 기존 목록을 유지한다.
 - 소식 분석은 대기·진행 중에만 상태를 재조회한다. 제안 반영·요청 처리·돌봄 변경·소식 삭제 후 관련 목록·홈·상세 캐시를 갱신한다. 변경 요청의 응답 유실은 같은 clientRequestId와 본문으로 확인하며 임의로 새 작업을 만들지 않는다.
 - 제안 편집 초안과 직접 입력은 해당 화면/Query 상태로 유지한다. 이것은 Mock 데이터나 영구 저장이 아니다. 최신 reviewToken·버전·편집 잠금 확인과 이탈 확인을 유지한다.
 - 홈 표시 개수는 `homePreviewLimits`에서 관리한다. 가족 3명·최근 소식 1건·일정 2건·할 일 3건·질문 2건·변경 3건이며, 서버 전체 건수와 구분한다.

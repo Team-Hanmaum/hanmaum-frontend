@@ -238,7 +238,7 @@ pnpm dev
 - `VITE_API_BASE_URL`에는 `/api`를 제외한 서버 주소를 설정합니다. 로컬 BE를 사용할 때는 [.env.example](.env.example)을 참고합니다.
 - 카카오톡 공유에는 `VITE_KAKAO_JAVASCRIPT_KEY`와 SDK 도메인 등록이 필요합니다. [설정 방법](docs/deployment.md#카카오톡-공유)을 참고하세요.
 
-로컬 공통 UI는 `/_dev/components`에서 확인할 수 있습니다. QA 도구는 `VITE_ENABLE_QA_TOOLS=true`인 환경에서 `?qa=1`로 켜며, 같은 탭에서 유지됩니다. QA 종료 또는 `?qa=0`으로 끌 수 있고, Production에서는 비활성화합니다.
+로컬 공통 UI는 `/_dev/components`에서 확인할 수 있습니다. QA 도구는 기본적으로 숨겨져 있습니다. `VITE_ENABLE_QA_TOOLS=true`인 환경과 이 변수를 설정하지 않은 로컬 개발 서버에서는 `?qa=1`로 켤 수 있습니다. 설정은 같은 탭에 유지되며, **QA 종료** 또는 `?qa=0`으로 끌 수 있습니다. Production에서는 `VITE_ENABLE_QA_TOOLS=false`로 비활성화합니다.
 
 <a id="개발-워크플로우"></a>
 
