@@ -10,11 +10,17 @@ import type { HomeView } from "../model/homeViewTypes";
 import { HomeFamilySection } from "./HomeFamilySection";
 import type { CareListFilter } from "@/features/careitem/model/careItemSelectors";
 
-function HomeScheduleRow({
-  schedule,
+function HomeDetailRow({
+  title,
+  description,
+  statusLabel,
+  daysUntil,
   onClick,
 }: {
-  schedule: HomeView["upcomingSchedules"][number];
+  title: string;
+  description: string;
+  statusLabel?: string;
+  daysUntil?: number;
   onClick: () => void;
 }) {
   return (
@@ -25,18 +31,16 @@ function HomeScheduleRow({
     >
       <span className="flex min-w-0 flex-1 flex-col gap-hm-4 wrap-anywhere">
         <span className="flex flex-wrap items-center gap-x-hm-8 gap-y-hm-4">
-          <span className="min-w-0 text-hm-body-emphasis">
-            {schedule.title}
-          </span>
-          {schedule.statusLabel && <Badge label={schedule.statusLabel} />}
+          <span className="min-w-0 text-hm-body-emphasis">{title}</span>
+          {statusLabel && <Badge label={statusLabel} />}
         </span>
         <span className="text-hm-caption-default text-hm-text-secondary">
-          {schedule.meta} · {schedule.body}
+          {description}
         </span>
       </span>
-      {schedule.daysUntil !== undefined && (
+      {daysUntil !== undefined && (
         <Badge
-          label={schedule.daysUntil === 0 ? "D-day" : `D-${schedule.daysUntil}`}
+          label={daysUntil === 0 ? "D-day" : `D-${daysUntil}`}
           tone="brand"
           className="shrink-0 whitespace-nowrap tabular-nums"
         />
@@ -192,9 +196,12 @@ export function HomeContent({
             {data.upcomingSchedules.length ? (
               <div className="divide-y divide-hm-divider-default rounded-hm-16 bg-hm-bg-surface">
                 {data.upcomingSchedules.map((schedule) => (
-                  <HomeScheduleRow
+                  <HomeDetailRow
                     key={schedule.id}
-                    schedule={schedule}
+                    title={schedule.title}
+                    description={`${schedule.meta} · ${schedule.body}`}
+                    statusLabel={schedule.statusLabel}
+                    daysUntil={schedule.daysUntil}
                     onClick={() => onOpenCare(schedule.id)}
                   />
                 ))}
@@ -273,21 +280,22 @@ export function HomeContent({
                 onClick: onHistory,
               }}
             />
-            {!data.recentChanges.length && (
+            {data.recentChanges.length ? (
+              <div className="divide-y divide-hm-divider-default rounded-hm-16 bg-hm-bg-surface">
+                {data.recentChanges.map((change) => (
+                  <HomeDetailRow
+                    key={change.id}
+                    title={change.title}
+                    description={change.description}
+                    onClick={() => onChange(change.id)}
+                  />
+                ))}
+              </div>
+            ) : (
               <p className="text-hm-body-default text-hm-text-secondary">
                 아직 반영된 변경이 없어요.
               </p>
             )}
-            {data.recentChanges.map((change) => (
-              <MenuRow
-                key={change.id}
-
-                icon="check"
-                title={change.title}
-                description={change.description}
-                onClick={() => onChange(change.id)}
-              />
-            ))}
           </section>
         </>
       )}
