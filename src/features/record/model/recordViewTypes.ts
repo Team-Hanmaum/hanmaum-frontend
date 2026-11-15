@@ -18,7 +18,12 @@ export type RecordView = {
   spaceId: string;
   title: string;
   body: string;
-  author: { id: string; name: string; self: boolean };
+  author: {
+    id: string;
+    name: string;
+    self: boolean;
+    profileImageUrl: string | null;
+  };
   createdAt: number;
   analysisStatus: RecordAnalysisStatus;
   proposalSummary?: { status: NewsStatus; count: number; message: string };

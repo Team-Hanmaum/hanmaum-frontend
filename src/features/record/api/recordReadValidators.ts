@@ -34,6 +34,7 @@ function isRecordSummary(item: unknown): item is RecordSummary {
     isObject(item.author) &&
     isNullableString(item.author.membershipId) &&
     isNullableString(item.author.displayName) &&
+    isNullableString(item.author.profileImageUrl ?? null) &&
     typeof item.author.withdrawn === "boolean" &&
     (item.latestAnalysis === null ||
       (isObject(item.latestAnalysis) &&

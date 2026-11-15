@@ -3,6 +3,7 @@ export type RecordAnalysisState =
 export interface RecordAuthor {
   membershipId: string | null;
   displayName: string | null;
+  profileImageUrl?: string | null;
   withdrawn: boolean;
 }
 export interface RecordLatestAnalysis {

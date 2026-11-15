@@ -7,6 +7,7 @@ export type CareSpaceView = {
   members: {
     id: string;
     name: string;
+    profileImageUrl?: string | null;
     role: "owner" | "member";
     self?: boolean;
   }[];

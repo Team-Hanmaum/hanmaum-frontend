@@ -41,6 +41,7 @@ export function toSpaceView(
     members: members.map((member) => ({
       id: member.membershipId,
       name: member.displayName?.trim() || (member.isMe ? "나" : "이름 미설정"),
+      profileImageUrl: member.profileImageUrl,
       role: member.role === "OWNER" ? "owner" : "member",
       self: member.isMe,
     })),
@@ -63,6 +64,9 @@ export function toHomeView(
       id: record.recordId,
       title: "가족 소식",
       author: `${record.author.withdrawn ? "탈퇴한 사용자" : record.author.displayName?.trim() || "이름 미설정"} · ${formattedTime(record.recordedAt)}`,
+      profileImageUrl: record.author.withdrawn
+        ? null
+        : record.author.profileImageUrl,
       body: record.content,
       status: record.latestAnalysis
         ? analysisStatuses[record.latestAnalysis.status]

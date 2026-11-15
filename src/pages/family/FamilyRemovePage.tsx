@@ -167,6 +167,7 @@ function RemoveConfirmation() {
           </p>
           <FamilyMember
             name={member.displayName || "이름 미설정"}
+            profileImageUrl={member.profileImageUrl}
             role="member"
             detail="현재 구성원"
           />

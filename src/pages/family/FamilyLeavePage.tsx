@@ -164,6 +164,7 @@ export function FamilyLeavePage() {
           </p>
           <FamilyMember
             name={self.displayName || "이름 미등록"}
+            profileImageUrl={self.profileImageUrl}
             role="owner"
             self
             detail="현재 소유자"

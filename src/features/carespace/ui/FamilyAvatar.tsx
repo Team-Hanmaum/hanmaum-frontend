@@ -3,6 +3,7 @@ export type FamilyAvatarProps = {
   name: string;
   roleLabel: string;
   initial?: string;
+  profileImageUrl?: string | null;
   self?: boolean;
   className?: string;
 };
@@ -10,6 +11,7 @@ export function FamilyAvatar({
   name,
   roleLabel,
   initial,
+  profileImageUrl,
   self = false,
   className = "",
 }: FamilyAvatarProps) {
@@ -20,6 +22,7 @@ export function FamilyAvatar({
       <Avatar
         name={name}
         initial={initial}
+        profileImageUrl={profileImageUrl}
         emphasis={self ? "self" : "default"}
         decorative
       />
