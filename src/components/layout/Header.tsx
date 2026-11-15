@@ -63,12 +63,15 @@ export function Header(props: HeaderProps) {
               aria-label={`돌봄 공간 선택: ${props.space.name}`}
               aria-expanded={props.space.expanded}
               aria-controls={props.space.controls}
-              className="hm-focus-ring flex min-h-hm-touch-min w-41 min-w-0 shrink items-center gap-hm-8 rounded-hm-full bg-hm-bg-subtle px-hm-12 py-hm-8 text-hm-body-small"
+              title={props.space.name}
+              className="hm-focus-ring group flex min-h-hm-touch-min max-w-[calc(100%-6.5rem)] min-w-0 items-center gap-hm-4 rounded-hm-8 pl-hm-8 text-hm-body-emphasis hover:bg-hm-bg-subtle aria-expanded:bg-hm-bg-subtle"
             >
               <span className="min-w-0 flex-1 truncate">
                 {props.space.name}
               </span>
-              <Icon name="chevron-down-secondary" />
+              <span className="inline-flex shrink-0 group-aria-expanded:rotate-180">
+                <Icon name="chevron-down-secondary" />
+              </span>
             </button>
           )}
         </>

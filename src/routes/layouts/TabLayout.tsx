@@ -1,7 +1,7 @@
 import { Outlet, useMatches } from "react-router";
 import { PageLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
-import { Button } from "@/components/ui";
+import { Button, Icon } from "@/components/ui";
 import { CareSpaceMenu } from "@/features/carespace/ui/CareSpaceMenu";
 import { useCareSpaces } from "@/features/carespace/model/useCareSpaces";
 import { toSpaceView } from "@/features/dashboard/model/homeData";
@@ -54,11 +54,27 @@ export function TabLayout() {
         />
       }
       footer={
-        <FixedBottomArea position="fixed">
+        <FixedBottomArea
+          position="fixed"
+          className={active === "home" ? "pointer-events-none" : undefined}
+        >
           {(active === "home" || active === "news") && (
-            <div className="bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-12">
+            <div
+              className={
+                active === "home"
+                  ? "flex justify-end px-hm-20 pt-hm-4 pb-hm-8"
+                  : "bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-12"
+              }
+            >
               <Button
-                className="w-full"
+                icon={
+                  active === "home" ? <Icon name="plus-inverse" /> : undefined
+                }
+                className={
+                  active === "home"
+                    ? "pointer-events-auto min-h-hm-touch-min max-w-full rounded-hm-full px-hm-16 py-hm-8 shadow-sm"
+                    : "w-full"
+                }
                 onClick={() =>
                   void navigate(withReturn(newsCreatePath(space.spaceId)))
                 }
@@ -68,10 +84,12 @@ export function TabLayout() {
             </div>
           )}
           {active === "care" && <CareListAction spaceId={space.spaceId} />}
-          <SpaceBottomNavigation
-            spaceId={space.spaceId}
-            active={active}
-          />
+          <div className="pointer-events-auto">
+            <SpaceBottomNavigation
+              spaceId={space.spaceId}
+              active={active}
+            />
+          </div>
         </FixedBottomArea>
       }
     >
