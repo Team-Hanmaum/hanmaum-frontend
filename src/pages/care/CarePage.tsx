@@ -6,7 +6,10 @@ import {
   careTypeTabs,
   type CareListStatus,
 } from "@/features/careitem/model/careItemSelectors";
-import { displayCareValue } from "@/features/careitem/model/careReadView";
+import {
+  displayCareValue,
+  itemLabels,
+} from "@/features/careitem/model/careReadView";
 import type {
   ItemType,
   CareSummary,
@@ -75,14 +78,14 @@ export function CarePage() {
     types[filter.type],
     filter.status?.toUpperCase(),
   );
-  const row = (item: CareSummary) => (
+  const row = (item: CareSummary, inReconfirmationList: boolean) => (
     <MenuRow
       key={item.itemId}
       icon={null}
       className="min-h-hm-touch-min! rounded-none py-hm-12 first:rounded-t-hm-16 last:rounded-b-hm-16 hover:bg-hm-bg-subtle focus-visible:z-10"
-      title={item.title ?? "내용이 제거된 항목"}
+      title={item.title ?? `내용이 제거된 ${itemLabels[item.itemType]}`}
       badge={
-        item.needsReconfirmation
+        item.needsReconfirmation && !inReconfirmationList
           ? "재확인 필요"
           : item.needsConflictReview
             ? "내용 확인 필요"
@@ -94,9 +97,16 @@ export function CarePage() {
       }
     />
   );
-  const renderList = (items: CareSummary[]) => (
-    <div className="divide-y divide-hm-divider-default rounded-hm-16 bg-hm-bg-surface">
-      {items.map(row)}
+  const renderList = (items: CareSummary[], reconfirmation = false) => (
+    <div
+      className={`divide-y divide-hm-divider-default rounded-hm-16 bg-hm-bg-surface ${reconfirmation ? "border border-hm-border-default" : ""}`}
+    >
+      {reconfirmation && (
+        <h2 className="rounded-t-hm-16 bg-hm-bg-brand-subtle px-hm-16 py-hm-8 text-hm-body-small font-bold text-hm-text-brand">
+          다시 확인할 내용
+        </h2>
+      )}
+      {items.map((item) => row(item, reconfirmation))}
     </div>
   );
   const content =
@@ -107,14 +117,8 @@ export function CarePage() {
       />
     ) : (
       <div className="flex flex-col gap-hm-16">
-        {query.data.reconfirmationItems.length > 0 && (
-          <section className="flex flex-col gap-hm-8">
-            <h2 className="text-hm-body-emphasis text-hm-text-brand">
-              다시 확인할 내용
-            </h2>
-            {renderList(query.data.reconfirmationItems)}
-          </section>
-        )}
+        {query.data.reconfirmationItems.length > 0 &&
+          renderList(query.data.reconfirmationItems, true)}
         {query.data.items.length ? (
           renderList(query.data.items)
         ) : !query.data.reconfirmationItems.length ? (
@@ -131,7 +135,7 @@ export function CarePage() {
       <div className="flex items-center justify-between gap-hm-12">
         <h1 className="text-hm-title-page">돌봄</h1>
         <TextAction
-          className="shrink-0 px-hm-12 font-bold text-hm-text-brand"
+          className="shrink-0 rounded-hm-full border border-hm-action-primary/25 bg-hm-bg-brand-subtle px-hm-12 font-bold text-hm-text-brand hover:border-hm-action-primary/50"
           onClick={() =>
             void navigate(withReturn(proposalListPath(space.spaceId)))
           }
