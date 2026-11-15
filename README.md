@@ -243,10 +243,13 @@ pnpm dev
 
 ## 🤝 개발 워크플로우
 
-```text
-이슈 생성 → 최신 dev에서 작업 브랜치 생성 → 구현·검증·커밋
-  → dev 대상 PR → 코드 리뷰·필수 검사 → 머지 → Production 배포
-```
+1. 이슈 생성
+2. 최신 `dev`에서 작업 브랜치 생성
+3. 구현·검증·커밋
+4. `dev` 대상 PR 생성
+5. 코드 리뷰·필수 검사
+6. `dev`에 머지
+7. Production 배포
 
 | 항목   | 규칙                                  | 예시                              |
 | ------ | ------------------------------------- | --------------------------------- |
@@ -264,8 +267,9 @@ pnpm dev
 ## ✅ 검증과 배포
 
 ```sh
-pnpm check   # ESLint · Prettier · TypeScript 검사
-pnpm build   # 타입 검사 · Production 번들 생성
+pnpm run format   # Prettier 포맷 자동 정리
+pnpm check        # ESLint · Prettier · TypeScript 검사
+pnpm build        # 타입 검사 · Production 번들 생성
 ```
 
 ![한마음 CI/CD 파이프라인](https://raw.githubusercontent.com/Team-Hanmaum/hanmaum-docs/main/assets/development/ci-cd.png)
