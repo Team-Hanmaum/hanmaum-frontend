@@ -5,7 +5,6 @@ import { useProposalList } from "@/features/proposal/model/useProposalQueries";
 import { useChangeRequests } from "@/features/proposal/model/useChangeRequests";
 import {
   actionLabels,
-  proposalStatusLabels,
   requestStatusLabels,
 } from "@/features/proposal/model/reviewLabels";
 import type { ProposalStatus } from "@/features/proposal/api/proposalReadTypes";
@@ -28,69 +27,95 @@ import {
   spaceInfoRequestsPath,
   spaceInfoRequestPath,
 } from "@/routes/paths";
-const tabs = [
-  { value: "review", label: "검토 필요" },
-  { value: "requests", label: "가족 요청" },
-  { value: "applied", label: "반영됨" },
-  { value: "rejected", label: "미반영" },
-  { value: "invalidated", label: "무효" },
-];
-const statuses: Record<string, ProposalStatus> = {
-  review: "REVIEW_PENDING",
-  applied: "APPLIED",
-  rejected: "DECLINED",
-  invalidated: "INVALIDATED",
-};
+const resultTabs = [
+  { value: "applied", label: "반영됨", status: "APPLIED" },
+  { value: "rejected", label: "미반영", status: "DECLINED" },
+  { value: "invalidated", label: "무효", status: "INVALIDATED" },
+] as const satisfies readonly {
+  value: string;
+  label: string;
+  status: ProposalStatus;
+}[];
+
 export function ProposalListPage() {
   const { space } = useSpaceContext();
   const [params, setParams] = useSearchParams();
-  const status = tabs.some((t) => t.value === params.get("status"))
-    ? params.get("status")!
-    : "review";
+  const status = params.get("status");
+  const result = resultTabs.find((tab) => tab.value === status);
+  const activeTab = result
+    ? "results"
+    : status === "requests"
+      ? "requests"
+      : "review";
   const { withReturn } = useWithdrawalReturn();
-  const navigate = useAppNavigate();
   const back = useBackNavigation(withReturn(spacePath(space.spaceId, "news")));
+
+  function selectStatus(value: string) {
+    if (value === status) return;
+    const next = new URLSearchParams(params);
+    next.set("status", value);
+    void setParams(next);
+  }
+
   return (
     <ProposalPageLayout
-      title="확인할 내용"
+      title="제안·요청"
       spaceId={space.spaceId}
       onBack={back}
       tabs
     >
-      <h1 className="text-hm-title-page">제안과 가족의 요청</h1>
-      <p className="text-hm-body-default text-hm-text-secondary">
-        {space.role === "OWNER"
-          ? "내용을 검토하고 선택한 내용만 반영해요."
-          : "가족에게 반영을 요청할 수 있어요. 최종 반영은 소유자가 진행해요."}
-      </p>
-      <MenuRow
-        icon="edit"
-        title="공간 정보 수정 요청"
-        description="공간 이름 수정 요청과 처리 결과"
-        onClick={() =>
-          void navigate(withReturn(spaceInfoRequestsPath(space.spaceId)))
-        }
-      />
+      <h1 className="sr-only">제안·요청</h1>
       <Tabs
-        label="제안 상태"
-        value={status}
+        label="제안·요청 종류"
+        variant="underline"
+        value={activeTab}
         onValueChange={(value) => {
-          const next = new URLSearchParams(params);
-          next.set("status", value);
-          void setParams(next);
+          if (value !== activeTab)
+            selectStatus(value === "results" ? resultTabs[0].value : value);
         }}
-        items={tabs.map((tab) => ({
-          ...tab,
-          content:
-            tab.value !== status ? null : status === "requests" ? (
-              <RequestList spaceId={space.spaceId} />
-            ) : (
-              <ProposalList
-                spaceId={space.spaceId}
-                status={statuses[status]}
+        items={[
+          {
+            value: "review",
+            label: "검토",
+            content:
+              activeTab === "review" ? (
+                <ProposalList
+                  spaceId={space.spaceId}
+                  status="REVIEW_PENDING"
+                />
+              ) : null,
+          },
+          {
+            value: "requests",
+            label: "가족 요청",
+            content:
+              activeTab === "requests" ? (
+                <RequestList spaceId={space.spaceId} />
+              ) : null,
+          },
+          {
+            value: "results",
+            label: "결과",
+            content: result ? (
+              <Tabs
+                label="제안 결과 상태"
+                variant="pill"
+                value={result.value}
+                onValueChange={selectStatus}
+                items={resultTabs.map((tab) => ({
+                  ...tab,
+                  content:
+                    tab.value === result.value ? (
+                      <ProposalList
+                        spaceId={space.spaceId}
+                        status={tab.status}
+                      />
+                    ) : null,
+                }))}
               />
-            ),
-        }))}
+            ) : null,
+          },
+        ]}
       />
     </ProposalPageLayout>
   );
@@ -120,24 +145,26 @@ function ProposalList({
   return (
     <div className="flex flex-col gap-hm-12">
       {items.length ? (
-        items.map((p) => (
-          <MenuRow
-            key={p.proposalId}
-            icon="news-brand"
-            title={p.title ?? "내용이 제거된 제안"}
-            badge={proposalStatusLabels[p.status]}
-            description={`${actionLabels[p.action]} · ${formatServerTime(p.createdAt)}`}
-            onClick={() =>
-              void navigate(
-                withReturn(
-                  p.status === "REVIEW_PENDING"
-                    ? proposalReviewPath(spaceId, p.recordId)
-                    : proposalResultPath(spaceId, p.proposalId),
-                ),
-              )
-            }
-          />
-        ))
+        <div className="divide-y divide-hm-divider-default rounded-hm-16 bg-hm-bg-surface">
+          {items.map((p) => (
+            <MenuRow
+              key={p.proposalId}
+              icon={null}
+              className="min-h-hm-touch-min! rounded-none py-hm-12 first:rounded-t-hm-16 last:rounded-b-hm-16 hover:bg-hm-bg-subtle focus-visible:z-10"
+              title={p.title ?? "내용이 제거된 제안"}
+              description={`${actionLabels[p.action]} · ${formatServerTime(p.createdAt)}`}
+              onClick={() =>
+                void navigate(
+                  withReturn(
+                    p.status === "REVIEW_PENDING"
+                      ? proposalReviewPath(spaceId, p.recordId)
+                      : proposalResultPath(spaceId, p.proposalId),
+                  ),
+                )
+              }
+            />
+          ))}
+        </div>
       ) : (
         <EmptyState
           title="표시할 제안이 없어요"
@@ -174,6 +201,14 @@ function RequestList({ spaceId }: { spaceId: string }) {
   const items = list.data?.pages.flatMap((p) => p.items) ?? [];
   return (
     <div className="flex flex-col gap-hm-16">
+      <MenuRow
+        icon={null}
+        className="min-h-hm-touch-min! py-hm-12 hover:bg-hm-bg-subtle"
+        title="공간 정보 수정 요청"
+        onClick={() =>
+          void navigate(withReturn(spaceInfoRequestsPath(spaceId)))
+        }
+      />
       <label className="flex flex-col gap-hm-8">
         요청 상태
         <select

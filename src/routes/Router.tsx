@@ -399,7 +399,7 @@ const proposalRoutes: RouteObject[] = [
       Component: (await import("@/pages/proposal/ProposalListPage"))
         .ProposalListPage,
     }),
-    handle: { title: "확인할 내용" },
+    handle: { title: "제안·요청" },
   },
 ];
 
