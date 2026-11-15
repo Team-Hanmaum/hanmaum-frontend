@@ -18,7 +18,8 @@ export type HomeView = {
   recentNews: {
     id: string;
     title?: string;
-    author: string;
+    author: { name: string; initial?: string; isMine: boolean };
+    recordedAtLabel: string;
     body: string;
   }[];
   upcomingSchedules: {

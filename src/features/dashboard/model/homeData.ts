@@ -51,11 +51,20 @@ export function toHomeView(
       questions: data.unconfirmedQuestions.totalCount,
       recentChanges: data.recentChanges.totalCount,
     },
-    recentNews: records.items.slice(0, limits.recentNews).map((record) => ({
-      id: record.recordId,
-      author: `${record.author.withdrawn ? "탈퇴한 사용자" : record.author.displayName?.trim() || "이름 미설정"} · ${formattedTime(record.recordedAt)}`,
-      body: record.content,
-    })),
+    recentNews: records.items.slice(0, limits.recentNews).map((record) => {
+      const { withdrawn, displayName } = record.author;
+      const name = withdrawn ? undefined : displayName?.trim();
+      return {
+        id: record.recordId,
+        author: {
+          name: withdrawn ? "탈퇴한 사용자" : name || "이름 미설정",
+          initial: name ? undefined : "?",
+          isMine: record.isMine && !withdrawn,
+        },
+        recordedAtLabel: formattedTime(record.recordedAt),
+        body: record.content,
+      };
+    }),
     upcomingSchedules: data.upcomingSchedules.items
       .slice(0, limits.upcomingSchedules)
       .map((item) => ({

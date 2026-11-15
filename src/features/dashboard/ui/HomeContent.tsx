@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { EmptyState, Notice } from "@/components/feedback";
 import { SectionHeader } from "@/components/layout";
-import { Badge, Button, Icon, MenuRow } from "@/components/ui";
+import { Avatar, Badge, Button, Icon, MenuRow } from "@/components/ui";
 import {
   careSpaceName,
   type CareSpaceView,
@@ -13,9 +13,11 @@ import type { CareListFilter } from "@/features/careitem/model/careItemSelectors
 
 function HomePreviewRow({
   children,
+  leading,
   onClick,
 }: {
   children: ReactNode;
+  leading?: ReactNode;
   onClick: () => void;
 }) {
   return (
@@ -24,6 +26,7 @@ function HomePreviewRow({
       className="hm-focus-ring flex w-full min-w-0 items-center gap-hm-12 px-hm-16 py-hm-12 text-left first:rounded-t-hm-16 last:rounded-b-hm-16 hover:bg-hm-bg-subtle focus-visible:z-10"
       onClick={onClick}
     >
+      {leading}
       <span className="flex min-w-0 flex-1 flex-col gap-hm-4 wrap-anywhere">
         {children}
       </span>
@@ -74,10 +77,25 @@ export function HomeContent({
           {data.recentNews.map((news) => (
             <HomePreviewRow
               key={news.id}
+              leading={
+                <Avatar
+                  name={news.author.name}
+                  initial={news.author.initial}
+                  emphasis={news.author.isMine ? "self" : "default"}
+                  size="compact"
+                  className="self-start"
+                  decorative
+                />
+              }
               onClick={() => onOpenNews(news.id)}
             >
-              <span className="text-hm-caption-default text-hm-text-secondary">
-                {news.author}
+              <span className="flex flex-wrap items-baseline gap-x-hm-8">
+                <span className="min-w-0 text-hm-body-default font-bold">
+                  {news.author.name}
+                </span>
+                <span className="text-hm-caption-default text-hm-text-secondary">
+                  {news.recordedAtLabel}
+                </span>
               </span>
               {news.title && (
                 <span className="text-hm-body-emphasis">{news.title}</span>
@@ -198,23 +216,23 @@ export function HomeContent({
                 onClick: () => onCare({ type: "task", status: "remaining" }),
               }}
             />
-            <div className="divide-y divide-hm-divider-default overflow-hidden rounded-hm-16 bg-hm-bg-surface">
-              {!data.tasks.length && (
-                <p className="p-hm-16 text-hm-body-default text-hm-text-secondary">
-                  남은 할 일이 없어요.
-                </p>
-              )}
-              {data.tasks.map((task) => (
-                <MenuRow
-                  key={task.id}
-
-                  icon="check-secondary"
-                  title={task.title}
-                  description={task.description}
-                  onClick={() => onOpenCare(task.id)}
-                />
-              ))}
-            </div>
+            {data.tasks.length ? (
+              <div className="divide-y divide-hm-divider-default overflow-hidden rounded-hm-16 bg-hm-bg-surface">
+                {data.tasks.map((task) => (
+                  <MenuRow
+                    key={task.id}
+                    icon="check-secondary"
+                    title={task.title}
+                    description={task.description}
+                    onClick={() => onOpenCare(task.id)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-hm-body-default text-hm-text-secondary">
+                남은 할 일이 없어요.
+              </p>
+            )}
           </section>
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
