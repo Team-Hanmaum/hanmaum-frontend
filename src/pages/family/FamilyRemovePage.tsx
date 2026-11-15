@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { useParams } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { ErrorState, Notice } from "@/components/feedback";
+import { ConfirmDialog, ErrorState, Notice } from "@/components/feedback";
 import { Button } from "@/components/ui";
 import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog";
 import { useUnsavedChanges } from "@/lib/useUnsavedChanges";
@@ -27,6 +28,7 @@ export function FamilyRemovePage() {
 }
 
 function RemoveConfirmation() {
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const data = useFamilyManagement();
   const { memberId = "" } = useParams();
   const tasks = useCareItems(data.spaceId, "TASK");
@@ -67,6 +69,17 @@ function RemoveConfirmation() {
     void data.refresh();
     void tasks.refetch();
   };
+  const confirmRemoval = () => {
+    if (!ready || !data.space || action.pending) return;
+    setConfirmOpen(false);
+    action.submit(
+      {
+        expectedSpaceVersion: data.space.version,
+        clientRequestId: crypto.randomUUID(),
+      },
+      complete,
+    );
+  };
   return (
     <FamilyPageLayout
       title="참여 관리"
@@ -100,16 +113,7 @@ function RemoveConfirmation() {
               variant="destructive"
               loading={action.pending}
               disabled={!ready}
-              onClick={() => {
-                if (ready)
-                  action.submit(
-                    {
-                      expectedSpaceVersion: data.space!.version,
-                      clientRequestId: crypto.randomUUID(),
-                    },
-                    complete,
-                  );
-              }}
+              onClick={() => setConfirmOpen(true)}
             >
               내보내기
             </Button>
@@ -153,7 +157,7 @@ function RemoveConfirmation() {
         />
       ) : (
         <>
-          <h1 className="text-hm-title-page">이 구성원을 내보낼까요?</h1>
+          <h1 className="text-hm-title-page">구성원 참여 종료</h1>
           <FamilyMember
             name={member.displayName || "이름 미설정"}
             profileImageUrl={member.profileImageUrl}
@@ -179,6 +183,20 @@ function RemoveConfirmation() {
           )}
         </>
       )}
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={
+          member?.displayName
+            ? `${member.displayName} 님을 내보낼까요?`
+            : "이 구성원을 내보낼까요?"
+        }
+        body="이 구성원은 돌봄 공간에 접근할 수 없게 돼요. 이미 남긴 소식과 변경 이력은 가족에게 남아요."
+        intent="destructive"
+        confirmLabel="구성원 내보내기"
+        confirmDisabled={!ready || action.pending}
+        onConfirm={confirmRemoval}
+      />
       <UnsavedChangesDialog
         open={blocker.state === "blocked"}
         title="처리 결과 확인을 나갈까요?"
