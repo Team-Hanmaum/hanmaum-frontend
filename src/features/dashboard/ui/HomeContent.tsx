@@ -85,7 +85,7 @@ export function HomeContent({
       className="hm-focus-ring flex min-h-14 w-full min-w-0 cursor-pointer items-center gap-hm-12 rounded-hm-12 border border-hm-action-primary/25 bg-hm-bg-brand-subtle px-hm-16 py-hm-8 text-left text-hm-text-brand hover:border-hm-action-primary/50"
       onClick={onPending}
     >
-      <span className="grid size-hm-32 shrink-0 place-items-center rounded-hm-8 bg-hm-bg-surface">
+      <span className="grid size-hm-32 shrink-0 place-items-center">
         <Icon name="news-brand" />
       </span>
       <span className="min-w-0 flex-1 text-hm-body-default font-bold wrap-anywhere">
