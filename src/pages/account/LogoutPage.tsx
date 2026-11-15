@@ -21,7 +21,7 @@ export function LogoutPage() {
       onBack={pending || unknown ? () => {} : onBack}
       footer={
         <FixedBottomArea position="fixed">
-          <div className="grid grid-cols-2 gap-hm-12 bg-hm-bg-surface px-hm-20 pt-hm-16 pb-[calc(var(--hm-spacing-24)+env(safe-area-inset-bottom))]">
+          <div className="grid grid-cols-2 gap-hm-12 px-hm-20 pt-hm-16 pb-[calc(var(--hm-spacing-24)+env(safe-area-inset-bottom))]">
             {!unknown && (
               <Button
                 variant="outline"
