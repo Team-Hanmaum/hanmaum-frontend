@@ -26,6 +26,7 @@ export type HomeView = {
     id: string;
     title: string;
     statusLabel?: string;
+    daysUntil?: number;
     meta: string;
     body: string;
   }[];

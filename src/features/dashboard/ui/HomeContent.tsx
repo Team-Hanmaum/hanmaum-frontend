@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { EmptyState, Notice } from "@/components/feedback";
 import { SectionHeader } from "@/components/layout";
 import { Avatar, Badge, Button, Icon, MenuRow } from "@/components/ui";
@@ -11,13 +10,11 @@ import type { HomeView } from "../model/homeViewTypes";
 import { HomeFamilySection } from "./HomeFamilySection";
 import type { CareListFilter } from "@/features/careitem/model/careItemSelectors";
 
-function HomePreviewRow({
-  children,
-  leading,
+function HomeScheduleRow({
+  schedule,
   onClick,
 }: {
-  children: ReactNode;
-  leading?: ReactNode;
+  schedule: HomeView["upcomingSchedules"][number];
   onClick: () => void;
 }) {
   return (
@@ -26,10 +23,24 @@ function HomePreviewRow({
       className="hm-focus-ring flex w-full min-w-0 items-center gap-hm-12 px-hm-16 py-hm-12 text-left first:rounded-t-hm-16 last:rounded-b-hm-16 hover:bg-hm-bg-subtle focus-visible:z-10"
       onClick={onClick}
     >
-      {leading}
       <span className="flex min-w-0 flex-1 flex-col gap-hm-4 wrap-anywhere">
-        {children}
+        <span className="flex flex-wrap items-center gap-x-hm-8 gap-y-hm-4">
+          <span className="min-w-0 text-hm-body-emphasis">
+            {schedule.title}
+          </span>
+          {schedule.statusLabel && <Badge label={schedule.statusLabel} />}
+        </span>
+        <span className="text-hm-caption-default text-hm-text-secondary">
+          {schedule.meta} · {schedule.body}
+        </span>
       </span>
+      {schedule.daysUntil !== undefined && (
+        <Badge
+          label={schedule.daysUntil === 0 ? "D-day" : `D-${schedule.daysUntil}`}
+          tone="brand"
+          className="shrink-0 whitespace-nowrap tabular-nums"
+        />
+      )}
       <Icon name="chevron-right-secondary" />
     </button>
   );
@@ -73,37 +84,38 @@ export function HomeContent({
         }}
       />
       {data.recentNews.length ? (
-        <div className="divide-y divide-hm-divider-default rounded-hm-16 bg-hm-bg-surface">
+        <div className="flex flex-col gap-hm-8">
           {data.recentNews.map((news) => (
-            <HomePreviewRow
+            <button
               key={news.id}
-              leading={
-                <Avatar
-                  name={news.author.name}
-                  initial={news.author.initial}
-                  emphasis={news.author.isMine ? "self" : "default"}
-                  size="compact"
-                  className="self-start"
-                  decorative
-                />
-              }
+              type="button"
+              className="hm-focus-ring flex w-full min-w-0 cursor-pointer items-start gap-hm-12 rounded-hm-12 bg-hm-bg-surface px-hm-16 py-hm-12 text-left hover:bg-hm-bg-subtle focus-visible:z-10"
               onClick={() => onOpenNews(news.id)}
             >
-              <span className="flex flex-wrap items-baseline gap-x-hm-8">
-                <span className="min-w-0 text-hm-body-default font-bold">
-                  {news.author.name}
+              <Avatar
+                name={news.author.name}
+                initial={news.author.initial}
+                emphasis={news.author.isMine ? "self" : "default"}
+                size="compact"
+                decorative
+              />
+              <span className="flex min-w-0 flex-1 flex-col gap-hm-4 wrap-anywhere">
+                <span className="flex flex-wrap items-baseline justify-between gap-x-hm-8">
+                  <span className="min-w-0 text-hm-body-default font-bold">
+                    {news.author.name}
+                  </span>
+                  <span className="text-hm-caption-default text-hm-text-secondary">
+                    {news.recordedAtLabel}
+                  </span>
                 </span>
-                <span className="text-hm-caption-default text-hm-text-secondary">
-                  {news.recordedAtLabel}
+                {news.title && (
+                  <span className="text-hm-body-emphasis">{news.title}</span>
+                )}
+                <span className="line-clamp-2 text-hm-body-default whitespace-pre-line">
+                  {news.body}
                 </span>
               </span>
-              {news.title && (
-                <span className="text-hm-body-emphasis">{news.title}</span>
-              )}
-              <span className="line-clamp-2 text-hm-body-default whitespace-pre-line">
-                {news.body}
-              </span>
-            </HomePreviewRow>
+            </button>
           ))}
         </div>
       ) : (
@@ -180,25 +192,11 @@ export function HomeContent({
             {data.upcomingSchedules.length ? (
               <div className="divide-y divide-hm-divider-default rounded-hm-16 bg-hm-bg-surface">
                 {data.upcomingSchedules.map((schedule) => (
-                  <HomePreviewRow
+                  <HomeScheduleRow
                     key={schedule.id}
+                    schedule={schedule}
                     onClick={() => onOpenCare(schedule.id)}
-                  >
-                    <span className="flex flex-wrap items-center gap-x-hm-8 gap-y-hm-4">
-                      <span className="min-w-0 text-hm-body-emphasis">
-                        {schedule.title}
-                      </span>
-                      {schedule.statusLabel && (
-                        <Badge
-                          label={schedule.statusLabel}
-                          tone="neutral"
-                        />
-                      )}
-                    </span>
-                    <span className="text-hm-caption-default text-hm-text-secondary">
-                      {schedule.meta} · {schedule.body}
-                    </span>
-                  </HomePreviewRow>
+                  />
                 ))}
               </div>
             ) : (
@@ -210,7 +208,11 @@ export function HomeContent({
           {newsSection}
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
-              title={`남은 할 일 ${data.totalCounts.tasks}`}
+              title={
+                data.totalCounts.tasks
+                  ? `남은 할 일 ${data.totalCounts.tasks}`
+                  : "남은 할 일"
+              }
               action={{
                 label: "모두 보기",
                 onClick: () => onCare({ type: "task", status: "remaining" }),
@@ -236,7 +238,11 @@ export function HomeContent({
           </section>
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
-              title={`미확인 질문 ${data.totalCounts.questions}`}
+              title={
+                data.totalCounts.questions
+                  ? `미확인 질문 ${data.totalCounts.questions}`
+                  : "미확인 질문"
+              }
               action={{
                 label: "모두 보기",
                 onClick: () =>

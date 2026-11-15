@@ -7,6 +7,7 @@ import type { RecordListResponse } from "@/features/record/api/recordReadTypes";
 import type { DashboardResponse, DashboardItem } from "../api/dashboardTypes";
 import type { HomeView } from "./homeViewTypes";
 import { homePreviewLimits as limits } from "./homePreviewLimits";
+import { scheduleDayOffset } from "./scheduleDayOffset";
 
 const formattedTime = (value: string) =>
   new Intl.DateTimeFormat("ko-KR", {
@@ -42,6 +43,7 @@ export function toHomeView(
   data: DashboardResponse,
   records: RecordListResponse,
 ): HomeView {
+  const now = new Date();
   return {
     // The dashboard contract does not include combined proposal/request counts.
     totalCounts: {
@@ -67,17 +69,21 @@ export function toHomeView(
     }),
     upcomingSchedules: data.upcomingSchedules.items
       .slice(0, limits.upcomingSchedules)
-      .map((item) => ({
-        id: item.itemId,
-        title: title(item),
-        statusLabel: item.needsReconfirmation
-          ? "재확인 필요"
-          : item.needsConflictReview
-            ? "내용 확인 필요"
-            : undefined,
-        meta: `${textField(item, "scheduledDate", "날짜 미정")} · ${textField(item, "scheduledTime", "시간 미정")}`,
-        body: textField(item, "location", "장소 미정"),
-      })),
+      .map((item) => {
+        const date = textField(item, "scheduledDate", "날짜 미정");
+        return {
+          id: item.itemId,
+          title: title(item),
+          statusLabel: item.needsReconfirmation
+            ? "재확인 필요"
+            : item.needsConflictReview
+              ? "내용 확인 필요"
+              : undefined,
+          daysUntil: scheduleDayOffset(date, now),
+          meta: `${date} · ${textField(item, "scheduledTime", "시간 미정")}`,
+          body: textField(item, "location", "장소 미정"),
+        };
+      }),
     tasks: data.remainingTasks.items.slice(0, limits.tasks).map((item) => ({
       id: item.itemId,
       title: title(item),
