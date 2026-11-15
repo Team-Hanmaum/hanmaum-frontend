@@ -1,5 +1,3 @@
-import type { NewsStatus } from "@/features/record/ui/NewsCard";
-
 type HomeSummaryItem = {
   id: string;
   title: string;
@@ -19,21 +17,24 @@ export type HomeView = {
   };
   recentNews: {
     id: string;
-    title: string;
-    author: string;
-    profileImageUrl?: string | null;
+    title?: string;
+    author: {
+      name: string;
+      initial?: string;
+      isMine: boolean;
+      profileImageUrl: string | null;
+    };
+    recordedAtLabel: string;
     body: string;
-    status: NewsStatus;
-    statusMessage?: string;
   }[];
   upcomingSchedules: {
     id: string;
     title: string;
-    statusLabel: string;
+    statusLabel?: string;
+    daysUntil?: number;
     meta: string;
     body: string;
   }[];
-  pastScheduleCount: number;
   tasks: HomeSummaryItem[];
   questions: HomeSummaryItem[];
   recentChanges: HomeSummaryItem[];

@@ -1,19 +1,16 @@
 import { useRef, useState } from "react";
 import { useParams } from "react-router";
 import { BottomSheet, Notice } from "@/components/feedback";
-import {
-  Badge,
-  Button,
-  Field,
-  SelectionRow,
-  TextAction,
-} from "@/components/ui";
+import { BrandSymbol, Button, Field, TextAction } from "@/components/ui";
 import type { CareDetail } from "@/features/careitem/api/careReadTypes";
 import { useCareItem } from "@/features/careitem/model/useCareQueries";
-import { itemLabels } from "@/features/careitem/model/careReadView";
-import { CareSection } from "@/features/careitem/ui/CareSection";
+import { CareFieldList } from "@/features/careitem/ui/CareFieldList";
 import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
 import { useCareShareLink } from "@/features/sharing/model/useCareShareLink";
+import {
+  shareCardButtonTitle,
+  shareCardMessage,
+} from "@/features/sharing/model/kakaoShare";
 import { useShareActions } from "@/features/sharing/model/useShareActions";
 import {
   needsShareRefresh,
@@ -23,6 +20,7 @@ import { ApiError } from "@/lib/api";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import { careItemPath, careListPath } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useSpaceContext } from "@/routes/useSpaceContext";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
@@ -32,14 +30,19 @@ export function CareSharePage() {
   const query = useCareItem(space.spaceId, itemId);
   const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
-  const backPath =
-    query.error instanceof ApiError && query.error.status === 404
-      ? careListPath(space.spaceId)
-      : careItemPath(space.spaceId, itemId);
-  const back = () =>
-    void navigate(withReturn(backPath), {
-      motion: "back",
-    });
+  const backToItem = useBackNavigation(
+    withReturn(careItemPath(space.spaceId, itemId)),
+  );
+  const back = () => {
+    if (query.error instanceof ApiError && query.error.status === 404) {
+      void navigate(withReturn(careListPath(space.spaceId)), {
+        replace: true,
+        motion: "back",
+      });
+    } else {
+      backToItem();
+    }
+  };
   const [revision, setRevision] = useState(0);
   const refresh = async () => {
     const next = await query.refetch();
@@ -68,8 +71,6 @@ export function CareSharePage() {
         title="공유"
         spaceId={space.spaceId}
         onBack={back}
-
-        actions={<Button onClick={back}>항목으로 돌아가기</Button>}
       >
         <Notice
           title="지금은 이 항목을 공유할 수 없어요"
@@ -99,15 +100,17 @@ function ShareContent({
   refresh: () => void;
   refreshing: boolean;
 }) {
-  const [includesChange, setIncludesChange] = useState(false);
   const link = useCareShareLink(item.spaceId, {
     itemId: item.itemId,
     expectedItemVersion: item.version,
-    includesChange,
+    includesChange: false,
   });
   const actions = useShareActions();
   const field = useRef<HTMLInputElement>(null);
   const card = link.data?.cards[0];
+  const message = shareCardMessage(
+    card ?? { itemType: item.itemType, includesChange: false },
+  );
   const conflict = link.isError && needsShareRefresh(link.error);
   return (
     <>
@@ -119,80 +122,77 @@ function ShareContent({
         actions={
           card ? (
             <>
-              <Button
-                disabled={actions.sdk !== "ready"}
-                loading={actions.busy}
-                onClick={() => void actions.share(card)}
-              >
-                카카오톡으로 공유
-              </Button>
-              <Button
-                variant="secondary"
-                disabled={actions.busy}
-                onClick={() => void actions.copy(card.url)}
-              >
-                공유 링크 복사
-              </Button>
+              <div className="grid grid-cols-2 gap-hm-12">
+                <Button
+                  disabled={actions.sdk !== "ready"}
+                  loading={actions.busy}
+                  onClick={() => void actions.share(card)}
+                  className="px-hm-8"
+                >
+                  카카오톡 공유
+                </Button>
+                <Button
+                  variant="secondary"
+                  disabled={actions.busy}
+                  onClick={() => void actions.copy(card.url)}
+                  className="px-hm-8"
+                >
+                  링크 복사
+                </Button>
+              </div>
               {actions.sdk === "error" && (
                 <TextAction onClick={() => void actions.retrySdk()}>
                   카카오톡 공유 다시 준비
                 </TextAction>
               )}
-              <TextAction onClick={onBack}>항목으로 돌아가기</TextAction>
             </>
           ) : (
-            <>
-              <Button
-                loading={link.isPending || refreshing}
-                onClick={conflict ? refresh : () => void link.prepare()}
-              >
-                {conflict
-                  ? "최신 내용 다시 확인"
-                  : link.isError
-                    ? "같은 요청으로 다시 확인"
-                    : "공유 링크 만들기"}
-              </Button>
-              <TextAction onClick={onBack}>항목으로 돌아가기</TextAction>
-            </>
+            <Button
+              loading={link.isPending || refreshing}
+              onClick={conflict ? refresh : () => void link.prepare()}
+            >
+              {conflict
+                ? "최신 내용 다시 확인"
+                : link.isError
+                  ? "같은 요청으로 다시 확인"
+                  : "공유 링크 만들기"}
+            </Button>
           )
         }
       >
-        <h1 className="text-hm-title-page">가족에게 이렇게 보여요</h1>
-        <CareSection title="한마음">
-          <Badge
-            label={itemLabels[card?.itemType ?? item.itemType]}
-            tone="brand"
-          />
-          <p className="text-hm-body-emphasis">
-            {itemLabels[card?.itemType ?? item.itemType]} 정보를 확인해 주세요
-          </p>
-          <p className="text-hm-body-small text-hm-text-secondary">
-            {(card?.includesChange ?? includesChange)
-              ? "변경된 정보가 있어요"
-              : "함께 확인할 정보가 있어요"}
-          </p>
-          <p className="text-hm-body-small text-hm-text-secondary">
-            한마음에서 확인
-          </p>
-        </CareSection>
-        <CareSection title="선택한 항목 · 공유 카드에 포함되지 않아요">
-          <p className="text-hm-body-default wrap-anywhere whitespace-pre-wrap">
+        <section className="flex flex-col gap-hm-4">
+          <h1 className="text-hm-title-page">공유할 항목</h1>
+          <p className="text-hm-body-emphasis wrap-anywhere">
             {item.title ?? "제목 없음"}
           </p>
-        </CareSection>
-        {!card && (
-          <SelectionRow
-            label="변경 안내 함께 공유"
-            description="유효한 확정 변경 이력이 있는지 확인한 뒤 공유해요."
-            checked={includesChange}
-            disabled={link.status !== "idle"}
-            onChange={(event) => setIncludesChange(event.target.checked)}
-          />
-        )}
-        <Notice
-          title="상세 내용은 참여자만 볼 수 있어요"
-          body="공유 카드에는 가족 이름이나 돌봄 상세 내용을 넣지 않아요. 로그인과 현재 참여 여부를 확인한 뒤 최신 항목을 열어요. 공유 링크는 초대 링크가 아니에요."
-        />
+          {item.itemType === "SCHEDULE" && (
+            <CareFieldList
+              values={item}
+              keys={["scheduledDate", "scheduledTime", "location"]}
+            />
+          )}
+        </section>
+        <section className="flex flex-col gap-hm-8">
+          <h2 className="text-hm-heading-section">가족에게 보이는 카드</h2>
+          <div className="overflow-hidden rounded-hm-16 border border-hm-border-default bg-hm-bg-surface">
+            <div className="flex items-center gap-hm-8 bg-hm-bg-brand-subtle px-hm-16 py-hm-12 text-hm-body-emphasis text-hm-text-brand">
+              <BrandSymbol decorative />
+              한마음
+            </div>
+            <div className="flex flex-col gap-hm-4 px-hm-16 py-hm-12">
+              <p className="text-hm-body-emphasis">{message.heading}</p>
+              <p className="text-hm-body-small text-hm-text-secondary">
+                {message.body}
+              </p>
+            </div>
+            <p className="border-t border-hm-divider-default px-hm-16 py-hm-12 text-center text-hm-body-small font-bold text-hm-text-brand">
+              {shareCardButtonTitle}
+            </p>
+          </div>
+        </section>
+        <p className="text-hm-body-small text-hm-text-secondary">
+          상세 내용은 링크를 연 뒤 로그인한 공간 참여자에게만 보여요.
+        </p>
         {link.isError && (
           <Notice
             tone="error"

@@ -63,10 +63,24 @@ export function prepareKakaoShare(): Promise<void> {
   return pending;
 }
 
+export const shareCardButtonTitle = "한마음에서 확인";
+
+export function shareCardMessage(
+  card: Pick<ShareCard, "itemType" | "includesChange">,
+) {
+  return {
+    heading: `${itemLabels[card.itemType]} 정보를 확인해 주세요`,
+    body: card.includesChange
+      ? "변경된 정보가 있어요"
+      : "함께 확인할 정보가 있어요",
+  };
+}
+
 export function shareCardText(
   card: Pick<ShareCard, "itemType" | "includesChange">,
 ) {
-  return `한마음\n${itemLabels[card.itemType]} 정보를 확인해 주세요\n${card.includesChange ? "변경된 정보가 있어요" : "함께 확인할 정보가 있어요"}`;
+  const { heading, body } = shareCardMessage(card);
+  return `한마음\n${heading}\n${body}`;
 }
 
 // Invoke synchronously from the user's click after preload, preserving popup activation.
@@ -78,6 +92,6 @@ export function openKakaoShare(card: ShareCard) {
     objectType: "text",
     text: shareCardText(card),
     link: { webUrl: card.url, mobileWebUrl: card.url },
-    buttonTitle: "한마음에서 확인",
+    buttonTitle: shareCardButtonTitle,
   });
 }

@@ -29,7 +29,7 @@ export function SectionHeader({
         <TextAction
           onClick={action.onClick}
           disabled={action.disabled}
-          className="min-w-22 shrink-0"
+          className="min-w-22 shrink-0 justify-end pr-hm-16 text-right"
         >
           {action.label}
         </TextAction>

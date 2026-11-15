@@ -1,12 +1,13 @@
 import { useSearchParams } from "react-router";
 import { Button, MenuRow, Tabs } from "@/components/ui";
-import { EmptyState, Notice } from "@/components/feedback";
+import { Notice } from "@/components/feedback";
 import { ApiError } from "@/lib/api";
 import {
   authorName,
   formatServerTime,
 } from "@/features/careitem/model/careReadView";
 import { useChangeRequests } from "@/features/proposal/model/useChangeRequests";
+import { requestFilterLabels } from "@/features/proposal/model/reviewLabels";
 import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
 import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
 import { spaceInfoPath, spaceInfoRequestPath } from "@/routes/paths";
@@ -16,11 +17,11 @@ import { useSpaceContext } from "@/routes/useSpaceContext";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
 const tabs = [
-  { value: "requested", label: "승인 대기", status: "PENDING" },
-  { value: "applied", label: "반영", status: "APPLIED" },
-  { value: "rejected", label: "미적용", status: "DECLINED" },
-  { value: "canceled", label: "취소", status: "CANCELED" },
-  { value: "invalidated", label: "무효", status: "INVALIDATED" },
+  { value: "requested", status: "PENDING" },
+  { value: "applied", status: "APPLIED" },
+  { value: "rejected", status: "DECLINED" },
+  { value: "canceled", status: "CANCELED" },
+  { value: "invalidated", status: "INVALIDATED" },
 ] as const;
 
 export function SpaceInfoRequestsPage() {
@@ -67,34 +68,34 @@ export function SpaceInfoRequestsPage() {
             action={{ label: "다시 확인", onClick: () => void query.refetch() }}
           />
         )}
-        {visible.map((request) => (
-          <MenuRow
-            key={request.requestId}
-            icon="edit"
-            title="돌봄 대상 호칭 수정 요청"
-            description={`${authorName(request.submittedBy)} · ${formatServerTime(request.submittedAt)}`}
-            onClick={() =>
-              void navigate(
-                withReturn(
-                  spaceInfoRequestPath(space.spaceId, request.requestId),
-                ),
-              )
-            }
-          />
-        ))}
-        {!visible.length && (
-          <EmptyState
-            title={
-              query.hasNextPage
-                ? "지금 불러온 목록에는 공간 정보 요청이 없어요"
-                : "표시할 요청이 없어요"
-            }
-            body={
-              query.hasNextPage
-                ? "더 보기를 눌러 이전 요청을 확인해 주세요."
-                : "가족이 보낸 수정 요청과 처리 결과를 여기에서 확인할 수 있어요."
-            }
-          />
+        {visible.length > 0 ? (
+          <div className="divide-y divide-hm-divider-default rounded-hm-16 bg-hm-bg-surface">
+            {visible.map((request) => (
+              <MenuRow
+                key={request.requestId}
+                icon={null}
+                className="min-h-hm-touch-min rounded-none py-hm-12 first:rounded-t-hm-16 last:rounded-b-hm-16 hover:bg-hm-bg-subtle"
+                title="돌봄 대상 호칭 수정 요청"
+                description={`${authorName(request.submittedBy)} · ${formatServerTime(request.submittedAt)}`}
+                onClick={() =>
+                  void navigate(
+                    withReturn(
+                      spaceInfoRequestPath(space.spaceId, request.requestId),
+                    ),
+                  )
+                }
+              />
+            ))}
+          </div>
+        ) : (
+          <p
+            role="status"
+            className="py-hm-16 text-hm-body-small text-hm-text-secondary"
+          >
+            {query.hasNextPage
+              ? "지금 불러온 목록에는 공간 정보 요청이 없어요."
+              : "이 상태의 요청이 없어요."}
+          </p>
         )}
         {query.hasNextPage && (
           <Button
@@ -115,21 +116,24 @@ export function SpaceInfoRequestsPage() {
       spaceId={space.spaceId}
     >
       <h1 className="text-hm-title-page">공간 정보 수정 요청</h1>
-      <p className="text-hm-body-small text-hm-text-secondary">
-        가족이 요청한 이름 변경과 처리 결과를 확인해요.
-      </p>
       <Tabs
         label="처리 상태"
+        variant="pill"
+        tabClassName="whitespace-nowrap px-hm-8"
         value={tab.value}
         onValueChange={(value) =>
-          void setParams((previous) => {
-            const next = new URLSearchParams(previous);
-            next.set("status", value);
-            return next;
-          })
+          void setParams(
+            (previous) => {
+              const next = new URLSearchParams(previous);
+              next.set("status", value);
+              return next;
+            },
+            { replace: true },
+          )
         }
         items={tabs.map((item) => ({
           ...item,
+          label: requestFilterLabels[item.status],
           content: item.value === tab.value ? contents : null,
         }))}
       />

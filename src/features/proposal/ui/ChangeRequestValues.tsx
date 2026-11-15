@@ -1,8 +1,10 @@
 import { Notice } from "@/components/feedback";
-import { CareValuesView } from "@/features/careitem/ui/CareValuesView";
+import { CareFieldList } from "@/features/careitem/ui/CareFieldList";
 import {
+  displayCareValue,
   fieldLabels,
   flattenCareValues,
+  readCareText,
 } from "@/features/careitem/model/careReadView";
 import type { SpaceMember } from "@/features/carespace/api/spaceDetailTypes";
 import type { ChangeRequestEntry } from "../api/changeRequestTypes";
@@ -10,9 +12,11 @@ import type { ChangeRequestEntry } from "../api/changeRequestTypes";
 export function ChangeRequestValues({
   entry,
   members,
+  title,
 }: {
   entry: ChangeRequestEntry;
   members?: SpaceMember[];
+  title: string;
 }) {
   if (entry.status === "INVALIDATED" || entry.redactedFields.length)
     return (
@@ -34,20 +38,42 @@ export function ChangeRequestValues({
     ? (entry.decision?.appliedValues ?? null)
     : entry.requestedValues;
   // 요청값은 전체 항목이 아닌 변경분이다. 생략한 필드를 '미정'으로 비교하지 않는다.
-  const keys = Object.keys(flattenCareValues(values)).filter(
-    (key) => key in fieldLabels,
+  const requested = flattenCareValues(values);
+  const keys = Object.keys(fieldLabels).filter((key) =>
+    Object.hasOwn(requested, key),
   );
+  if (applied || entry.action === "CREATE_ITEM")
+    return (
+      <CareFieldList
+        values={values}
+        keys={keys.filter(
+          (key) => key !== "title" || readCareText(requested.title) !== title,
+        )}
+        members={members}
+      />
+    );
+
+  const current = flattenCareValues(entry.currentValues);
   return (
-    <CareValuesView
-      before={
-        applied || entry.action === "CREATE_ITEM"
-          ? undefined
-          : entry.currentValues
-      }
-      values={values}
-      keys={keys}
-      members={members}
-      afterLabel={applied ? "반영된 내용" : "요청한 내용"}
-    />
+    <dl className="divide-y divide-hm-divider-default">
+      {keys.map((key) => (
+        <div
+          key={key}
+          className="grid grid-cols-2 gap-x-hm-12 gap-y-hm-4 py-hm-8"
+        >
+          <dt className="col-span-2 text-hm-caption-default font-bold">
+            {fieldLabels[key]}
+          </dt>
+          <dd className="min-w-0 text-hm-body-small wrap-anywhere whitespace-pre-wrap text-hm-text-secondary">
+            <span className="block text-hm-caption-default">현재</span>
+            {displayCareValue(key, current[key], members)}
+          </dd>
+          <dd className="min-w-0 text-hm-body-emphasis wrap-anywhere whitespace-pre-wrap text-hm-text-brand">
+            <span className="block text-hm-caption-default">요청</span>
+            {displayCareValue(key, requested[key], members)}
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }

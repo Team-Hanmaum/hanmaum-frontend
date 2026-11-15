@@ -1,11 +1,15 @@
 import { useAppNavigate } from "@/routes/useAppNavigate";
 
-import { hasPreviousAppEntry } from "./navigationHistory";
+import { previousAppEntryDelta } from "./navigationHistory";
 
-export function useBackNavigation(fallback: string) {
+export function useBackNavigation(
+  fallback: string,
+  { toFallback = false }: { toFallback?: boolean } = {},
+) {
   const navigate = useAppNavigate();
   return () => {
-    if (hasPreviousAppEntry()) void navigate(-1);
+    const delta = previousAppEntryDelta(toFallback ? fallback : undefined);
+    if (delta !== undefined) void navigate(delta);
     else void navigate(fallback, { replace: true, motion: "back" });
   };
 }

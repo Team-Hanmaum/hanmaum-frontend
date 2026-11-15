@@ -2,7 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router";
 import { ErrorState, LoadingState, Notice } from "@/components/feedback";
 import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog";
-import { Badge, Button, Comparison, TextAction } from "@/components/ui";
+import { Badge, Button, Comparison } from "@/components/ui";
 import { useSession } from "@/features/auth/model/useSession";
 import { transferSpaceOwnership } from "@/features/carespace/api/familyManagementApi";
 import type {
@@ -106,24 +106,26 @@ function TransferConfirmation() {
       actions={
         completed ? (
           <>
-            <Button onClick={recover}>
-              {withdrawing ? "남은 소유 공간 확인" : "가족 화면으로"}
-            </Button>
             {withdrawing ? (
-              <TextAction
+              <Button
+                variant="outline"
                 onClick={() => void navigate(paths.account, { replace: true })}
               >
                 탈퇴 취소
-              </TextAction>
+              </Button>
             ) : currentKnown && space.role === "MEMBER" ? (
-              <TextAction
+              <Button
+                variant="outline"
                 onClick={() =>
                   void navigate(familyLeavePath(spaceId), { replace: true })
                 }
               >
                 이어서 공간 나가기
-              </TextAction>
+              </Button>
             ) : null}
+            <Button onClick={recover}>
+              {withdrawing ? "남은 소유 공간 확인" : "가족 화면으로"}
+            </Button>
           </>
         ) : action.pending ? (
           <Button
@@ -135,31 +137,43 @@ function TransferConfirmation() {
         ) : action.uncertain ? (
           <>
             <Button
-              loading={action.pending}
-              onClick={submit}
-            >
-              같은 이전 요청으로 결과 확인
-            </Button>
-            <TextAction
+              variant="outline"
               disabled={action.pending}
               onClick={recover}
             >
               {recoveryLabel}
-            </TextAction>
+            </Button>
+            <Button
+              loading={action.pending}
+              onClick={submit}
+            >
+              이전 결과 확인
+            </Button>
           </>
         ) : action.error ? (
           <>
+            <Button
+              variant="outline"
+              onClick={recover}
+            >
+              {recoveryLabel}
+            </Button>
             <Button
               disabled={data.refreshing}
               onClick={refresh}
             >
               현재 가족 정보 다시 확인
             </Button>
-            <TextAction onClick={recover}>{recoveryLabel}</TextAction>
           </>
         ) : loaded && !forbidden ? (
           missing ? (
             <>
+              <Button
+                variant="outline"
+                onClick={recover}
+              >
+                {recoveryLabel}
+              </Button>
               <Button
                 onClick={() =>
                   void navigate(withReturn(familyTransferPath(spaceId)), {
@@ -169,23 +183,23 @@ function TransferConfirmation() {
               >
                 가족 다시 선택
               </Button>
-              <TextAction onClick={recover}>{recoveryLabel}</TextAction>
             </>
           ) : (
             <>
+              <Button
+                variant="outline"
+                disabled={action.pending}
+                onClick={onBack}
+              >
+                취소
+              </Button>
               <Button
                 disabled={!ready}
                 loading={action.pending}
                 onClick={submit}
               >
-                {member?.displayName ?? "선택한 가족"}님에게 소유권 이전
+                소유권 이전
               </Button>
-              <TextAction
-                disabled={action.pending}
-                onClick={onBack}
-              >
-                취소
-              </TextAction>
             </>
           )
         ) : undefined
@@ -327,34 +341,30 @@ function TransferConfirmation() {
               }}
             />
           )}
-          <h1 className="text-hm-title-page">
-            소유자 역할을
-            <br />
-            {member?.displayName ?? "선택한 가족"}님께 넘길까요?
-          </h1>
-          <p className="text-hm-body-default text-hm-text-secondary">
-            {space.subjectLabel}의 돌봄
-          </p>
+          <div className="flex flex-col gap-hm-8">
+            <h1 className="text-hm-title-page">소유권을 이전할까요?</h1>
+            <p className="text-hm-body-small text-hm-text-secondary">
+              {space.subjectLabel}의 돌봄
+            </p>
+          </div>
           <FamilyInfoCard title="소유자">
             <Comparison
-              beforeLabel="현재"
+              beforeLabel="현재 소유자"
               beforeValue={`${self?.displayName ?? "나"} · 나`}
-              afterLabel="변경 후"
+              afterLabel="새 소유자"
               afterValue={member?.displayName ?? "이름 미등록"}
             />
           </FamilyInfoCard>
-          <FamilyInfoCard title={`${self?.displayName ?? "나"} · 나`}>
-            구성원으로 바뀌어요.
-            <br />
-            승인이 필요한 변경은 새 소유자에게 요청해요.
+          <FamilyInfoCard title="이전 후">
+            <ul className="flex list-disc flex-col gap-hm-8 pl-hm-16">
+              <li>
+                나는 구성원으로 남아요. 승인이 필요한 변경은 새 소유자에게
+                요청해요.
+              </li>
+              <li>소식·돌봄 항목·이력과 담당 할 일은 유지돼요.</li>
+              <li>공간에서 나가려면 이전 후 ‘공간 나가기’를 선택해 주세요.</li>
+            </ul>
           </FamilyInfoCard>
-          <FamilyInfoCard title="남는 정보">
-            소식·돌봄 항목·이력과 현재 담당 할 일은 유지돼요.
-          </FamilyInfoCard>
-          <Notice
-            title="이전해도 공간에 남아 있어요"
-            body="공간에서 나가려면 이전이 끝난 뒤 ‘공간 나가기’를 진행해 주세요."
-          />
         </>
       )}
       <UnsavedChangesDialog

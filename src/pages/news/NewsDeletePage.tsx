@@ -21,6 +21,7 @@ import {
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import { useSpaceContext } from "@/routes/useSpaceContext";
 import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { newsDetailPath, newsDeletionPath, spacePath } from "@/routes/paths";
 
@@ -38,12 +39,12 @@ export function NewsDeletePage() {
   const { blocker, allowNavigation } = useUnsavedChanges(
     deletion.isPending || uncertain,
   );
-  const back = () =>
-    void navigate(withReturn(newsDetailPath(space.spaceId, recordId)), {
-      motion: "back",
-    });
+  const back = useBackNavigation(
+    withReturn(newsDetailPath(space.spaceId, recordId)),
+  );
   const list = () =>
     void navigate(withReturn(spacePath(space.spaceId, "news")), {
+      replace: true,
       motion: "back",
     });
   const ready =
@@ -89,7 +90,14 @@ export function NewsDeletePage() {
       spaceId={space.spaceId}
       onBack={back}
       actions={
-        <>
+        <div className="grid grid-cols-2 gap-hm-12">
+          <Button
+            variant="outline"
+            disabled={deletion.isPending}
+            onClick={deletion.isError ? list : back}
+          >
+            {deletion.isError ? "소식 목록으로" : "취소"}
+          </Button>
           {(!deletion.isError || uncertain) && (
             <Button
               variant="destructive"
@@ -103,13 +111,7 @@ export function NewsDeletePage() {
           {deletion.isError && !uncertain && (
             <Button onClick={reload}>현재 삭제 영향 다시 확인</Button>
           )}
-          <TextAction
-            disabled={deletion.isPending}
-            onClick={deletion.isError ? list : back}
-          >
-            {deletion.isError ? "소식 목록으로" : "취소"}
-          </TextAction>
-        </>
+        </div>
       }
     >
       <h1 className="text-hm-title-page">

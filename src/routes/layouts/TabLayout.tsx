@@ -1,7 +1,6 @@
 import { Outlet, useMatches } from "react-router";
 import { PageLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
-import { Button } from "@/components/ui";
 import { CareSpaceMenu } from "@/features/carespace/ui/CareSpaceMenu";
 import { useCareSpaces } from "@/features/carespace/model/useCareSpaces";
 import { toSpaceView } from "@/features/dashboard/model/homeData";
@@ -12,6 +11,7 @@ import { SpaceBottomNavigation } from "./SpaceBottomNavigation";
 import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
 import { LoadingState, ErrorState } from "@/components/feedback";
 import { CareListAction } from "./CareListAction";
+import { TabQuickAction } from "./TabQuickAction";
 import { ApiError } from "@/lib/api";
 import { useWithdrawalReturn } from "../useWithdrawalReturn";
 
@@ -26,6 +26,9 @@ export function TabLayout() {
     .find((value) => (value.handle as { tab?: SpaceTab } | undefined)?.tab);
   const active =
     (match?.handle as { tab: SpaceTab } | undefined)?.tab ?? "home";
+  const showNewsAction = active === "home" || active === "news";
+  const onCreateNews = () =>
+    void navigate(withReturn(newsCreatePath(space.spaceId)));
   const members = useSpaceMembers(space.spaceId, active === "all");
   const membersDenied =
     members.error instanceof ApiError &&
@@ -54,24 +57,28 @@ export function TabLayout() {
         />
       }
       footer={
-        <FixedBottomArea position="fixed">
-          {(active === "home" || active === "news") && (
-            <div className="bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-12">
-              <Button
-                className="w-full"
-                onClick={() =>
-                  void navigate(withReturn(newsCreatePath(space.spaceId)))
-                }
-              >
-                소식 남기기
-              </Button>
-            </div>
+        <FixedBottomArea
+          position="fixed"
+          className={
+            showNewsAction || active === "care"
+              ? "pointer-events-none"
+              : undefined
+          }
+        >
+          {showNewsAction && (
+            <TabQuickAction
+              label="소식"
+              accessibleLabel="소식 남기기"
+              onClick={onCreateNews}
+            />
           )}
           {active === "care" && <CareListAction spaceId={space.spaceId} />}
-          <SpaceBottomNavigation
-            spaceId={space.spaceId}
-            active={active}
-          />
+          <div className="pointer-events-auto">
+            <SpaceBottomNavigation
+              spaceId={space.spaceId}
+              active={active}
+            />
+          </div>
         </FixedBottomArea>
       }
     >

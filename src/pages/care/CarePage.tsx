@@ -1,9 +1,13 @@
-import { Badge, MenuRow, Tabs } from "@/components/ui";
+import { PageTitleWithAction } from "@/components/layout";
+import { MenuRow, Tabs } from "@/components/ui";
 import { EmptyState } from "@/components/feedback";
 import { useCareItems } from "@/features/careitem/model/useCareQueries";
+import { scheduleDayOffset } from "@/features/careitem/model/scheduleDayOffset";
+import { ScheduleCountdownBadge } from "@/features/careitem/ui/ScheduleCountdownBadge";
 import {
   careStatusTabs,
   careTypeTabs,
+  type CareListStatus,
 } from "@/features/careitem/model/careItemSelectors";
 import {
   displayCareValue,
@@ -26,6 +30,47 @@ const types: Record<string, ItemType> = {
   observation: "OBSERVATION",
   guidance: "GUIDANCE",
 };
+
+function careListDescription(item: CareSummary, filterStatus?: CareListStatus) {
+  const field = (key: string) => {
+    const value = item.fields?.[key];
+    return typeof value === "string" ? value.trim() : undefined;
+  };
+  const status = item.status
+    ? displayCareValue("status", item.status)
+    : undefined;
+
+  switch (item.itemType) {
+    case "SCHEDULE":
+      return [
+        field("scheduledDate"),
+        field("scheduledTime"),
+        field("location"),
+        filterStatus === "closed" ? status : undefined,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+    case "TASK":
+      return [
+        item.assigneeDisplayName || "담당자 미지정",
+        field("dueDate"),
+        filterStatus === "remaining" ? status : undefined,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+    case "OBSERVATION":
+      return [field("observedDate"), field("observedTimeText")]
+        .filter(Boolean)
+        .join(" · ");
+    case "GUIDANCE":
+      return [field("receivedDate"), field("sourceName")]
+        .filter(Boolean)
+        .join(" · ");
+    case "QUESTION":
+      return undefined;
+  }
+}
+
 export function CarePage() {
   const { space } = useSpaceContext();
   const navigate = useAppNavigate();
@@ -36,31 +81,46 @@ export function CarePage() {
     types[filter.type],
     filter.status?.toUpperCase(),
   );
-  const row = (item: CareSummary) => (
+  const now = new Date();
+  const row = (item: CareSummary, inReconfirmationList: boolean) => (
     <MenuRow
       key={item.itemId}
-      icon="care-brand"
-      title={item.title ?? "내용이 제거된 항목"}
+      icon={null}
+      className="min-h-hm-touch-min! rounded-none py-hm-12 first:rounded-t-hm-16 last:rounded-b-hm-16 hover:bg-hm-bg-subtle focus-visible:z-10"
+      title={item.title ?? `내용이 제거된 ${itemLabels[item.itemType]}`}
       badge={
-        item.needsReconfirmation
+        item.needsReconfirmation && !inReconfirmationList
           ? "재확인 필요"
           : item.needsConflictReview
             ? "내용 확인 필요"
             : undefined
       }
-      description={[
-        itemLabels[item.itemType],
-        displayCareValue("status", item.status),
-        item.itemType === "TASK"
-          ? item.assigneeDisplayName || "담당자 미지정"
-          : item.fields?.scheduledDate,
-      ]
-        .filter((v) => typeof v === "string")
-        .join(" · ")}
+      description={careListDescription(item, filter.status)}
+      trailing={
+        item.itemType === "SCHEDULE" &&
+        filter.status === "upcoming" &&
+        !item.needsReconfirmation && (
+          <ScheduleCountdownBadge
+            daysUntil={scheduleDayOffset(item.fields?.scheduledDate, now)}
+          />
+        )
+      }
       onClick={() =>
         void navigate(withReturn(careItemPath(space.spaceId, item.itemId)))
       }
     />
+  );
+  const renderList = (items: CareSummary[], reconfirmation = false) => (
+    <div
+      className={`divide-y divide-hm-divider-default rounded-hm-16 bg-hm-bg-surface ${reconfirmation ? "border border-hm-border-default" : ""}`}
+    >
+      {reconfirmation && (
+        <h2 className="rounded-t-hm-16 bg-hm-bg-brand-subtle px-hm-16 py-hm-8 text-hm-body-small font-bold text-hm-text-brand">
+          다시 확인할 내용
+        </h2>
+      )}
+      {items.map((item) => row(item, reconfirmation))}
+    </div>
   );
   const content =
     !query.data || query.isError ? (
@@ -70,14 +130,10 @@ export function CarePage() {
       />
     ) : (
       <div className="flex flex-col gap-hm-16">
-        {query.data.reconfirmationItems.length > 0 && (
-          <section className="flex flex-col gap-hm-12">
-            <Badge label="다시 확인할 내용" />
-            {query.data.reconfirmationItems.map(row)}
-          </section>
-        )}
+        {query.data.reconfirmationItems.length > 0 &&
+          renderList(query.data.reconfirmationItems, true)}
         {query.data.items.length ? (
-          query.data.items.map(row)
+          renderList(query.data.items)
         ) : !query.data.reconfirmationItems.length ? (
           <EmptyState
             title="아직 표시할 돌봄 정보가 없어요"
@@ -89,17 +145,19 @@ export function CarePage() {
   const statusTabs = careStatusTabs[filter.type];
   return (
     <>
-      <MenuRow
-        title="제안·가족 요청 확인"
-        icon="news-brand"
-        description="검토할 내용과 처리 결과"
-        onClick={() =>
-          void navigate(withReturn(proposalListPath(space.spaceId)))
-        }
+      <PageTitleWithAction
+        title="돌봄"
+        action={{
+          label: "제안·요청",
+          onClick: () =>
+            void navigate(
+              withReturn(proposalListPath(space.spaceId, "review", "care")),
+            ),
+        }}
       />
-      <h1 className="text-hm-title-page">돌봄</h1>
       <Tabs
         label="돌봄 종류"
+        variant="underline"
         value={filter.type}
         onValueChange={setType}
         items={careTypeTabs.map((tab) => ({
@@ -109,6 +167,7 @@ export function CarePage() {
               statusTabs.length ? (
                 <Tabs
                   label="돌봄 상태"
+                  variant="pill"
                   value={filter.status ?? ""}
                   onValueChange={setStatus}
                   items={statusTabs.map((status) => ({

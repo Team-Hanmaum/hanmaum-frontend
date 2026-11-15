@@ -13,6 +13,8 @@ export function HomeFamilySection({
   onFamily: () => void;
   onInvite: () => void;
 }) {
+  const hasMore = members.length > homePreviewLimits.family;
+
   return (
     <section className="flex flex-col gap-hm-12">
       <SectionHeader
@@ -31,16 +33,26 @@ export function HomeFamilySection({
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-hm-12 rounded-hm-16 bg-hm-bg-surface p-hm-16">
-          {members.slice(0, homePreviewLimits.family).map((member) => (
-            <FamilyAvatar
-              key={member.id}
-              name={member.name}
-              profileImageUrl={member.profileImageUrl}
-              self={member.self}
-              roleLabel={`${member.self ? "나 · " : ""}${member.role === "owner" ? "소유자" : "구성원"}`}
-            />
-          ))}
+        <div className="rounded-hm-16 bg-hm-bg-surface p-hm-16">
+          <ul
+            aria-label={hasMore ? "가족 목록, 가로로 스크롤" : "가족 목록"}
+            tabIndex={hasMore ? 0 : undefined}
+            className={`grid grid-flow-col gap-hm-12 ${hasMore ? "snap-x snap-proximity [scrollbar-width:none] auto-cols-[calc((100%_-_3_*_var(--hm-spacing-12))_/_3.5)] overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hm-border-focus [&::-webkit-scrollbar]:hidden" : "auto-cols-fr"}`}
+          >
+            {members.map((member) => (
+              <li
+                key={member.id}
+                className="flex min-w-0 snap-start justify-center"
+              >
+                <FamilyAvatar
+                  name={member.name}
+                  profileImageUrl={member.profileImageUrl}
+                  self={member.self}
+                  roleLabel={`${member.self ? "나 · " : ""}${member.role === "owner" ? "소유자" : "구성원"}`}
+                />
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </section>

@@ -20,20 +20,19 @@ import { CareValuesView } from "./CareValuesView";
 import { CareSection } from "./CareSection";
 import { CareTimeSelection } from "./CareTimeSelection";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
-import { useAppNavigate } from "@/routes/useAppNavigate";
-import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { useTimeSelectionScreen } from "@/routes/useTimeSelectionScreen";
-import { careItemPath } from "@/routes/paths";
 
 export function CareReconfirmationForm({
   space,
   item,
   queryError,
+  onBack,
   reload,
 }: {
   space: SpaceDetail;
   item: CareDetail;
   queryError: unknown;
+  onBack: () => void;
   reload: () => void;
 }) {
   const evidence = useCareEvidence(space.spaceId, item.itemId);
@@ -43,22 +42,10 @@ export function CareReconfirmationForm({
     item,
     evidence.data?.items ?? [],
   );
-  const navigate = useAppNavigate();
-  const { withReturn } = useWithdrawalReturn();
   const { blocker, allowNavigation } = useUnsavedChanges(
     form.dirty || form.frozen,
   );
-  const back = () =>
-    void navigate(withReturn(careItemPath(space.spaceId, item.itemId)), {
-      motion: "back",
-    });
-  const complete = () =>
-    allowNavigation(
-      () =>
-        void navigate(withReturn(careItemPath(space.spaceId, item.itemId)), {
-          replace: true,
-        }),
-    );
+  const complete = () => allowNavigation(onBack);
   const timeScreen = useTimeSelectionScreen(
     item.itemType === "SCHEDULE" && !form.review,
   );
@@ -114,7 +101,7 @@ export function CareReconfirmationForm({
     <ProposalPageLayout
       title={form.review ? "반영 전 확인" : "다시 확인하기"}
       spaceId={space.spaceId}
-      onBack={back}
+      onBack={onBack}
       actions={
         <>
           <Button
@@ -137,7 +124,7 @@ export function CareReconfirmationForm({
           </Button>
           <TextAction
             disabled={form.frozen}
-            onClick={form.review ? form.edit : back}
+            onClick={form.review ? form.edit : onBack}
           >
             {form.review ? "내용 다시 수정" : "돌아가기"}
           </TextAction>

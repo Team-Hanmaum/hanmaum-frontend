@@ -40,11 +40,12 @@ export function useCareEdit(
   space: SpaceDetail,
   original: CareDetail,
   operation: EditOperation,
+  initialStatus = "",
 ) {
   // 재조회가 도착해도 작성 기준 버전과 입력은 자동 교체하지 않는다.
   const [item] = useState(original);
   const [fields, setFields] = useState(() => itemWriteFields(item));
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState(initialStatus);
   const [answer, setAnswer] = useState("");
   const [basis, setBasis] = useState("");
   const [review, setReview] = useState(operation === "delete");
@@ -110,7 +111,9 @@ export function useCareEdit(
       message ||
         (!Object.keys(values).length ? "변경할 내용을 입력해 주세요." : ""),
     );
-    if (!message && Object.keys(values).length) setReview(true);
+    const valid = !message && Object.keys(values).length > 0;
+    if (valid) setReview(true);
+    return valid;
   }
   function submit(onComplete: (requestId?: string) => void) {
     if (mutation.isPending) return;

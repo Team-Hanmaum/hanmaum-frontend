@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router";
 import { ErrorState, Notice } from "@/components/feedback";
 import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog";
-import { Button, SelectionRow, TextAction } from "@/components/ui";
+import { Button, SelectionRow } from "@/components/ui";
 import { useFamilyManagement } from "@/features/carespace/model/useFamilyManagement";
 import { FamilyMember } from "@/features/carespace/ui/FamilyMember";
 import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
@@ -57,6 +57,12 @@ function TransferSelection() {
           candidates.length ? (
             <>
               <Button
+                variant="outline"
+                onClick={recover}
+              >
+                취소
+              </Button>
+              <Button
                 disabled={!ready || !selected}
                 onClick={() =>
                   allowNavigation(
@@ -69,10 +75,17 @@ function TransferSelection() {
               >
                 이전 내용 확인
               </Button>
-              <TextAction onClick={recover}>취소</TextAction>
             </>
           ) : ready ? (
             <>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  void navigate(withReturn(familyDeletePath(spaceId)))
+                }
+              >
+                공간 삭제 확인
+              </Button>
               <Button
                 onClick={() =>
                   void navigate(withReturn(spaceInvitePath(spaceId)))
@@ -80,14 +93,6 @@ function TransferSelection() {
               >
                 가족 초대하기
               </Button>
-              <TextAction
-                tone="danger"
-                onClick={() =>
-                  void navigate(withReturn(familyDeletePath(spaceId)))
-                }
-              >
-                공간 삭제 확인
-              </TextAction>
             </>
           ) : undefined
         ) : undefined
@@ -130,21 +135,17 @@ function TransferSelection() {
           )}
           {candidates.length ? (
             <>
-              <h1 className="text-hm-title-page">
-                누가 소유자 역할을
-                <br />
-                이어받을까요?
-              </h1>
-              <p className="text-hm-body-default text-hm-text-secondary">
-                {space.subjectLabel}의 돌봄 · 현재 소유자{" "}
-                {owner?.displayName ?? "이름 미등록"}
-              </p>
-              <Notice
-                title="새 소유자가 맡는 일"
-                body="제안·변경 요청을 최종 반영하고 공간과 가족의 참여를 관리해요."
-              />
+              <div className="flex flex-col gap-hm-8">
+                <h1 className="text-hm-title-page">
+                  새 소유자를 선택해 주세요
+                </h1>
+                <p className="text-hm-body-small text-hm-text-secondary">
+                  {space.subjectLabel}의 돌봄 · 현재 소유자{" "}
+                  {owner?.displayName ?? "이름 미등록"}
+                </p>
+              </div>
               <fieldset
-                className="flex flex-col gap-hm-24"
+                className="flex flex-col gap-hm-8"
                 disabled={!ready}
               >
                 <legend className="sr-only">새 소유자 선택</legend>
@@ -155,7 +156,7 @@ function TransferSelection() {
                     name="new-owner"
                     value={member.membershipId}
                     label={member.displayName ?? "이름 미등록"}
-                    description="현재 구성원"
+                    className="min-h-hm-touch-min px-hm-12 py-hm-8"
                     checked={selectedId === member.membershipId}
                     onChange={() => setSelectedId(member.membershipId)}
                   />
@@ -167,17 +168,14 @@ function TransferSelection() {
                   body="선택했던 가족의 참여 상태가 바뀌었어요."
                 />
               )}
-              <p className="text-hm-caption-default text-hm-text-secondary">
-                현재 함께하는 가족 중 한 명을 골라 주세요.
+              <p className="text-hm-body-small text-hm-text-secondary">
+                새 소유자는 제안·변경 요청을 반영하고 공간과 가족의 참여를
+                관리해요.
               </p>
             </>
           ) : !data.error ? (
             <>
-              <h1 className="text-hm-title-page">
-                아직 다른 가족이
-                <br />
-                없어요
-              </h1>
+              <h1 className="text-hm-title-page">아직 다른 가족이 없어요</h1>
               <p className="text-hm-body-default text-hm-text-secondary">
                 가족을 초대하고 참여가 완료되면 소유자 역할을 넘길 수 있어요.
               </p>
@@ -190,10 +188,6 @@ function TransferSelection() {
                   detail="나만 참여 중"
                 />
               )}
-              <Notice
-                title="기록을 이어서 돌볼 가족을 초대해요"
-                body="소유자 역할은 현재 참여 중인 가족에게 넘길 수 있어요."
-              />
             </>
           ) : null}
         </>

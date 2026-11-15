@@ -4,10 +4,10 @@ import type {
 } from "@/features/carespace/api/spaceDetailTypes";
 import type { CareSpaceView } from "@/features/carespace/model/careSpaceViewTypes";
 import type { RecordListResponse } from "@/features/record/api/recordReadTypes";
-import type { NewsStatus } from "@/features/record/ui/NewsCard";
 import type { DashboardResponse, DashboardItem } from "../api/dashboardTypes";
 import type { HomeView } from "./homeViewTypes";
 import { homePreviewLimits as limits } from "./homePreviewLimits";
+import { scheduleDayOffset } from "@/features/careitem/model/scheduleDayOffset";
 
 const formattedTime = (value: string) =>
   new Intl.DateTimeFormat("ko-KR", {
@@ -21,13 +21,6 @@ const textField = (item: DashboardItem, key: string, fallback: string) =>
     : fallback;
 const title = (item: DashboardItem) =>
   item.title?.trim() || "제목 없는 돌봄 항목";
-const analysisStatuses: Record<string, NewsStatus> = {
-  QUEUED: "analyzing",
-  RUNNING: "analyzing",
-  COMPLETED: "analysis-completed",
-  FAILED: "failed",
-  DISCARDED: "analysis-discarded",
-};
 
 export function toSpaceView(
   space: SpaceDetail,
@@ -51,6 +44,7 @@ export function toHomeView(
   data: DashboardResponse,
   records: RecordListResponse,
 ): HomeView {
+  const now = new Date();
   return {
     // The dashboard contract does not include combined proposal/request counts.
     totalCounts: {
@@ -60,32 +54,38 @@ export function toHomeView(
       questions: data.unconfirmedQuestions.totalCount,
       recentChanges: data.recentChanges.totalCount,
     },
-    recentNews: records.items.slice(0, limits.recentNews).map((record) => ({
-      id: record.recordId,
-      title: "가족 소식",
-      author: `${record.author.withdrawn ? "탈퇴한 사용자" : record.author.displayName?.trim() || "이름 미설정"} · ${formattedTime(record.recordedAt)}`,
-      profileImageUrl: record.author.withdrawn
-        ? null
-        : record.author.profileImageUrl,
-      body: record.content,
-      status: record.latestAnalysis
-        ? analysisStatuses[record.latestAnalysis.status]
-        : "recorded",
-    })),
+    recentNews: records.items.slice(0, limits.recentNews).map((record) => {
+      const { withdrawn, displayName, profileImageUrl } = record.author;
+      const name = withdrawn ? undefined : displayName?.trim();
+      return {
+        id: record.recordId,
+        author: {
+          name: withdrawn ? "탈퇴한 사용자" : name || "이름 미설정",
+          initial: name ? undefined : "?",
+          isMine: record.isMine && !withdrawn,
+          profileImageUrl: withdrawn ? null : (profileImageUrl ?? null),
+        },
+        recordedAtLabel: formattedTime(record.recordedAt),
+        body: record.content,
+      };
+    }),
     upcomingSchedules: data.upcomingSchedules.items
       .slice(0, limits.upcomingSchedules)
-      .map((item) => ({
-        id: item.itemId,
-        title: title(item),
-        statusLabel: item.needsReconfirmation
-          ? "재확인 필요"
-          : item.needsConflictReview
-            ? "내용 확인 필요"
-            : "예정",
-        meta: `${textField(item, "scheduledDate", "날짜 미정")} · ${textField(item, "scheduledTime", "시간 미정")}`,
-        body: textField(item, "location", "장소 미정"),
-      })),
-    pastScheduleCount: data.pastScheduleCount,
+      .map((item) => {
+        const date = textField(item, "scheduledDate", "날짜 미정");
+        return {
+          id: item.itemId,
+          title: title(item),
+          statusLabel: item.needsReconfirmation
+            ? "재확인 필요"
+            : item.needsConflictReview
+              ? "내용 확인 필요"
+              : undefined,
+          daysUntil: scheduleDayOffset(date, now),
+          meta: `${date} · ${textField(item, "scheduledTime", "시간 미정")}`,
+          body: textField(item, "location", "장소 미정"),
+        };
+      }),
     tasks: data.remainingTasks.items.slice(0, limits.tasks).map((item) => ({
       id: item.itemId,
       title: title(item),

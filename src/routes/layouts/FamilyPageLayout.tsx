@@ -27,7 +27,7 @@ export function FamilyPageLayout({
           <FixedBottomArea position="fixed">
             {actions && (
               <div
-                className={`flex flex-col gap-hm-12 bg-hm-bg-surface px-hm-20 pt-hm-16 ${tabs ? "pb-hm-24" : "pb-[calc(var(--hm-spacing-24)+env(safe-area-inset-bottom))]"}`}
+                className={`grid auto-cols-fr grid-flow-col gap-hm-8 bg-hm-bg-surface px-hm-20 pt-hm-16 [&>.hm-button]:px-hm-8 ${tabs ? "pb-hm-8" : "pb-[calc(var(--hm-spacing-24)+env(safe-area-inset-bottom))]"}`}
               >
                 {actions}
               </div>

@@ -28,8 +28,7 @@ export function CareSpaceList({
           <MenuRow
             icon="home-brand"
             title={careSpaceName(space)}
-            description={`${currentId === space.id ? "현재 공간 · " : ""}${space.role === "owner" ? "소유자" : "구성원"}\n함께하는 가족 ${space.memberCount}명`}
-            className="whitespace-pre-line"
+            description={`${currentId === space.id ? "현재 공간 · " : ""}${space.role === "owner" ? "소유자" : "구성원"} · 함께하는 가족 ${space.memberCount}명`}
             onClick={() => onSelect(space.id)}
           />
         </li>

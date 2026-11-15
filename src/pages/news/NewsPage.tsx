@@ -1,5 +1,6 @@
 import { ErrorState, Notice } from "@/components/feedback";
-import { TextAction, MenuRow } from "@/components/ui";
+import { PageTitleWithAction } from "@/components/layout";
+import { TextAction } from "@/components/ui";
 import { useRecordList } from "@/features/record/model/useRecords";
 import { toRecordView } from "@/features/record/model/recordView";
 import type { NewsListState } from "@/features/record/model/newsScreenStates";
@@ -67,6 +68,14 @@ export function NewsPage() {
           }}
         />
       )}
+      <PageTitleWithAction
+        title="가족 소식"
+        action={{
+          label: "제안·요청",
+          onClick: () =>
+            void navigate(withReturn(proposalListPath(space.spaceId))),
+        }}
+      />
       <NewsList
         records={records}
         state={state}
@@ -81,18 +90,7 @@ export function NewsPage() {
         onOpen={(id) =>
           void navigate(withReturn(newsDetailPath(space.spaceId, id)))
         }
-        onReview={() =>
-          void navigate(withReturn(proposalListPath(space.spaceId)))
-        }
         onRetry={() => void list.refetch()}
-      />
-      <MenuRow
-        icon="news-brand"
-        title="제안·가족 요청 확인"
-        description="소식 분석으로 만들어진 제안과 요청 상태"
-        onClick={() =>
-          void navigate(withReturn(proposalListPath(space.spaceId)))
-        }
       />
     </>
   );

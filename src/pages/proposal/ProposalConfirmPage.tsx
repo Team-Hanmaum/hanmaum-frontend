@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useSearchParams } from "react-router";
-import { Button, TextAction } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { EmptyState, Notice } from "@/components/feedback";
 import {
   useSelectedProposals,
@@ -157,7 +157,24 @@ export function ProposalConfirmPage() {
       onBack={back}
       actions={
         loaded ? (
-          <>
+          <div className="grid grid-cols-2 gap-hm-8 [&>.hm-button]:px-hm-8">
+            {space.role === "OWNER" && !mutation.variables ? (
+              <Button
+                variant="outline"
+                disabled={pending || proposals.some((p) => !p.reviewToken)}
+                onClick={() => submit("decline")}
+              >
+                반영하지 않기
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={back}
+                disabled={pending}
+              >
+                돌아가기
+              </Button>
+            )}
             <Button
               loading={pending}
               disabled={
@@ -173,21 +190,7 @@ export function ProposalConfirmPage() {
                   ? "선택한 내용 반영"
                   : "소유자에게 반영 요청"}
             </Button>
-            {space.role === "OWNER" && !mutation.variables && (
-              <TextAction
-                disabled={pending || proposals.some((p) => !p.reviewToken)}
-                onClick={() => submit("decline")}
-              >
-                선택한 제안 반영하지 않기
-              </TextAction>
-            )}
-            <TextAction
-              onClick={back}
-              disabled={pending}
-            >
-              검토로 돌아가기
-            </TextAction>
-          </>
+          </div>
         ) : undefined
       }
     >

@@ -166,8 +166,7 @@ hanmaum-frontend/
 │   │   ├── error/              # 404 · 라우트 오류
 │   │   ├── family/             # 가족 목록 · 관리
 │   │   ├── home/               # 홈 현황
-│   │   ├── landing/            # 서비스 소개
-│   │   ├── login/              # 로그인 · OAuth 복귀
+│   │   ├── login/              # 통합 시작·로그인 화면 · OAuth 복귀
 │   │   ├── news/               # 소식 작성 · 상세 · 삭제
 │   │   ├── onboarding/         # 시작 안내
 │   │   ├── proposal/           # 제안 검토 · 요청 · 결과
@@ -196,7 +195,7 @@ hanmaum-frontend/
 
 | 영역      | 주요 URL                                         | 연결되는 화면                          |
 | --------- | ------------------------------------------------ | -------------------------------------- |
-| 시작·인증 | `/`, `/login`, `/auth/callback`                  | 소개 → 소셜 로그인 → 세션 확인·복귀    |
+| 시작·인증 | `/`, `/login`, `/auth/callback`                  | 통합 시작·소셜 로그인 → 세션 확인·복귀 |
 | 공간      | `/spaces`, `/spaces/new`                         | 참여 공간 선택·생성 → 홈               |
 | 초대·공유 | `/invitations/:invitationToken`, `/share/:token` | 로그인·권한 확인 → 참여 또는 항목 조회 |
 | 홈        | `/spaces/:careSpaceId/home`                      | 가족·최근 소식·돌봄·변경 현황          |

@@ -17,7 +17,7 @@ React Router Data 모드를 사용한다. URL과 레이아웃은 `Router.tsx`, �
 
 | 경로                                                                               | 화면·동작                                    |
 | ---------------------------------------------------------------------------------- | -------------------------------------------- |
-| `/`, `/login`, `/auth/callback`                                                    | 랜딩, OAuth 진입, 세션 확인과 로그인 복귀    |
+| `/`, `/login`, `/auth/callback`                                                    | 통합 시작·로그인, 세션 확인과 로그인 복귀    |
 | `/onboarding/guide`, `/spaces`, `/spaces/new`                                      | 시작 안내, 참여 공간 목록, 공간 생성         |
 | `/invitations/:invitationToken`                                                    | 로그인 후 초대 확인·참여                     |
 | `/share/:token`                                                                    | 로그인·참여 권한 확인 후 공유 항목 조회      |
@@ -39,6 +39,8 @@ React Router Data 모드를 사용한다. URL과 레이아웃은 `Router.tsx`, �
 | `info`, `info/edit`, `info/requests`, `info/requests/:requestId`                   | 공간 정보 조회·수정·구성원 요청·소유자 처리  |
 | `/_dev/components`                                                                 | 로컬 개발 전용 표현 컴포넌트 전시            |
 
+`/`와 `/login`은 같은 `LoginPage`를 표시한다. 기존 소개용 랜딩과 상단 뒤로가기·로그인 헤더 없이 소셜 로그인을 바로 제공한다. 로그인된 사용자는 기존 `/auth/callback`을 통해 저장된 내부 경로 또는 참여 공간으로 이동하며, `/login?reason=expired|signed-out` 안내도 유지한다.
+
 공간 루트는 홈으로 이동한다. 없는 주소는 404, 화면 오류는 공통 RouteErrorPage를 사용한다. 정적 호스팅의 SPA rewrite는 기존 Vercel 설정을 유지한다. 공간 ID만으로 참여 권한을 판단하지 않는다.
 
 ## 이전 주소와 예시 데이터
@@ -46,7 +48,7 @@ React Router Data 모드를 사용한다. URL과 레이아웃은 `Router.tsx`, �
 - 업무용 Mock 저장소·예시 시드·미연동 안내와 예시 결과 화면은 제거했다. 예전 공간·항목·소식 등의 `mock-` 식별자는 루트 loader에서 404로 처리하며 실제 업무 조회에 사용하지 않는다. 초대·공유의 불투명 토큰은 이 접두사 검사 대상이 아니다.
 - `care/requests`와 `care/requests/:changeId`는 실제 가족 요청 목록 `proposals?status=requests`로 보낸다. 기존 requested/applied/rejected는 PENDING/APPLIED/DECLINED 필터로 연결한다. 이전 개별 Mock 변경 ID나 항목 필터를 실제 요청 ID로 해석하지 않는다. 탈퇴 복귀 표시와 해시는 유지한다.
 - 항목 기반 `care/items/:itemId/shared` 주소는 기존대로 보호된 항목 상세로 보낸다. 실제 공유 조회는 `/share/:token`이다.
-- 랜딩의 사용 예시와 로컬 컴포넌트 전시의 예시 값은 유지한다. 전시 경로와 코드는 Production 빌드에 포함하지 않는다.
+- 예시 값은 로컬 컴포넌트 전시에만 둔다. 전시 경로와 코드는 Production 빌드에 포함하지 않는다.
 - QA 도구를 켜고 끄는 방법은 [로컬 실행 안내](../../README.md#로컬-실행)를 참고한다.
 
 ## 데이터·입력·이동 유지

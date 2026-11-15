@@ -1,12 +1,6 @@
 import { useState } from "react";
 import { useParams } from "react-router";
-import {
-  Badge,
-  Button,
-  Comparison,
-  MenuRow,
-  TextAction,
-} from "@/components/ui";
+import { Badge, Button, Comparison, MenuRow } from "@/components/ui";
 import { ErrorState, Notice } from "@/components/feedback";
 import { ApiError } from "@/lib/api";
 import { FamilyInfoCard } from "@/features/carespace/ui/FamilyInfoCard";
@@ -29,6 +23,7 @@ import {
 import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
 import { spaceInfoPath, spaceInfoRequestsPath } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useSpaceContext } from "@/routes/useSpaceContext";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
@@ -65,10 +60,9 @@ function RequestDetail({ requestId }: { requestId: string }) {
   const [message, setMessage] = useState("");
   const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
-  const toList = () =>
-    void navigate(withReturn(spaceInfoRequestsPath(space.spaceId)), {
-      motion: "back",
-    });
+  const listPath = withReturn(spaceInfoRequestsPath(space.spaceId));
+  const back = useBackNavigation(listPath);
+  const toList = useBackNavigation(listPath, { toFallback: true });
   const toInfo = () => void navigate(withReturn(spaceInfoPath(space.spaceId)));
   const latest = query.data?.entries.find(
     (entry) => entry.action === "UPDATE_SPACE",
@@ -186,7 +180,7 @@ function RequestDetail({ requestId }: { requestId: string }) {
           setDecision(null);
           action.reset();
           setMessage("");
-        } else toList();
+        } else back();
       }}
       spaceId={decision && !completed ? undefined : space.spaceId}
       actions={
@@ -194,11 +188,27 @@ function RequestDetail({ requestId }: { requestId: string }) {
         entry &&
         (completed || entry.status !== "PENDING" ? (
           <>
+            <Button
+              variant="outline"
+              onClick={toList}
+            >
+              요청 목록으로
+            </Button>
             <Button onClick={toInfo}>현재 공간 정보 보기</Button>
-            <TextAction onClick={toList}>요청 목록으로</TextAction>
           </>
         ) : decision ? (
           <>
+            <Button
+              variant="outline"
+              disabled={action.pending}
+              onClick={action.uncertain ? toList : refresh}
+            >
+              {action.uncertain
+                ? "요청 목록으로"
+                : action.error || staleDecision || unavailable
+                  ? "최신 내용 확인"
+                  : "요청 내용으로"}
+            </Button>
             <Button
               loading={action.pending}
               disabled={
@@ -213,57 +223,41 @@ function RequestDetail({ requestId }: { requestId: string }) {
               onClick={submit}
             >
               {action.uncertain
-                ? "같은 요청으로 다시 확인"
+                ? "요청 결과 확인"
                 : decision.mode === "apply"
                   ? "변경 내용 반영"
                   : decision.mode === "decline"
                     ? "미적용으로 처리"
                     : "요청 취소"}
             </Button>
-            {action.uncertain ? (
-              <TextAction
-                disabled={action.pending}
-                onClick={toList}
-              >
-                요청 목록에서 결과 확인
-              </TextAction>
-            ) : (
-              <TextAction
-                disabled={action.pending}
-                onClick={refresh}
-              >
-                {action.error || staleDecision || unavailable
-                  ? "최신 내용 다시 확인"
-                  : "요청 내용으로"}
-              </TextAction>
-            )}
           </>
         ) : (
           <>
+            {mine && (
+              <Button
+                variant="outline"
+                disabled={unavailable}
+                onClick={() => prepare("cancel")}
+              >
+                요청 취소
+              </Button>
+            )}
             {owner && (
               <>
+                <Button
+                  variant="outline"
+                  disabled={unavailable || !entry.reviewToken}
+                  onClick={() => prepare("decline")}
+                >
+                  미적용
+                </Button>
                 <Button
                   disabled={unavailable || !!applyError}
                   onClick={() => prepare("apply")}
                 >
-                  반영 내용 확인
+                  반영 확인
                 </Button>
-                <TextAction
-                  disabled={unavailable || !entry.reviewToken}
-                  onClick={() => prepare("decline")}
-                >
-                  미적용으로 처리
-                </TextAction>
               </>
-            )}
-            {mine && (
-              <Button
-                variant="secondary"
-                disabled={unavailable}
-                onClick={() => prepare("cancel")}
-              >
-                내 요청 취소
-              </Button>
             )}
             {!owner && !mine && <Button onClick={toList}>요청 목록으로</Button>}
           </>

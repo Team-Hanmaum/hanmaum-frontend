@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { ErrorState, Notice } from "@/components/feedback";
 import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog";
-import { Button, MenuRow, TextAction } from "@/components/ui";
+import { Button, MenuRow } from "@/components/ui";
 import { useSession } from "@/features/auth/model/useSession";
 import { useCareItems } from "@/features/careitem/model/useCareQueries";
 import { leaveCareSpace } from "@/features/carespace/api/familyManagementApi";
@@ -11,7 +11,6 @@ import { useFamilyAction } from "@/features/carespace/model/useFamilyAction";
 import { useFamilyManagement } from "@/features/carespace/model/useFamilyManagement";
 import { FamilyDepartureImpact } from "@/features/carespace/ui/FamilyDepartureImpact";
 import { FamilyActionNotice } from "@/features/carespace/ui/FamilyActionNotice";
-import { FamilyMember } from "@/features/carespace/ui/FamilyMember";
 import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
 import { useUnsavedChanges } from "@/lib/useUnsavedChanges";
 import { FamilyPageLayout } from "@/routes/layouts/FamilyPageLayout";
@@ -75,12 +74,19 @@ export function FamilyLeavePage() {
       onBack={back}
       actions={
         <>
+          <Button
+            variant="outline"
+            disabled={action.pending}
+            onClick={back}
+          >
+            {action.uncertain ? "결과 확인 나가기" : "취소"}
+          </Button>
           {action.uncertain ? (
             <Button
               loading={action.pending}
               onClick={() => action.retry(complete)}
             >
-              같은 나가기 요청으로 결과 확인
+              나가기 결과 확인
             </Button>
           ) : action.error ? (
             <Button
@@ -117,12 +123,6 @@ export function FamilyLeavePage() {
               공간 나가기
             </Button>
           ) : null}
-          <TextAction
-            disabled={action.pending}
-            onClick={back}
-          >
-            {action.uncertain ? "결과 확인 나가기" : "취소"}
-          </TextAction>
         </>
       }
     >
@@ -154,25 +154,17 @@ export function FamilyLeavePage() {
         />
       ) : owner ? (
         <>
-          <h1 className="text-hm-title-page">
-            먼저 소유자 역할을
-            <br />
-            넘겨 주세요
-          </h1>
-          <p className="text-hm-body-default text-hm-text-secondary">
-            가족의 기록을 남기려면 다른 가족에게 소유권을 이전해 주세요.
-          </p>
-          <FamilyMember
-            name={self.displayName || "이름 미등록"}
-            profileImageUrl={self.profileImageUrl}
-            role="owner"
-            self
-            detail="현재 소유자"
-          />
-          <Notice
-            title="가족의 기록을 이어갈 수 있어요"
-            body="소유권을 넘긴 뒤 구성원으로 바뀌면 공간에서 나갈 수 있어요."
-          />
+          <div className="flex flex-col gap-hm-8">
+            <h1 className="text-hm-title-page">소유권 이전이 필요해요</h1>
+            <p className="text-hm-body-small text-hm-text-secondary">
+              {space.subjectLabel}의 돌봄 · 현재 소유자{" "}
+              {self.displayName || "나"}
+            </p>
+            <p className="text-hm-body-default text-hm-text-secondary">
+              가족에게 소유권을 넘기면 기록이 유지되고, 구성원으로서 공간에서
+              나갈 수 있어요.
+            </p>
+          </div>
           {data.error && (
             <ReviewQueryState
               error={data.error}
@@ -189,14 +181,12 @@ export function FamilyLeavePage() {
         </>
       ) : (
         <>
-          <h1 className="text-hm-title-page">
-            {space.subjectLabel}의 돌봄에서
-            <br />
-            나갈까요?
-          </h1>
-          <p className="text-hm-body-default text-hm-text-secondary">
-            {self.displayName || "나"} · 현재 구성원
-          </p>
+          <div className="flex flex-col gap-hm-8">
+            <h1 className="text-hm-title-page">이 공간에서 나갈까요?</h1>
+            <p className="text-hm-body-small text-hm-text-secondary">
+              {space.subjectLabel}의 돌봄 · {self.displayName || "나"}
+            </p>
+          </div>
           {data.error && (
             <ReviewQueryState
               error={data.error}
@@ -215,10 +205,6 @@ export function FamilyLeavePage() {
               retry={() => void tasks.refetch()}
             />
           )}
-          <Notice
-            title="나가기는 기록 삭제와 달라요"
-            body="기록을 지우는 작업은 소식 삭제 등 별도 절차에서 진행해요."
-          />
         </>
       )}
       <UnsavedChangesDialog

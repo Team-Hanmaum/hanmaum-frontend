@@ -31,6 +31,7 @@ export function CareFieldsForm({
   direct = false,
   preserveTitle = false,
   apiMode = false,
+  compact = false,
 }: {
   kind: CareItemKind;
   fields: CareItemFields;
@@ -43,6 +44,7 @@ export function CareFieldsForm({
   direct?: boolean;
   preserveTitle?: boolean;
   apiMode?: boolean;
+  compact?: boolean;
 }) {
   const [picker, setPicker] = useState<Picker | null>(null);
   const [selection, setSelection] = useState("");
@@ -139,7 +141,7 @@ export function CareFieldsForm({
                     ? formatCareDate(fields[key])
                     : "날짜 선택"
             }
-            className="border border-hm-border-default"
+            className={`border border-hm-border-default ${compact ? "min-h-hm-touch-min py-hm-8" : ""}`}
             disabled={disabled}
             onClick={() => (key === "time" ? onTimeSelect() : open(key))}
           />
@@ -172,7 +174,7 @@ export function CareFieldsForm({
                 : "추가 설명 (선택)"
           }
           multiline
-          rows={5}
+          rows={compact ? 3 : 5}
           maxLength={10000}
           value={fields.note}
           onChange={(event) => update("note", event.target.value)}

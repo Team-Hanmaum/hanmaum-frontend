@@ -9,7 +9,7 @@ import type { EditOperation } from "@/features/careitem/model/useCareEdit";
 import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import { useSpaceContext } from "@/routes/useSpaceContext";
-import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { careItemPath } from "@/routes/paths";
 
@@ -21,12 +21,10 @@ export function CareEditPage() {
   const operation = (matches.at(-1)?.handle as { operation: EditOperation })
     .operation;
   const [revision, setRevision] = useState(0);
-  const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
-  const back = () =>
-    void navigate(withReturn(careItemPath(space.spaceId, itemId)), {
-      motion: "back",
-    });
+  const back = useBackNavigation(
+    withReturn(careItemPath(space.spaceId, itemId)),
+  );
   if (query.data)
     return (
       <CareEditEntry
@@ -48,7 +46,7 @@ export function CareEditPage() {
       title="돌봄 변경"
       spaceId={space.spaceId}
       onBack={back}
-      actions={<Button onClick={back}>항목 상세로</Button>}
+      actions={<Button onClick={back}>돌아가기</Button>}
     >
       <ReviewQueryState
         error={query.error}
@@ -58,10 +56,7 @@ export function CareEditPage() {
   );
 }
 
-function CareEditEntry({
-  onBack,
-  ...props
-}: ComponentProps<typeof CareEditForm> & { onBack: () => void }) {
+function CareEditEntry(props: ComponentProps<typeof CareEditForm>) {
   // 차단 중에는 최신 상태를 확인하되, 한 번 열린 폼은 재조회로 해제하지 않는다.
   const [unavailable, setUnavailable] = useState(() =>
     careWriteUnavailable(props.item, props.operation),
@@ -75,8 +70,8 @@ function CareEditEntry({
     <ProposalPageLayout
       title="돌봄 변경"
       spaceId={props.space.spaceId}
-      onBack={onBack}
-      actions={<Button onClick={onBack}>항목 상세로</Button>}
+      onBack={props.onBack}
+      actions={<Button onClick={props.onBack}>돌아가기</Button>}
     >
       <EmptyState
         title="지금은 변경할 수 없어요"

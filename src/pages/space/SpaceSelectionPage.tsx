@@ -1,13 +1,14 @@
 import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useLocation } from "react-router";
 import { Header, PageLayout } from "@/components/layout";
+import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
 import {
   EmptyState,
   ErrorState,
   LoadingState,
   Notice,
 } from "@/components/feedback";
-import { MenuRow } from "@/components/ui";
+import { Button, IconButton } from "@/components/ui";
 import type { CareSpaceSummary } from "@/features/carespace/api/careSpaceTypes";
 import {
   CareSpaceList,
@@ -16,6 +17,7 @@ import {
 import { useCareSpaces } from "@/features/carespace/model/useCareSpaces";
 import type { ApiError } from "@/lib/api";
 import { paths, spacePath } from "@/routes/paths";
+import { useBackNavigation } from "@/routes/useBackNavigation";
 
 function toListItem(space: CareSpaceSummary): CareSpaceListItem {
   return {
@@ -61,11 +63,23 @@ export function SpaceSelectionPage() {
   const remote = useCareSpaces();
   const spaces = remote.data?.map(toListItem) ?? [];
   const location = useLocation();
-  const familyAction = (
-    location.state as {
-      familyAction?: { kind: string; spaceId: string };
-    } | null
-  )?.familyAction;
+  const entry = location.state as {
+    familyAction?: { kind: string; spaceId: string };
+    fromAllSpaceId?: string;
+  } | null;
+  const familyAction = entry?.familyAction;
+  const fromAllSpaceId = entry?.fromAllSpaceId;
+  const onBack = useBackNavigation(
+    fromAllSpaceId ? spacePath(fromAllSpaceId, "all") : paths.spaces,
+  );
+  const accountAction = (
+    <IconButton
+      icon="person"
+      label="내 계정"
+      title="내 계정"
+      onClick={() => void navigate(paths.account)}
+    />
+  );
   const endedParticipation =
     remote.isSuccess &&
     !remote.isFetching &&
@@ -81,13 +95,36 @@ export function SpaceSelectionPage() {
     <>
       <PageLayout
         header={
-          <Header
-            variant="main"
-            brandAction={{
-              label: "한마음 시작 화면으로",
-              onClick: () => void navigate(paths.landing),
-            }}
-          />
+          fromAllSpaceId ? (
+            <Header
+              variant="back"
+              title="참여 공간 선택"
+              onBack={onBack}
+              actions={accountAction}
+            />
+          ) : (
+            <Header
+              variant="main"
+              brandAction={{
+                label: "한마음 시작 화면으로",
+                onClick: () => void navigate(paths.landing),
+              }}
+              actions={accountAction}
+            />
+          )
+        }
+        footer={
+          <FixedBottomArea position="fixed">
+            <div className="flex justify-center px-hm-20 pt-hm-16 pb-[calc(var(--hm-spacing-24)+env(safe-area-inset-bottom))]">
+              <Button
+                variant="primary"
+                className="min-h-hm-48 max-w-full border border-transparent px-hm-40 py-hm-10"
+                onClick={() => void navigate(paths.onboardingGuide)}
+              >
+                돌봄 공간 만들기
+              </Button>
+            </div>
+          </FixedBottomArea>
         }
       >
         {endedParticipation && (
@@ -106,11 +143,7 @@ export function SpaceSelectionPage() {
             }
           />
         )}
-        <h1 className="text-hm-title-page">
-          어느 공간으로
-          <br />
-          들어갈까요?
-        </h1>
+        <h1 className="text-hm-title-page">공간을 선택해주세요.</h1>
         {remote.isPending ? (
           <LoadingState label="참여 공간을 불러오고 있어요" />
         ) : remote.isError ? (
@@ -134,20 +167,6 @@ export function SpaceSelectionPage() {
             }}
           />
         )}
-        <MenuRow
-          icon="plus"
-          title="돌봄 공간 만들기"
-          description="새로운 돌봄 공간이 필요할 때"
-          onClick={() => void navigate(paths.onboardingGuide)}
-        />
-        <p className="text-hm-body-small text-hm-text-secondary">
-          초대받은 링크가 있다면 그 링크로 가족의 공간에 참여해 주세요.
-        </p>
-        <MenuRow
-          icon="person"
-          title="내 계정"
-          onClick={() => void navigate(paths.account)}
-        />
       </PageLayout>
     </>
   );

@@ -8,6 +8,7 @@ import { toSpaceView } from "@/features/dashboard/model/homeData";
 import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
 import { FamilyPageLayout } from "@/routes/layouts/FamilyPageLayout";
 import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import {
   familyRemovePath,
@@ -21,10 +22,7 @@ export function FamilyMembersPage() {
   const tasks = useCareItems(data.spaceId, "TASK");
   const navigate = useAppNavigate();
   const { withReturn, withdrawing, returnToWithdrawal } = useWithdrawalReturn();
-  const back = () =>
-    void navigate(withReturn(spacePath(data.spaceId, "family")), {
-      motion: "back",
-    });
+  const back = useBackNavigation(withReturn(spacePath(data.spaceId, "family")));
   const view =
     data.space && data.members
       ? toSpaceView(data.space, data.members)
@@ -51,13 +49,8 @@ export function FamilyMembersPage() {
       ) : (
         <>
           <h1 className="text-hm-title-page">
-            함께하는 가족의
-            <br />
-            참여를 관리해요
+            함께하는 가족 {view.members.length}명
           </h1>
-          <p className="text-hm-body-default text-hm-text-secondary">
-            {view.subjectLabel}의 돌봄 · {view.members.length}명
-          </p>
           {(data.error || tasks.error) && (
             <Notice
               tone="error"
@@ -72,26 +65,27 @@ export function FamilyMembersPage() {
               }}
             />
           )}
-          {view.members.map((member) => (
-            <section
-              key={member.id}
-              className="overflow-hidden rounded-hm-14 bg-hm-bg-surface"
-            >
-              <FamilyMember
-                {...member}
-                name={`${member.name}${member.self ? " · 나" : ""}`}
-                initial={member.name[0]}
-                detail={
-                  tasks.data && !tasks.error
-                    ? `미완료 담당 할 일 ${unfinishedFamilyTasks(tasks.data, member.id).length}개`
-                    : "담당 할 일 확인 중"
-                }
-              />
-              {!member.self && member.role === "member" && (
-                <div className="px-hm-16 pb-hm-16">
+          <ul className="divide-y divide-hm-divider-default rounded-hm-16 bg-hm-bg-surface">
+            {view.members.map((member) => (
+              <li
+                key={member.id}
+                className="flex items-center gap-hm-4 px-hm-12 py-hm-4"
+              >
+                <FamilyMember
+                  {...member}
+                  className="min-w-0 flex-1 bg-transparent! px-0! py-hm-8!"
+                  name={`${member.name}${member.self ? " · 나" : ""}`}
+                  initial={member.name[0]}
+                  detail={
+                    tasks.data && !tasks.error
+                      ? `미완료 담당 할 일 ${unfinishedFamilyTasks(tasks.data, member.id).length}개`
+                      : "담당 할 일 확인 중"
+                  }
+                />
+                {!member.self && member.role === "member" && (
                   <Button
-                    variant="outline"
-                    className="w-full"
+                    variant="secondary"
+                    className="min-h-hm-touch-min shrink-0 px-hm-12 py-hm-4"
                     disabled={!!data.error || data.refreshing}
                     aria-label={`${member.name} 참여 관리`}
                     onClick={() =>
@@ -100,12 +94,12 @@ export function FamilyMembersPage() {
                       )
                     }
                   >
-                    참여 관리
+                    관리
                   </Button>
-                </div>
-              )}
-            </section>
-          ))}
+                )}
+              </li>
+            ))}
+          </ul>
           <MenuRow
             icon="person"
             title="소유권 이전"
