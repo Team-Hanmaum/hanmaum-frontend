@@ -7,7 +7,7 @@ import {
   LoadingState,
   Notice,
 } from "@/components/feedback";
-import { MenuRow } from "@/components/ui";
+import { Button, Icon, IconButton } from "@/components/ui";
 import type { CareSpaceSummary } from "@/features/carespace/api/careSpaceTypes";
 import {
   CareSpaceList,
@@ -87,6 +87,14 @@ export function SpaceSelectionPage() {
               label: "한마음 시작 화면으로",
               onClick: () => void navigate(paths.landing),
             }}
+            actions={
+              <IconButton
+                icon="person"
+                label="내 계정"
+                title="내 계정"
+                onClick={() => void navigate(paths.account)}
+              />
+            }
           />
         }
       >
@@ -130,20 +138,19 @@ export function SpaceSelectionPage() {
             }}
           />
         )}
-        <MenuRow
-          icon="plus"
-          title="돌봄 공간 만들기"
-          description="새로운 돌봄 공간이 필요할 때"
-          onClick={() => void navigate(paths.onboardingGuide)}
-        />
-        <p className="text-hm-body-small text-hm-text-secondary">
-          초대받은 링크가 있다면 그 링크로 가족의 공간에 참여해 주세요.
-        </p>
-        <MenuRow
-          icon="person"
-          title="내 계정"
-          onClick={() => void navigate(paths.account)}
-        />
+        <div className="flex flex-col gap-hm-12">
+          <Button
+            variant="outline"
+            icon={<Icon name="plus" />}
+            className="w-full"
+            onClick={() => void navigate(paths.onboardingGuide)}
+          >
+            돌봄 공간 만들기
+          </Button>
+          <p className="text-hm-body-small text-hm-text-secondary">
+            초대받은 링크가 있다면 그 링크로 가족의 공간에 참여해 주세요.
+          </p>
+        </div>
       </PageLayout>
     </>
   );
