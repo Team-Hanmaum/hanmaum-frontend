@@ -1,12 +1,22 @@
 import { useRef } from "react";
 import { EmptyState, ErrorState, Notice } from "@/components/feedback";
 import { SectionHeader } from "@/components/layout";
-import { Button, Spinner } from "@/components/ui";
+import { Button, Spinner, type BadgeProps } from "@/components/ui";
 import { formatRecordTime, groupRecordsByDay } from "../model/recordDates";
 import type { RecordView } from "../model/recordViewTypes";
 import type { NewsListState } from "../model/newsScreenStates";
-import { NewsCard } from "./NewsCard";
+import { NewsPreviewCard } from "./NewsPreviewCard";
+import type { NewsStatus } from "./NewsCard";
 import { sortNewsRecords } from "../model/newsPagination";
+
+const previewBadges: Partial<
+  Record<NewsStatus, Pick<BadgeProps, "label" | "tone">>
+> = {
+  analyzing: { label: "분석 중", tone: "neutral" },
+  review: { label: "검토 대기", tone: "brand" },
+  pending: { label: "승인 대기", tone: "neutral" },
+  failed: { label: "분석 실패", tone: "error" },
+};
 
 export function NewsList({
   records,
@@ -69,46 +79,42 @@ export function NewsList({
         groupRecordsByDay(visible).map((group) => (
           <section
             key={group.id}
-            className="flex flex-col gap-hm-24"
+            className="flex flex-col gap-hm-12"
             aria-label={group.label}
           >
             <SectionHeader title={group.label} />
-            {group.records.map((record) => (
-              <div
-                key={record.id}
-                role="group"
-                tabIndex={-1}
-                aria-label={record.title}
-                ref={(element) => {
-                  if (
-                    element &&
-                    nextFocusIndex.current === indexById.get(record.id)
-                  ) {
-                    nextFocusIndex.current = null;
-                    element.focus({ preventScroll: true });
+            <div className="flex flex-col gap-hm-8">
+              {group.records.map((record) => (
+                <NewsPreviewCard
+                  key={record.id}
+                  title={
+                    record.title === "가족 소식" ? undefined : record.title
                   }
-                }}
-              >
-                <NewsCard
-                  title={record.title}
-                  author={`${record.author.name} · ${formatRecordTime(record.createdAt)}`}
-                  authorImageUrl={record.author.profileImageUrl}
+                  author={{
+                    name: record.author.name,
+                    profileImageUrl: record.author.profileImageUrl,
+                    isMine: record.author.self,
+                  }}
+                  time={formatRecordTime(record.createdAt)}
                   body={record.body}
-                  previewBody
-                  status={
-                    record.proposalSummary?.status ?? record.analysisStatus
+                  badge={
+                    previewBadges[
+                      record.proposalSummary?.status ?? record.analysisStatus
+                    ]
                   }
-                  statusMessage={
-                    record.proposalSummary?.message ??
-                    (record.analysisStatus === "review"
-                      ? "변경 제안 1건을 확인해 주세요."
-                      : undefined)
-                  }
-                  actionLabel="소식 자세히 보기"
-                  onAction={() => onOpen(record.id)}
+                  onOpen={() => onOpen(record.id)}
+                  ref={(element) => {
+                    if (
+                      element &&
+                      nextFocusIndex.current === indexById.get(record.id)
+                    ) {
+                      nextFocusIndex.current = null;
+                      element.focus({ preventScroll: true });
+                    }
+                  }}
                 />
-              </div>
-            ))}
+              ))}
+            </div>
           </section>
         ))
       )}
@@ -116,7 +122,7 @@ export function NewsList({
         <div className="flex flex-col gap-hm-12">
           <p
             role="status"
-            className="text-center text-hm-body-small text-hm-text-secondary"
+            className="sr-only"
           >
             {`불러온 소식 ${visible.length}건`}
           </p>

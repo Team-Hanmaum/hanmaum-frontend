@@ -1,6 +1,6 @@
 import { EmptyState, Notice } from "@/components/feedback";
 import { SectionHeader } from "@/components/layout";
-import { Avatar, Badge, Button, Icon, MenuRow } from "@/components/ui";
+import { Badge, Button, Icon, MenuRow } from "@/components/ui";
 import {
   careSpaceName,
   type CareSpaceView,
@@ -10,6 +10,7 @@ import type { HomeView } from "../model/homeViewTypes";
 import { HomeFamilySection } from "./HomeFamilySection";
 import type { CareListFilter } from "@/features/careitem/model/careItemSelectors";
 import { ScheduleCountdownBadge } from "@/features/careitem/ui/ScheduleCountdownBadge";
+import { NewsPreviewCard } from "@/features/record/ui/NewsPreviewCard";
 
 function HomeDetailRow({
   title,
@@ -103,37 +104,14 @@ export function HomeContent({
       {data.recentNews.length ? (
         <div className="flex flex-col gap-hm-8">
           {data.recentNews.map((news) => (
-            <button
+            <NewsPreviewCard
               key={news.id}
-              type="button"
-              className="hm-focus-ring flex w-full min-w-0 cursor-pointer items-start gap-hm-12 rounded-hm-12 bg-hm-bg-surface px-hm-16 py-hm-12 text-left hover:bg-hm-bg-subtle focus-visible:z-10"
-              onClick={() => onOpenNews(news.id)}
-            >
-              <Avatar
-                name={news.author.name}
-                initial={news.author.initial}
-                profileImageUrl={news.author.profileImageUrl}
-                emphasis={news.author.isMine ? "self" : "default"}
-                size="compact"
-                decorative
-              />
-              <span className="flex min-w-0 flex-1 flex-col gap-hm-4 wrap-anywhere">
-                <span className="flex flex-wrap items-baseline justify-between gap-x-hm-8">
-                  <span className="min-w-0 text-hm-body-default font-bold">
-                    {news.author.name}
-                  </span>
-                  <span className="text-hm-caption-default text-hm-text-secondary">
-                    {news.recordedAtLabel}
-                  </span>
-                </span>
-                {news.title && (
-                  <span className="text-hm-body-emphasis">{news.title}</span>
-                )}
-                <span className="line-clamp-2 text-hm-body-default whitespace-normal">
-                  {news.body}
-                </span>
-              </span>
-            </button>
+              author={news.author}
+              time={news.recordedAtLabel}
+              title={news.title}
+              body={news.body}
+              onOpen={() => onOpenNews(news.id)}
+            />
           ))}
         </div>
       ) : (
