@@ -54,6 +54,22 @@ export function flattenCareValues(values: CareValues | null): CareValues {
   const { fields, ...flat } = values;
   return { ...flat, ...(isObject(fields) ? fields : {}) };
 }
+export function readCareText(value: unknown) {
+  return typeof value === "string" && value.trim() ? value : undefined;
+}
+
+export function parseCareEvidenceValues(
+  text: string | null,
+): CareValues | null {
+  if (!text) return null;
+  try {
+    const values: unknown = JSON.parse(text);
+    return isObject(values) ? values : null;
+  } catch {
+    return null;
+  }
+}
+
 export function displayCareValue(
   key: string,
   value: unknown,

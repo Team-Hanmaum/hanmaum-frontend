@@ -1,12 +1,18 @@
 import { useParams } from "react-router";
-import { Button, Badge, MenuRow } from "@/components/ui";
+import { Button, Badge, MenuRow, TextAction } from "@/components/ui";
 import { Notice } from "@/components/feedback";
 import { useCareItem } from "@/features/careitem/model/useCareQueries";
 import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
-import { CareValuesView } from "@/features/careitem/ui/CareValuesView";
+import { CareFieldList } from "@/features/careitem/ui/CareFieldList";
+import { formatCareDate } from "@/features/careitem/model/careItemFields";
+import type {
+  CareDetail,
+  ItemType,
+} from "@/features/careitem/api/careReadTypes";
 import {
-  fieldLabels,
+  displayCareValue,
   itemLabels,
+  readCareText,
 } from "@/features/careitem/model/careReadView";
 import { careTypeTabs } from "@/features/careitem/model/careItemSelectors";
 import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
@@ -24,6 +30,41 @@ import {
   careReconfirmPath,
   proposalListPath,
 } from "@/routes/paths";
+
+const detailFields: Record<ItemType, readonly string[]> = {
+  SCHEDULE: ["location"],
+  TASK: ["assigneeMembershipId"],
+  QUESTION: ["confirmedAnswer"],
+  OBSERVATION: [],
+  GUIDANCE: ["sourceName"],
+};
+
+function careTiming(item: CareDetail) {
+  const field = (key: string) => readCareText(item.fields?.[key]);
+  switch (item.itemType) {
+    case "SCHEDULE": {
+      const date = field("scheduledDate");
+      return [date && formatCareDate(date), field("scheduledTime")]
+        .filter(Boolean)
+        .join(" · ");
+    }
+    case "TASK": {
+      const due = field("dueDate");
+      return due ? `기한 ${formatCareDate(due)}` : undefined;
+    }
+    case "OBSERVATION": {
+      const date = field("observedDate");
+      return [date && formatCareDate(date), field("observedTimeText")]
+        .filter(Boolean)
+        .join(" · ");
+    }
+    case "GUIDANCE": {
+      const date = field("receivedDate");
+      return date && formatCareDate(date);
+    }
+  }
+}
+
 export function CareItemPage() {
   const { space } = useSpaceContext();
   const { itemId = "" } = useParams();
@@ -40,21 +81,21 @@ export function CareItemPage() {
     }),
   );
   const back = useBackNavigation(listPath);
+  const timing = item && careTiming(item);
+  const canShare =
+    item &&
+    !item.needsReconfirmation &&
+    item.visibility !== "DELETED" &&
+    !item.redactedFields.length;
+  const menuRow =
+    "min-h-hm-touch-min rounded-none px-hm-16 py-hm-12 first:rounded-t-hm-16 last:rounded-b-hm-16 hover:bg-hm-bg-subtle";
   return (
     <ProposalPageLayout
-      title="돌봄 상세"
+      title={item ? `${itemLabels[item.itemType]} 상세` : "돌봄 상세"}
       spaceId={space.spaceId}
       onBack={back}
       activeTab="care"
       tabs
-      actions={
-        <Button
-          variant="secondary"
-          onClick={() => void navigate(listPath)}
-        >
-          돌봄 목록으로
-        </Button>
-      }
     >
       {!item || query.isError ? (
         <ReviewQueryState
@@ -63,10 +104,24 @@ export function CareItemPage() {
         />
       ) : (
         <>
-          <Badge label={itemLabels[item.itemType]} />
-          <h1 className="text-hm-title-page">
-            {item.title ?? "내용이 제거된 항목"}
-          </h1>
+          <div className="flex flex-col gap-hm-8">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-hm-12 gap-y-hm-4">
+              <h1 className="min-w-0 text-hm-title-page wrap-anywhere">
+                {item.title ?? "내용이 제거된 항목"}
+              </h1>
+              {item.status && (
+                <Badge
+                  label={displayCareValue("status", item.status)}
+                  tone="brand"
+                />
+              )}
+            </div>
+            {timing && (
+              <p className="text-hm-body-emphasis wrap-anywhere text-hm-text-secondary">
+                {timing}
+              </p>
+            )}
+          </div>
           {(item.needsReconfirmation || item.needsConflictReview) && (
             <Notice
               title={
@@ -74,37 +129,85 @@ export function CareItemPage() {
                   ? "원본 변경으로 다시 확인이 필요해요"
                   : "서로 다른 내용이 있어요"
               }
-              body="근거와 제안을 확인해 주세요. 현재 정보를 임의로 확정하지 않아요."
+              body={
+                item.needsReconfirmation
+                  ? "소유자가 현재 값과 유효한 근거를 다시 확인해야 해요."
+                  : "현재 값과 제안의 근거를 비교해 주세요."
+              }
+              action={
+                item.needsReconfirmation &&
+                item.visibility !== "DELETED" &&
+                space.role === "OWNER"
+                  ? {
+                      label: "다시 확인하기",
+                      onClick: () =>
+                        void navigate(
+                          withReturn(careReconfirmPath(space.spaceId, itemId)),
+                        ),
+                    }
+                  : undefined
+              }
             />
           )}
-          {item.needsReconfirmation &&
-            item.visibility !== "DELETED" &&
-            (space.role === "OWNER" ? (
+          {item.needsConflictReview && (
+            <TextAction
+              className="self-start text-hm-text-brand"
+              onClick={() =>
+                void navigate(
+                  withReturn(proposalListPath(space.spaceId, "review", "care")),
+                )
+              }
+            >
+              제안·요청 확인
+            </TextAction>
+          )}
+          {(readCareText(item.description) ||
+            detailFields[item.itemType].some((key) =>
+              readCareText(
+                key === "confirmedAnswer"
+                  ? item.confirmedAnswer
+                  : item.fields?.[key],
+              ),
+            )) && (
+            <section className="rounded-hm-16 bg-hm-bg-surface px-hm-16 py-hm-12">
+              {readCareText(item.description) && (
+                <p className="text-hm-body-default wrap-anywhere whitespace-pre-wrap">
+                  {item.description}
+                </p>
+              )}
+              <CareFieldList
+                values={item}
+                keys={detailFields[item.itemType]}
+                members={members.data}
+              />
+            </section>
+          )}
+          <div className="flex flex-wrap gap-hm-8">
+            <Button
+              variant="secondary"
+              className="min-h-hm-touch-min px-hm-16 py-hm-8"
+              onClick={() =>
+                void navigate(
+                  withReturn(`${careItemPath(space.spaceId, itemId)}/manage`),
+                )
+              }
+            >
+              항목 관리
+            </Button>
+            {canShare && (
               <Button
+                variant="outline"
+                className="min-h-hm-touch-min px-hm-16 py-hm-8"
                 onClick={() =>
                   void navigate(
-                    withReturn(careReconfirmPath(space.spaceId, itemId)),
+                    withReturn(careSharePath(space.spaceId, itemId)),
                   )
                 }
               >
-                다시 확인하기
+                공유
               </Button>
-            ) : (
-              <Notice
-                title="소유자의 재확인이 필요해요"
-                body="소유자가 현재 값과 유효한 근거를 다시 확인해야 해요."
-              />
-            ))}
-          <section className="rounded-hm-14 bg-hm-bg-surface p-hm-20">
-            <CareValuesView
-              values={{ ...item, fields: item.fields }}
-              keys={Object.keys(fieldLabels).filter(
-                (key) =>
-                  key !== "confirmedAnswer" || item.itemType === "QUESTION",
-              )}
-              members={members.data}
-            />
-          </section>
+            )}
+          </div>
           {item.answers.length > 0 && (
             <section className="flex flex-col gap-hm-12">
               <h2 className="text-hm-heading-section">가족이 남긴 답변</h2>
@@ -117,51 +220,28 @@ export function CareItemPage() {
               ))}
             </section>
           )}
-          <MenuRow
-            icon="news-brand"
-            title="근거 보기"
-            onClick={() =>
-              void navigate(withReturn(careSourcesPath(space.spaceId, itemId)))
-            }
-          />
-          <MenuRow
-            icon="news-brand"
-            title="변경 이력 보기"
-            onClick={() =>
-              void navigate(withReturn(careHistoryPath(space.spaceId, itemId)))
-            }
-          />
-          <MenuRow
-            icon="news-brand"
-            title="제안·요청 확인"
-            onClick={() =>
-              void navigate(withReturn(proposalListPath(space.spaceId)))
-            }
-          />
-          {!item.needsReconfirmation &&
-            item.visibility !== "DELETED" &&
-            !item.redactedFields.length && (
-              <MenuRow
-                icon="link-brand"
-                title="공유"
-                description="카카오톡 또는 링크로 가족에게 알리기"
-                onClick={() =>
-                  void navigate(
-                    withReturn(careSharePath(space.spaceId, itemId)),
-                  )
-                }
-              />
-            )}
-          <MenuRow
-            icon="edit"
-            title="항목 관리"
-            description="내용·담당자·상태 변경, 답변과 삭제"
-            onClick={() =>
-              void navigate(
-                withReturn(`${careItemPath(space.spaceId, itemId)}/manage`),
-              )
-            }
-          />
+          <div className="divide-y divide-hm-divider-default rounded-hm-16 bg-hm-bg-surface">
+            <MenuRow
+              icon={null}
+              className={menuRow}
+              title="기록 근거"
+              onClick={() =>
+                void navigate(
+                  withReturn(careSourcesPath(space.spaceId, itemId)),
+                )
+              }
+            />
+            <MenuRow
+              icon={null}
+              className={menuRow}
+              title="변경 이력"
+              onClick={() =>
+                void navigate(
+                  withReturn(careHistoryPath(space.spaceId, itemId)),
+                )
+              }
+            />
+          </div>
         </>
       )}
     </ProposalPageLayout>
