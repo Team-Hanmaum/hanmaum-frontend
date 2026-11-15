@@ -1,6 +1,5 @@
 import { ActionBar, DetailLayout } from "@/components/layout";
 import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog";
-import { toSpaceView } from "@/features/dashboard/model/homeData";
 import { useRecordComposer } from "@/features/record/model/useRecordComposer";
 import { NewsForm } from "@/features/record/ui/NewsForm";
 import { TextAction } from "@/components/ui";
@@ -49,7 +48,7 @@ export function NewsCreatePage() {
       )}
       <NewsForm
         id="news-form"
-        space={toSpaceView(space, [])}
+        space={space}
         body={composer.body}
         onChange={composer.changeBody}
         onSubmit={composer.submit}

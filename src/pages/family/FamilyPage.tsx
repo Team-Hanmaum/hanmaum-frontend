@@ -1,6 +1,7 @@
 import { ErrorState, LoadingState, Notice } from "@/components/feedback";
-import { Button, MenuRow } from "@/components/ui";
-import { FamilyMember } from "@/features/carespace/ui";
+import { MenuGroup } from "@/components/layout/MenuGroup";
+import { PageTitleWithAction } from "@/components/layout";
+import { FamilyAvatar } from "@/features/carespace/ui";
 import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
 import { toSpaceView } from "@/features/dashboard/model/homeData";
 import { useSpaceContext } from "@/routes/useSpaceContext";
@@ -68,47 +69,61 @@ export function FamilyPage() {
           }}
         />
       )}
-      <h1 className="text-hm-title-page">
-        함께 돌보는 가족 {members.data.length}명
-      </h1>
-      {toSpaceView(space, members.data).members.map((member) => (
-        <FamilyMember
-          key={member.id}
-          name={member.name}
-          profileImageUrl={member.profileImageUrl}
-          role={member.role}
-          self={member.self}
-        />
-      ))}
-      <Button onClick={() => void navigate(spaceInvitePath(space.spaceId))}>
-        가족 초대하기
-      </Button>
-      <h2 className="text-hm-heading-section">가족 관리</h2>
-      {space.role === "OWNER" && (
-        <>
-          <MenuRow
-            icon="family-brand"
-            title="구성원 관리"
-            description="함께하는 가족의 참여 관리"
-            onClick={() => void navigate(familyMembersPath(space.spaceId))}
-          />
-          <MenuRow
-            icon="person"
-            title="소유권 이전"
-            description="가족에게 소유자 역할을 넘겨요"
-            onClick={() => void navigate(familyTransferPath(space.spaceId))}
-          />
-        </>
-      )}
-      <MenuRow
-        tone="danger"
-        title="공간 나가기"
-        description={
-          space.role === "OWNER"
-            ? "소유권 이전 또는 공간 삭제 후 가능"
-            : "내 참여를 종료해요"
-        }
-        onClick={() => void navigate(familyLeavePath(space.spaceId))}
+      <PageTitleWithAction
+        title={`가족 ${members.data.length}명`}
+        action={{
+          label: "가족 초대",
+          onClick: () => void navigate(spaceInvitePath(space.spaceId)),
+        }}
+      />
+      <ul
+        aria-label="함께 돌보는 가족"
+        className="grid grid-cols-3 gap-x-hm-8 gap-y-hm-16 rounded-hm-16 bg-hm-bg-surface p-hm-16"
+      >
+        {toSpaceView(space, members.data).members.map((member) => (
+          <li
+            key={member.id}
+            className="flex min-w-0 justify-center"
+          >
+            <FamilyAvatar
+              name={member.name}
+              profileImageUrl={member.profileImageUrl}
+              self={member.self}
+              roleLabel={`${member.self ? "나 · " : ""}${member.role === "owner" ? "소유자" : "구성원"}`}
+            />
+          </li>
+        ))}
+      </ul>
+      <MenuGroup
+        title="가족 관리"
+        items={[
+          ...(space.role === "OWNER"
+            ? ([
+                {
+                  icon: "family-brand",
+                  title: "구성원 관리",
+                  onClick: () =>
+                    void navigate(familyMembersPath(space.spaceId)),
+                },
+                {
+                  icon: "person",
+                  title: "소유권 이전",
+                  onClick: () =>
+                    void navigate(familyTransferPath(space.spaceId)),
+                },
+              ] as const)
+            : []),
+          {
+            icon: "logout",
+            tone: "danger",
+            title: "공간 나가기",
+            description:
+              space.role === "OWNER"
+                ? "소유권 이전 또는 공간 삭제 후 가능"
+                : undefined,
+            onClick: () => void navigate(familyLeavePath(space.spaceId)),
+          },
+        ]}
       />
     </>
   );
