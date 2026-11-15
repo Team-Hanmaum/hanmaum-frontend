@@ -16,17 +16,19 @@ export function InvitationLinkCard({
     timeZone: "Asia/Seoul",
   }).format(expiresAt);
   return (
-    <div className="flex flex-col items-start gap-hm-16 rounded-hm-16 bg-hm-bg-surface p-hm-20">
-      <Badge
-        label={expired ? "기간 만료" : "초대 링크 준비 완료"}
-        tone={expired ? "neutral" : "brand"}
-      />
-      <p className="text-hm-body-small text-hm-text-secondary">
-        사용할 수 있는 기한
-      </p>
-      <p className="text-hm-body-emphasis wrap-anywhere">{date}까지</p>
-      <p className="text-hm-body-small text-hm-text-secondary">
-        발급 시점부터 24시간 동안 유효해요.
+    <div className="flex flex-col gap-hm-4 border-t border-hm-divider-default px-hm-16 py-hm-12">
+      <div className="flex items-center justify-between gap-hm-8">
+        <p className="text-hm-body-small text-hm-text-secondary">
+          {expired ? "만료 시각" : "링크 사용 기한"}
+        </p>
+        <Badge
+          label={expired ? "만료" : "사용 가능"}
+          tone={expired ? "neutral" : "brand"}
+        />
+      </div>
+      <p className="text-hm-body-emphasis wrap-anywhere">
+        {date}
+        {!expired && "까지"}
       </p>
     </div>
   );

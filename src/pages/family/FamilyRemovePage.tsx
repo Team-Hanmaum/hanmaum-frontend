@@ -1,7 +1,7 @@
 import { useParams } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { ErrorState, Notice } from "@/components/feedback";
-import { Button, TextAction } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog";
 import { useUnsavedChanges } from "@/lib/useUnsavedChanges";
 import { useSession } from "@/features/auth/model/useSession";
@@ -17,6 +17,7 @@ import { useCareItems } from "@/features/careitem/model/useCareQueries";
 import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
 import { FamilyPageLayout } from "@/routes/layouts/FamilyPageLayout";
 import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { familyMembersPath, paths, spacePath } from "@/routes/paths";
 
@@ -39,10 +40,7 @@ function RemoveConfirmation() {
   const { blocker, allowNavigation } = useUnsavedChanges(
     action.pending || action.uncertain,
   );
-  const back = () =>
-    void navigate(withReturn(familyMembersPath(data.spaceId)), {
-      motion: "back",
-    });
+  const back = useBackNavigation(withReturn(familyMembersPath(data.spaceId)));
   const member = data.members?.find((entry) => entry.membershipId === memberId);
   const allowed =
     data.space?.role === "OWNER" && member?.role === "MEMBER" && !member.isMe;
@@ -76,48 +74,46 @@ function RemoveConfirmation() {
       onBack={withdrawing ? returnToWithdrawal : back}
       actions={
         <>
+          <Button
+            variant="outline"
+            disabled={action.pending}
+            onClick={back}
+          >
+            {action.uncertain ? "결과 확인 나가기" : "취소"}
+          </Button>
           {action.uncertain ? (
             <Button
               loading={action.pending}
               onClick={() => action.retry(complete)}
             >
-              같은 요청으로 결과 확인
+              요청 결과 확인
             </Button>
-          ) : (
-            allowed && (
-              <Button
-                variant="destructive"
-                loading={action.pending}
-                disabled={!ready}
-                onClick={() => {
-                  if (ready)
-                    action.submit(
-                      {
-                        expectedSpaceVersion: data.space!.version,
-                        clientRequestId: crypto.randomUUID(),
-                      },
-                      complete,
-                    );
-                }}
-              >
-                {member?.displayName || "구성원"}님 내보내기
-              </Button>
-            )
-          )}
-          {action.error && !action.uncertain && (
+          ) : action.error ? (
             <Button
               disabled={action.pending || data.refreshing}
               onClick={reload}
             >
               현재 가족 다시 확인
             </Button>
-          )}
-          <TextAction
-            disabled={action.pending}
-            onClick={back}
-          >
-            취소
-          </TextAction>
+          ) : allowed ? (
+            <Button
+              variant="destructive"
+              loading={action.pending}
+              disabled={!ready}
+              onClick={() => {
+                if (ready)
+                  action.submit(
+                    {
+                      expectedSpaceVersion: data.space!.version,
+                      clientRequestId: crypto.randomUUID(),
+                    },
+                    complete,
+                  );
+              }}
+            >
+              내보내기
+            </Button>
+          ) : null}
         </>
       }
     >
@@ -157,19 +153,12 @@ function RemoveConfirmation() {
         />
       ) : (
         <>
-          <h1 className="text-hm-title-page">
-            {member.displayName || "구성원"}님을 이 공간에서
-            <br />
-            내보낼까요?
-          </h1>
-          <p className="text-hm-body-default text-hm-text-secondary">
-            {data.space.subjectLabel}의 돌봄에서 참여가 종료돼요.
-          </p>
+          <h1 className="text-hm-title-page">이 구성원을 내보낼까요?</h1>
           <FamilyMember
             name={member.displayName || "이름 미설정"}
             profileImageUrl={member.profileImageUrl}
             role="member"
-            detail="현재 구성원"
+            detail={`${data.space.subjectLabel}의 돌봄`}
           />
           {data.error && (
             <ReviewQueryState

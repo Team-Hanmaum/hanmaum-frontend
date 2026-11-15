@@ -103,13 +103,20 @@ export function FamilyDeletePage() {
         !forbidden &&
         !deletion.result && (
           <>
+            <Button
+              variant="outline"
+              disabled={deletion.pending}
+              onClick={back}
+            >
+              {deletion.uncertain ? "결과 확인 나가기" : "취소"}
+            </Button>
             {deletion.uncertain ? (
               <Button
                 variant="destructive"
                 loading={deletion.pending}
                 onClick={() => deletion.retry(complete)}
               >
-                같은 삭제 요청으로 결과 확인
+                삭제 결과 확인
               </Button>
             ) : deletion.error ? (
               <Button onClick={reload}>현재 삭제 영향 다시 확인</Button>
@@ -120,15 +127,9 @@ export function FamilyDeletePage() {
                 disabled={!ready}
                 onClick={remove}
               >
-                공간과 모든 기록 삭제
+                공간 삭제
               </Button>
             )}
-            <TextAction
-              disabled={deletion.pending}
-              onClick={back}
-            >
-              {deletion.uncertain ? "결과 확인 나가기" : "취소"}
-            </TextAction>
           </>
         )
       }
@@ -171,21 +172,19 @@ export function FamilyDeletePage() {
         )
       ) : (
         <>
-          <h1 className="text-hm-title-page">
-            {space.subjectLabel}의 돌봄 공간을
-            <br />
-            삭제할까요?
-          </h1>
-          <p className="text-hm-body-default text-hm-text-secondary">
-            이 공간을 함께 쓰는 모든 가족에게 적용돼요.
-          </p>
+          <div className="flex flex-col gap-hm-8">
+            <h1 className="text-hm-title-page">이 공간을 삭제할까요?</h1>
+            <p className="text-hm-body-small text-hm-text-secondary">
+              {space.subjectLabel}의 돌봄
+            </p>
+          </div>
           <Notice
             tone="error"
             title="삭제하면 복구할 수 없어요"
-            body="삭제한 공간과 기록은 되돌릴 수 없어요."
+            body="모든 가족의 접근이 종료되고, 기존 초대·공유 링크도 사용할 수 없어요."
           />
           <FamilyInfoCard title="함께 삭제되는 정보">
-            <ul className="flex flex-col gap-hm-8">
+            <ul className="grid grid-cols-2 gap-x-hm-12 gap-y-hm-4">
               <li>참여 이력 {impact.data.counts.members}건</li>
               <li>소식 원본 {impact.data.counts.records}건</li>
               <li>돌봄 항목 {impact.data.counts.items}건</li>
@@ -197,12 +196,6 @@ export function FamilyDeletePage() {
               종료된 참여와 삭제·무효 상태의 자료를 포함한 전체 건수예요. 연결된
               근거와 표시 내용도 함께 삭제돼요.
             </p>
-          </FamilyInfoCard>
-          <FamilyInfoCard title="가족의 접근">
-            모든 가족이 이 공간에 접근할 수 없게 돼요.
-          </FamilyInfoCard>
-          <FamilyInfoCard title="기존 링크">
-            이 공간의 초대·공유 링크도 사용할 수 없어요.
           </FamilyInfoCard>
           {space.version !== impact.data.spaceVersion && (
             <Notice
