@@ -78,6 +78,24 @@ export function HomeContent({
   onChange: (id: string) => void;
 }) {
   const empty = state === "empty" || state === "created";
+  const isOwner = space.role === "owner";
+  const reviewAction = !empty && (
+    <button
+      type="button"
+      className="hm-focus-ring flex min-h-14 w-full min-w-0 cursor-pointer items-center gap-hm-12 rounded-hm-12 border border-hm-action-primary/25 bg-hm-bg-brand-subtle px-hm-16 py-hm-8 text-left text-hm-text-brand hover:border-hm-action-primary/50"
+      onClick={onPending}
+    >
+      <span className="grid size-hm-32 shrink-0 place-items-center rounded-hm-8 bg-hm-bg-surface">
+        <Icon name="news-brand" />
+      </span>
+      <span className="min-w-0 flex-1 text-hm-body-default font-bold wrap-anywhere">
+        {data.pendingCount
+          ? `확인할 내용 ${data.pendingCount}건`
+          : "제안·요청 확인"}
+      </span>
+      <Icon name="chevron-right-brand" />
+    </button>
+  );
   const newsSection = (
     <section className="flex flex-col gap-hm-12">
       <SectionHeader
@@ -139,11 +157,13 @@ export function HomeContent({
           body="혼자 먼저 시작해도 좋아요."
         />
       )}
+      {isOwner && reviewAction}
       <HomeFamilySection
         members={space.members}
         onFamily={onFamily}
         onInvite={onInvite}
       />
+      {!isOwner && reviewAction}
       {empty ? (
         <>
           {space.empty && data.recentNews.length > 0 ? (
@@ -175,16 +195,6 @@ export function HomeContent({
         </>
       ) : (
         <>
-          <MenuRow
-            icon="news-brand"
-            title={
-              data.pendingCount
-                ? `확인할 내용 ${data.pendingCount}건`
-                : "제안·요청 확인"
-            }
-            tone="brand"
-            onClick={onPending}
-          />
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
               title="다가오는 일정"
