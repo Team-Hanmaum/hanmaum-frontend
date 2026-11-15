@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { DetailLayout } from "@/components/layout";
+import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
 import { Notice } from "@/components/feedback";
-import { Button, TextAction } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useSession } from "@/features/auth/model/useSession";
 import { useLogout } from "@/features/auth/model/useLogout";
 import { paths } from "@/routes/paths";
@@ -18,6 +19,33 @@ export function LogoutPage() {
     <DetailLayout
       title="로그아웃"
       onBack={pending || unknown ? () => {} : onBack}
+      footer={
+        <FixedBottomArea position="fixed">
+          <div className="grid grid-cols-2 gap-hm-12 bg-hm-bg-surface px-hm-20 pt-hm-16 pb-[calc(var(--hm-spacing-24)+env(safe-area-inset-bottom))]">
+            {!unknown && (
+              <Button
+                variant="outline"
+                disabled={pending}
+                onClick={onBack}
+              >
+                뒤로가기
+              </Button>
+            )}
+            <Button
+              className={unknown ? "col-span-2" : undefined}
+              loading={pending}
+              onClick={() => {
+                if (unknown) {
+                  setChecking(true);
+                  void session.check().finally(() => setChecking(false));
+                } else mutation.mutate();
+              }}
+            >
+              {unknown ? "로그아웃 상태 확인" : "로그아웃"}
+            </Button>
+          </div>
+        </FixedBottomArea>
+      }
     >
       <h1 className="text-hm-title-page">
         {unknown ? "로그아웃 상태를 확인하지 못했어요" : "로그아웃할까요?"}
@@ -41,25 +69,6 @@ export function LogoutPage() {
           title="로그아웃하지 못했어요"
           body={mutation.error.message}
         />
-      )}
-      <Button
-        loading={pending}
-        onClick={() => {
-          if (unknown) {
-            setChecking(true);
-            void session.check().finally(() => setChecking(false));
-          } else mutation.mutate();
-        }}
-      >
-        {unknown ? "로그아웃 상태 확인" : "로그아웃"}
-      </Button>
-      {!unknown && (
-        <TextAction
-          disabled={pending}
-          onClick={onBack}
-        >
-          계속 이용하기
-        </TextAction>
       )}
     </DetailLayout>
   );
