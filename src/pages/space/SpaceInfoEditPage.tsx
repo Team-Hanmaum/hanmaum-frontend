@@ -134,55 +134,35 @@ export function SpaceInfoEditPage() {
       ) : (
         <>
           <h1 className="text-hm-title-page">
-            {confirming ? (
-              owner ? (
-                "이 이름으로 변경할까요?"
-              ) : (
-                "소유자에게 수정을 요청할까요?"
-              )
-            ) : (
-              <>
-                부모님을
-                <br />
-                어떻게 표시할까요?
-              </>
-            )}
+            {confirming
+              ? owner
+                ? "이 이름으로 변경할까요?"
+                : "소유자에게 수정을 요청할까요?"
+              : owner
+                ? "부모님 호칭 수정"
+                : "부모님 호칭 수정 요청"}
           </h1>
-          <p className="text-hm-body-default text-hm-text-secondary">
-            현재 공간의 이름·호칭을 수정해요.
-          </p>
           {confirming ? (
-            <SpaceInfoComparison
-              before={baseline.subjectLabel}
-              after={editor.label}
-            />
-          ) : (
             <>
-              <Field
-                label="부모님 이름 또는 호칭"
-                value={editor.value}
-                onChange={(event) => editor.changeValue(event.target.value)}
-                helper={`현재: ${editor.space.subjectLabel}`}
-                error={editor.validation}
-                disabled={action.pending || action.uncertain}
+              <SpaceInfoComparison
+                before={baseline.subjectLabel}
+                after={editor.label}
               />
-              <FamilyInfoCard title="이렇게 표시돼요">
-                {editor.label || "이름 또는 호칭"}의 돌봄
-              </FamilyInfoCard>
+              {!owner && (
+                <p className="text-hm-body-small text-hm-text-secondary">
+                  소유자가 승인하면 새 이름이 반영돼요.
+                </p>
+              )}
             </>
+          ) : (
+            <Field
+              label="부모님 이름 또는 호칭"
+              value={editor.value}
+              onChange={(event) => editor.changeValue(event.target.value)}
+              error={editor.validation}
+              disabled={action.pending || action.uncertain}
+            />
           )}
-          <Notice
-            title={
-              owner
-                ? "가족에게 보이는 이름이 바뀌어요"
-                : "현재 공간 정보는 그대로예요"
-            }
-            body={
-              owner
-                ? "소식과 돌봄 기록은 그대로예요."
-                : "소유자가 요청 내용을 확인한 뒤 최종 반영해요."
-            }
-          />
           {editor.changed && (
             <Notice
               title="현재 정보와 다시 비교해 주세요"
