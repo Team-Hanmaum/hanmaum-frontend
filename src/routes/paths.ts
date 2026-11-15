@@ -75,7 +75,7 @@ export function newsDeletionPath(careSpaceId: string, deletionId: string) {
 export function proposalListPath(
   careSpaceId: string,
   status = "review",
-  fromTab?: "care",
+  fromTab?: "care" | "all",
 ) {
   const params = new URLSearchParams({ status });
   if (fromTab) params.set("fromTab", fromTab);

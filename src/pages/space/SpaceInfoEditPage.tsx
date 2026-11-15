@@ -14,6 +14,7 @@ import {
   spaceInfoRequestsPath,
 } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useSpaceContext } from "@/routes/useSpaceContext";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
@@ -24,6 +25,9 @@ export function SpaceInfoEditPage() {
   const owner = baseline.role === "OWNER";
   const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
+  const toPrevious = useBackNavigation(
+    withReturn(spaceInfoPath(space.spaceId)),
+  );
   const { blocker, allowNavigation } = useUnsavedChanges(
     editor.dirty || action.pending || action.uncertain,
   );
@@ -31,10 +35,7 @@ export function SpaceInfoEditPage() {
   const back = () => {
     if (action.pending || action.uncertain) return;
     if (confirming && !action.result) editor.edit();
-    else
-      void navigate(withReturn(spaceInfoPath(space.spaceId)), {
-        motion: "back",
-      });
+    else toPrevious();
   };
   const result = action.result;
   return (
@@ -53,19 +54,31 @@ export function SpaceInfoEditPage() {
         result ? (
           <Button
             onClick={() =>
-              allowNavigation(() =>
-                go(
-                  result.requestId
-                    ? spaceInfoRequestPath(space.spaceId, result.requestId)
-                    : spaceInfoPath(space.spaceId),
-                ),
-              )
+              allowNavigation(() => {
+                if (result.requestId)
+                  void navigate(
+                    withReturn(
+                      spaceInfoRequestPath(space.spaceId, result.requestId),
+                    ),
+                    {
+                      replace: true,
+                    },
+                  );
+                else toPrevious();
+              })
             }
           >
             {result.requestId ? "요청 상태 확인" : "현재 공간 정보 보기"}
           </Button>
         ) : (
           <>
+            <Button
+              variant="outline"
+              disabled={action.pending || action.uncertain}
+              onClick={back}
+            >
+              {confirming ? "다시 수정하기" : "수정 취소"}
+            </Button>
             <Button
               loading={action.pending}
               disabled={
@@ -87,12 +100,6 @@ export function SpaceInfoEditPage() {
                       ? "변경 내용 반영"
                       : "수정 요청 보내기"}
             </Button>
-            <TextAction
-              disabled={action.pending || action.uncertain}
-              onClick={back}
-            >
-              {confirming ? "다시 수정하기" : "수정 취소"}
-            </TextAction>
           </>
         )
       }

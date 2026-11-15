@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router";
-import { Badge, Button, MenuRow, TextAction } from "@/components/ui";
+import { Badge, Button, MenuRow } from "@/components/ui";
 import { ErrorState, LoadingState, Notice } from "@/components/feedback";
 import { useSession } from "@/features/auth/model/useSession";
 import { useCareSpaces } from "@/features/carespace/model/useCareSpaces";
@@ -9,6 +9,7 @@ import { WithdrawalSpaceList } from "@/features/user/ui/WithdrawalSpaceList";
 import { useWithdrawal } from "@/features/user/model/useWithdrawal";
 import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
 import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useBackNavigation } from "@/routes/useBackNavigation";
 import {
   familyDeletePath,
   familyTransferPath,
@@ -21,6 +22,7 @@ export function WithdrawalPage() {
   const spaces = useCareSpaces({ enabled: session.status === "authenticated" });
   const withdrawal = useWithdrawal();
   const navigate = useAppNavigate();
+  const back = useBackNavigation(paths.account);
   const [params] = useSearchParams();
   const [checked, setChecked] = useState(false);
   const owned = spaces.data?.filter((space) => space.role === "OWNER") ?? [];
@@ -29,8 +31,7 @@ export function WithdrawalPage() {
   const pending = withdrawal.isPending || session.status === "withdrawing";
   const ready = !!spaces.data && !spaces.isError;
   const cancel = () => {
-    if (!pending && !unknown)
-      void navigate(paths.account, { replace: true, motion: "back" });
+    if (!pending && !unknown) back();
   };
   const leave = async () => {
     await session.leaveWithdrawal();
@@ -50,20 +51,28 @@ export function WithdrawalPage() {
         unknown ? (
           <>
             <Button
+              variant="outline"
+              disabled={checking}
+              onClick={() => void leave()}
+            >
+              처음으로
+            </Button>
+            <Button
               loading={checking}
               onClick={() => void session.checkWithdrawal()}
             >
               로그인 상태 확인
             </Button>
-            <TextAction
-              disabled={checking}
-              onClick={() => void leave()}
-            >
-              처음으로
-            </TextAction>
           </>
         ) : ready ? (
           <>
+            <Button
+              variant="outline"
+              disabled={pending}
+              onClick={cancel}
+            >
+              탈퇴 취소
+            </Button>
             <Button
               variant={owned.length ? "primary" : "destructive"}
               loading={pending || spaces.isFetching}
@@ -74,12 +83,6 @@ export function WithdrawalPage() {
             >
               {owned.length ? "정리 상태 확인하기" : "계정 정보 삭제하고 탈퇴"}
             </Button>
-            <TextAction
-              disabled={pending}
-              onClick={cancel}
-            >
-              탈퇴 취소
-            </TextAction>
           </>
         ) : undefined
       }

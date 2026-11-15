@@ -584,7 +584,7 @@ const router = createBrowserRouter([
 ]);
 
 // 앱 내부 뒤로가기 판단을 위한 방문 이력 연결
-recordNavigation(router.state.location.key, "POP");
+recordNavigation(router.state.location, "POP");
 let previousLocation = router.state.location;
 router.subscribe(({ location, historyAction }) => {
   // 로딩 중 이전 URL이 재통지되어도 종료한 QA를 다시 켜지 않는다.
@@ -600,7 +600,7 @@ router.subscribe(({ location, historyAction }) => {
     previousLocation = location;
     qaMode.readSearch(location.search);
   }
-  recordNavigation(location.key, historyAction);
+  recordNavigation(location, historyAction);
 });
 
 export function Router() {

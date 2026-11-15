@@ -55,7 +55,10 @@ export function AllPage() {
           {
             icon: "grid-brand",
             title: "참여 공간 선택",
-            onClick: go(paths.spaces),
+            onClick: () =>
+              void navigate(paths.spaces, {
+                state: { fromAllSpaceId: space.id },
+              }),
           },
         ]}
       />
@@ -75,7 +78,7 @@ export function AllPage() {
           {
             icon: "check",
             title: "제안·요청",
-            onClick: go(proposalListPath(space.id)),
+            onClick: go(proposalListPath(space.id, "review", "all")),
           },
         ]}
       />

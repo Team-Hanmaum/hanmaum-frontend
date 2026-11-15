@@ -1,4 +1,5 @@
 import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useBackNavigation } from "@/routes/useBackNavigation";
 
 import { Button, MenuRow } from "@/components/ui";
 import {
@@ -15,7 +16,7 @@ export function WithdrawalNewsPage() {
   const query = useCareSpaces();
   const spaces = query.data ?? [];
   const navigate = useAppNavigate();
-  const back = () => void navigate(paths.withdrawal, { motion: "back" });
+  const back = useBackNavigation(paths.withdrawal);
   return (
     <AccountPageLayout
       title="탈퇴 전 소식 확인"

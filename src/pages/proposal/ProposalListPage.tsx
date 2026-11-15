@@ -41,7 +41,8 @@ export function ProposalListPage() {
   const { space } = useSpaceContext();
   const [params, setParams] = useSearchParams();
   const status = params.get("status");
-  const sourceTab = params.get("fromTab") === "care" ? "care" : "news";
+  const fromTab = params.get("fromTab");
+  const sourceTab = fromTab === "care" || fromTab === "all" ? fromTab : "news";
   const result = resultTabs.find((tab) => tab.value === status);
   const activeTab = result
     ? "results"
@@ -57,7 +58,7 @@ export function ProposalListPage() {
     if (value === status) return;
     const next = new URLSearchParams(params);
     next.set("status", value);
-    void setParams(next);
+    void setParams(next, { replace: true });
   }
 
   return (
@@ -276,7 +277,7 @@ function RequestList({ spaceId }: { spaceId: string }) {
           if (value === status) return;
           const next = new URLSearchParams(params);
           next.set("requestStatus", value);
-          void setParams(next);
+          void setParams(next, { replace: true });
         }}
         items={filters.map((value) => ({
           value,

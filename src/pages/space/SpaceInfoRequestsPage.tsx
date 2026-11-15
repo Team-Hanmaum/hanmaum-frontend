@@ -122,11 +122,14 @@ export function SpaceInfoRequestsPage() {
         tabClassName="whitespace-nowrap px-hm-8"
         value={tab.value}
         onValueChange={(value) =>
-          void setParams((previous) => {
-            const next = new URLSearchParams(previous);
-            next.set("status", value);
-            return next;
-          })
+          void setParams(
+            (previous) => {
+              const next = new URLSearchParams(previous);
+              next.set("status", value);
+              return next;
+            },
+            { replace: true },
+          )
         }
         items={tabs.map((item) => ({
           ...item,

@@ -1,7 +1,8 @@
-import { Button, MenuRow } from "@/components/ui";
+import { Badge, Button } from "@/components/ui";
+import { MenuGroup } from "@/components/layout/MenuGroup";
 import { Notice } from "@/components/feedback";
 import { useSpaceDetail } from "@/features/carespace/model/useSpaceDetail";
-import { FamilyInfoCard } from "@/features/carespace/ui/FamilyInfoCard";
+import { careSpaceName } from "@/features/carespace/model/careSpaceViewTypes";
 import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
 import { AccountPageLayout } from "@/routes/layouts/AccountPageLayout";
 import {
@@ -35,49 +36,46 @@ export function SpaceInfoPage() {
         </Button>
       }
     >
-      <h1 className="text-hm-title-page">
-        지금 함께하는
-        <br />
-        돌봄 공간이에요
-      </h1>
+      <div className="flex flex-col gap-hm-8">
+        <h1 className="text-hm-title-page wrap-anywhere">
+          {careSpaceName(space)}
+        </h1>
+        <div className="flex items-center gap-hm-8">
+          <Badge
+            label={space.role === "OWNER" ? "소유자" : "구성원"}
+            tone="brand"
+          />
+          <p className="text-hm-body-small text-hm-text-secondary">
+            함께하는 가족 {space.memberCount}명
+          </p>
+        </div>
+      </div>
       {query.error && (
         <ReviewQueryState
           error={query.error}
           retry={() => void query.refetch()}
         />
       )}
-      <FamilyInfoCard title="부모님 이름 또는 호칭">
-        {space.subjectLabel}
-      </FamilyInfoCard>
-      <FamilyInfoCard title="공간 이름">
-        {space.subjectLabel}의 돌봄
-      </FamilyInfoCard>
-      <FamilyInfoCard title="내 역할">
-        {space.role === "OWNER" ? "소유자" : "구성원"} · 함께하는 가족{" "}
-        {space.memberCount}명
-      </FamilyInfoCard>
-      <MenuRow
-        icon="family-brand"
-        title="함께하는 가족"
-        onClick={go(spacePath(space.spaceId, "family"))}
+      <MenuGroup
+        items={[
+          {
+            icon: "family-brand",
+            title: "함께하는 가족",
+            onClick: go(spacePath(space.spaceId, "family")),
+          },
+          {
+            icon: "edit",
+            title: "공간 정보 수정 요청",
+            onClick: go(spaceInfoRequestsPath(space.spaceId)),
+          },
+        ]}
       />
-      <MenuRow
-        icon="edit"
-        title="공간 정보 수정 요청"
-        onClick={go(spaceInfoRequestsPath(space.spaceId))}
-      />
-      <Notice
-        title={
-          space.role === "OWNER"
-            ? "가족에게 함께 보이는 이름이에요"
-            : "소유자가 확인한 뒤 바뀌어요"
-        }
-        body={
-          space.role === "OWNER"
-            ? "수정해도 소식과 돌봄 기록은 그대로예요."
-            : "수정 요청만으로 현재 공간 정보가 바뀌지는 않아요."
-        }
-      />
+      {space.role !== "OWNER" && (
+        <Notice
+          title="소유자가 확인한 뒤 바뀌어요"
+          body="수정 요청을 보내면 소유자가 검토한 뒤 공간 이름에 반영해요."
+        />
+      )}
     </AccountPageLayout>
   );
 }

@@ -1,15 +1,20 @@
+import { useSearchParams } from "react-router";
 import { DetailLayout } from "@/components/layout";
 import { Avatar, MenuRow } from "@/components/ui";
 import { useSession } from "@/features/auth/model/useSession";
 import { AccountInfoCard } from "@/features/user/ui/AccountInfoCard";
-import { paths } from "@/routes/paths";
+import { paths, spacePath } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 
 export function AccountPage() {
   const session = useSession();
   const navigate = useAppNavigate();
-  const onBack = useBackNavigation(paths.spaces);
+  const [params] = useSearchParams();
+  const spaceId = params.get("space");
+  const onBack = useBackNavigation(
+    spaceId ? spacePath(spaceId, "all") : paths.spaces,
+  );
   if (session.status !== "authenticated") return null;
   const displayName = session.user.displayName ?? "이름 미등록";
   return (

@@ -17,6 +17,7 @@ import {
 import { useCareSpaces } from "@/features/carespace/model/useCareSpaces";
 import type { ApiError } from "@/lib/api";
 import { paths, spacePath } from "@/routes/paths";
+import { useBackNavigation } from "@/routes/useBackNavigation";
 
 function toListItem(space: CareSpaceSummary): CareSpaceListItem {
   return {
@@ -62,11 +63,23 @@ export function SpaceSelectionPage() {
   const remote = useCareSpaces();
   const spaces = remote.data?.map(toListItem) ?? [];
   const location = useLocation();
-  const familyAction = (
-    location.state as {
-      familyAction?: { kind: string; spaceId: string };
-    } | null
-  )?.familyAction;
+  const entry = location.state as {
+    familyAction?: { kind: string; spaceId: string };
+    fromAllSpaceId?: string;
+  } | null;
+  const familyAction = entry?.familyAction;
+  const fromAllSpaceId = entry?.fromAllSpaceId;
+  const onBack = useBackNavigation(
+    fromAllSpaceId ? spacePath(fromAllSpaceId, "all") : paths.spaces,
+  );
+  const accountAction = (
+    <IconButton
+      icon="person"
+      label="내 계정"
+      title="내 계정"
+      onClick={() => void navigate(paths.account)}
+    />
+  );
   const endedParticipation =
     remote.isSuccess &&
     !remote.isFetching &&
@@ -82,21 +95,23 @@ export function SpaceSelectionPage() {
     <>
       <PageLayout
         header={
-          <Header
-            variant="main"
-            brandAction={{
-              label: "한마음 시작 화면으로",
-              onClick: () => void navigate(paths.landing),
-            }}
-            actions={
-              <IconButton
-                icon="person"
-                label="내 계정"
-                title="내 계정"
-                onClick={() => void navigate(paths.account)}
-              />
-            }
-          />
+          fromAllSpaceId ? (
+            <Header
+              variant="back"
+              title="참여 공간 선택"
+              onBack={onBack}
+              actions={accountAction}
+            />
+          ) : (
+            <Header
+              variant="main"
+              brandAction={{
+                label: "한마음 시작 화면으로",
+                onClick: () => void navigate(paths.landing),
+              }}
+              actions={accountAction}
+            />
+          )
         }
         footer={
           <FixedBottomArea position="fixed">
