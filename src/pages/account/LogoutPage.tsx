@@ -47,21 +47,24 @@ export function LogoutPage() {
         </FixedBottomArea>
       }
     >
-      <h1 className="text-hm-title-page">
-        {unknown ? "로그아웃 상태를 확인하지 못했어요" : "로그아웃할까요?"}
-      </h1>
-      <Notice
-        title={
-          unknown
-            ? "이전 돌봄 화면은 가려두었어요"
-            : "계정과 돌봄 기록은 유지돼요"
-        }
-        body={
-          unknown
-            ? "응답을 받지 못해 결과를 확인해야 해요. 연결 상태를 확인한 뒤 아래 버튼을 눌러 주세요."
-            : "다시 로그인하면 참여 중인 공간을 확인할 수 있어요."
-        }
-      />
+      <div className="flex flex-col gap-hm-8">
+        <h1 className="text-hm-title-page">
+          {unknown ? "로그아웃 상태를 확인하지 못했어요" : "로그아웃할까요?"}
+        </h1>
+        {!unknown && (
+          <p className="text-hm-body-default break-keep text-hm-text-secondary">
+            계정과 돌봄 기록은 그대로 남아요.
+            <br />
+            다시 로그인하면 참여 공간을 볼 수 있어요.
+          </p>
+        )}
+      </div>
+      {unknown && (
+        <Notice
+          title="이전 돌봄 화면은 가려두었어요"
+          body="응답을 받지 못해 결과를 확인해야 해요. 연결 상태를 확인한 뒤 아래 버튼을 눌러 주세요."
+        />
+      )}
       {mutation.error && !unknown && (
         <Notice
           tone="error"
