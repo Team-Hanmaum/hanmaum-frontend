@@ -91,7 +91,6 @@ export function HomePage() {
               careHistoryPath(space.spaceId, change.itemId, change.version),
             );
         }}
-        onRetry={retry}
       />
     </>
   );

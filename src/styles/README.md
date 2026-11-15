@@ -1,15 +1,15 @@
 # 공통 스타일 사용 규격
 
-기준: 2026-10-02에 직접 조회한 [Figma 상세 UI](https://www.figma.com/design/TNlkTZrM8NIo0jSp6tRTwH?node-id=172-2)의 로컬 변수 94개와 텍스트 스타일 12개.
+디자인 토큰과 텍스트 스타일은 [Figma 상세 UI](https://www.figma.com/design/TNlkTZrM8NIo0jSp6tRTwH?node-id=172-2)를 기준으로 관리한다.
 
 ## 파일 책임
 
-- `tokens.css`: Figma 변수의 CSS 이름·값·별칭 원본. Primitives 18개, Color 42개, Layout 34개.
+- `tokens.css`: Figma 변수에 대응하는 CSS 이름·값·별칭.
 - `theme.css`: CSS 토큰을 Tailwind v4 유틸리티에 연결하는 어댑터.
 - `typography.css`: Noto Sans KR 폰트 스택과 이름 기반 텍스트 스타일.
 - `../index.css`: 스타일 및 폰트 로딩, 기본 본문 스타일 적용.
 
-Figma 설명 카드 `176:7`의 “84개” 문구는 과거 수치이며 현재 변수 테이블은 소셜 토큰을 포함한 94개다. 값 변경 시 실제 변수 테이블과 별칭 관계를 다시 확인한다.
+토큰 값을 변경할 때는 Figma 변수 테이블과 별칭 관계를 확인한다.
 
 ## 토큰 사용
 
@@ -80,10 +80,9 @@ Figma 설명 카드 `176:7`의 “84개” 문구는 과거 수치이며 현재 
 - `font-display: swap`: 로딩 중 시스템 폰트로 본문 표시
 - `unicode-range`: 브라우저에서 필요한 문자 범위만 요청
 - 패키지 라이선스: OFL-1.1. 원문을 `public/licenses/noto-sans-kr-OFL.txt`에 보존하며 빌드 시 폰트와 함께 배포한다.
-- 기존 React·Vite·Tailwind 버전 및 기본 유틸리티 유지
 
 ## 적용 범위
 
 현재 Figma에 있는 Light 모드만 제공한다. 화면을 390px 고정 폭으로 제한하지 않는다. 컨트롤 토큰 52px과 소셜 버튼의 실제 높이 54px은 구분한다.
 
-실제 로고·아이콘·공통 컴포넌트와 최신 로그인 대표 화면에서 토큰을 사용한다. 개발 중 `/?preview=components`에서 상태별 적용을 확인할 수 있다. [공통 컴포넌트 규격](../components/README.md) 참조. 토큰 구현 자체에는 BE 연동 의존성이 없다.
+로컬의 `/_dev/components`에서 공통 UI에 토큰이 적용된 상태를 확인한다. 자세한 사용법은 [공통 컴포넌트 규격](../components/README.md)을 참고한다.

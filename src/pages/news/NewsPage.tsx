@@ -70,13 +70,11 @@ export function NewsPage() {
       <NewsList
         records={records}
         state={state}
-        visibleCount={records.length}
         paging={{
           hasNext: list.hasNextPage,
           loading: list.isFetchingNextPage,
         }}
         onMore={() => void list.fetchNextPage()}
-        pendingCount={0}
         onCreate={() =>
           void navigate(withReturn(newsCreatePath(space.spaceId)))
         }

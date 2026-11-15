@@ -54,13 +54,14 @@
 - 업무 화면은 실제 API 응답을 사용한다. 빈 목록·로딩·오류는 실제 상태대로 표시하며 예시 데이터, 타이머, 메모리 저장소로 성공이나 결과를 대신하지 않는다. 신규 미연동 기능이 필요하면 준비 상태를 명시하고 Mock 업무 경로를 되살리지 않는다.
 - `.env.production`은 실제 API(`https://api.hanmaum.site`)와 QA false를 기본으로 한다. Mock 활성화 환경 변수는 사용하지 않는다. 표현 검증용 예시 데이터는 로컬 전용 `/_dev/components` 안에 두고 업무 화면이나 실제 Query 캐시에 연결하지 않는다. 랜딩의 서비스 사용 예시는 소개 콘텐츠로 유지한다.
 - 로그인 상태는 `useSession`과 `SessionBoundary`에서 관리한다. 401 UNAUTHENTICATED는 세션 정리, 403은 권한/CSRF 실패로 구분하며 변경 요청을 자동 재전송하지 않는다. OAuth 복귀는 `/auth/callback`에서 `/me`를 확인하고 저장된 내부 경로 또는 기존 공간 조회 훅으로 이동한다.
-- QA 도구는 로컬·배포 모두 기본 숨김이며 `qa=1`로 켜고 같은 탭에서 유지한다. `VITE_ENABLE_QA_TOOLS`가 true인 환경에서만 허용하고 운영 빌드에서는 false로 비활성화한다. QA 종료 동작은 유지하며 실제 응답·권한·업무 상태를 가짜 값으로 바꾸는 선택기를 추가하지 않는다.
+- QA 도구는 허용된 환경에서 `?qa=1`로 켜고 같은 탭에서 유지한다. 허용 조건과 종료 방법은 [로컬 실행](README.md#로컬-실행)을 따른다. 운영 빌드는 `VITE_ENABLE_QA_TOOLS=false`로 설정한다. 실제 응답·권한·업무 상태를 바꾸는 QA 선택기를 추가하지 않는다.
 - 구성원의 요청과 소유자의 최종 반영을 구분한다.
 - 인증은 BE의 세션 쿠키·CSRF 계약을 따르며 임의의 JWT 방식을 도입하지 않는다.
 
 ## 이슈와 브랜치
 
 - 코드 변경 작업은 관련 이슈를 확인하고 이슈 단위 브랜치에서 진행한다.
+- 이슈 생성 시 `.github/ISSUE_TEMPLATE/`의 이슈 템플릿을 사용한다.
 - 관련 이슈가 있으면 재사용하며 같은 작업의 이슈를 중복 생성하지 않는다.
 - 단순 질문이나 읽기 전용 조사에는 이슈와 브랜치 생성을 강제하지 않는다.
 - 이슈와 PR의 Assignee는 대상 저장소의 GitHub 호스트에 GitHub CLI(gh)로 로그인된 활성 계정으로 설정한다.
@@ -87,9 +88,8 @@
 - 의미 있는 작업 단위가 완료되고 해당 변경을 검증한 시점에 커밋한다.
 - 전체 이슈가 끝날 때까지 모든 변경을 하나의 커밋으로 미루지 않는다.
 - 관련 변경만 스테이징하고 기존 lint-staged와 포맷팅 설정을 따른다.
-- 제목은 type: 작업 내용 (#이슈번호) 형식을 사용한다.
-- 예: feat: 소셜 로그인 버튼 구현 (#123)
-- 본문에는 변경 이유와 주요 구현 내용, 검증 결과를 설명한다.
+- 커밋 메시지는 `type: 핵심 변경 내용 (#이슈번호)` 형식으로 한 줄만 작성한다.
+- 예시 `feat: 소셜 로그인 버튼 구현 (#123)`
 
 ## Pull Request
 
@@ -119,10 +119,7 @@
 
 ## 참고 문서
 
-- 문서 위치와 읽는 순서는 ../docs/handoff/README.md에서 확인한다.
-- 구조와 공통 규격 작업은 COMMON.md, FE.md, TOKENS.md를 참고한다.
-- UI 작업은 FIGMA.md와 해당 Figma 상세 화면을 확인한다.
-- 기능과 정책 작업은 FEATURES.md, DECISIONS.md, sources/notion-policy.md의 관련 부분을 확인한다.
-- 위 문서명은 ../docs/handoff/ 기준이며 작업에 필요한 부분만 읽는다.
-- 현재 레포의 구현과 공통 규격은 README.md, src/components/README.md, src/routes/README.md, src/styles/README.md, src/assets/README.md도 함께 참고한다. 이 경로들은 현재 레포 루트 기준이다.
-- 공통 handoff에는 개발 초기 상태가 포함될 수 있으므로, 현재 구현 상태는 실제 코드와 현재 레포 문서로 재확인한다.
+- 기능과 정책은 `hanmaum-docs`의 [기능 명세서](https://github.com/Team-Hanmaum/hanmaum-docs/blob/main/product/feature-spec.md)와 [제품 정책서](https://github.com/Team-Hanmaum/hanmaum-docs/blob/main/product/product-policy.md)를 확인한다.
+- FE 구조와 실행 방법은 [README](README.md), 화면 이동은 [라우팅 규칙](src/routes/README.md)을 참고한다.
+- UI 작업은 해당 Figma 상세 화면과 [공통 컴포넌트 규격](src/components/README.md), [스타일 규격](src/styles/README.md)을 확인한다.
+- API 연동은 [공통 API 안내](https://github.com/Team-Hanmaum/hanmaum-docs/blob/main/development/api.md)와 [FE API·세션 규칙](src/lib/api/README.md)을 참고한다. 현재 동작은 실제 코드에서 확인한다.

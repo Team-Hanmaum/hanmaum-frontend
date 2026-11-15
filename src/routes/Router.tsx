@@ -198,7 +198,7 @@ const tabRoutes: RouteObject[] = [
   },
 ];
 
-// 작성·상세: 실제 소식은 연결된 공간, 예시 소식은 RecordRouteLayout의 예시 공간을 사용
+// 소식 작성·상세: RecordRouteLayout에서 공간·소식 ID별 상태 경계를 유지
 const recordRoutes: RouteObject[] = [
   {
     path: "news/new",
