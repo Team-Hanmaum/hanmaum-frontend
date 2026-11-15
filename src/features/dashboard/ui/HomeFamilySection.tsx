@@ -37,7 +37,7 @@ export function HomeFamilySection({
           <ul
             aria-label={hasMore ? "가족 목록, 가로로 스크롤" : "가족 목록"}
             tabIndex={hasMore ? 0 : undefined}
-            className={`grid grid-flow-col gap-hm-12 ${hasMore ? "snap-x snap-proximity [scrollbar-width:thin] auto-cols-[calc((100%_-_3_*_var(--hm-spacing-12))_/_3.5)] overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hm-border-focus" : "auto-cols-fr"}`}
+            className={`grid grid-flow-col gap-hm-12 ${hasMore ? "snap-x snap-proximity [scrollbar-width:none] auto-cols-[calc((100%_-_3_*_var(--hm-spacing-12))_/_3.5)] overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hm-border-focus [&::-webkit-scrollbar]:hidden" : "auto-cols-fr"}`}
           >
             {members.map((member) => (
               <li
