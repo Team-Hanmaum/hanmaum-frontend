@@ -1,6 +1,7 @@
 import { useAppNavigate } from "@/routes/useAppNavigate";
 import { useLocation } from "react-router";
 import { Header, PageLayout } from "@/components/layout";
+import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
 import {
   EmptyState,
   ErrorState,
@@ -97,6 +98,25 @@ export function SpaceSelectionPage() {
             }
           />
         }
+        footer={
+          <FixedBottomArea position="fixed">
+            <div className="flex flex-col items-center gap-hm-12 border-t border-hm-divider-default bg-hm-bg-surface px-hm-20 pt-hm-16 pb-[calc(var(--hm-spacing-24)+env(safe-area-inset-bottom))]">
+              <Button
+                variant="outline"
+                className="max-w-full px-hm-24"
+                onClick={() => void navigate(paths.onboardingGuide)}
+              >
+                <span className="inline-flex max-w-full items-center justify-center gap-hm-8">
+                  <Icon name="plus" />
+                  <span className="min-w-0">돌봄 공간 만들기</span>
+                </span>
+              </Button>
+              <p className="text-center text-hm-body-small break-keep text-hm-text-secondary">
+                초대받은 링크가 있다면 그 링크로 가족의 공간에 참여해 주세요.
+              </p>
+            </div>
+          </FixedBottomArea>
+        }
       >
         {endedParticipation && (
           <Notice
@@ -138,19 +158,6 @@ export function SpaceSelectionPage() {
             }}
           />
         )}
-        <div className="flex flex-col gap-hm-12">
-          <Button
-            variant="outline"
-            icon={<Icon name="plus" />}
-            className="w-full"
-            onClick={() => void navigate(paths.onboardingGuide)}
-          >
-            돌봄 공간 만들기
-          </Button>
-          <p className="text-hm-body-small text-hm-text-secondary">
-            초대받은 링크가 있다면 그 링크로 가족의 공간에 참여해 주세요.
-          </p>
-        </div>
       </PageLayout>
     </>
   );
