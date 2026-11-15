@@ -83,11 +83,8 @@ export function CareSpaceMenu({
           tabIndex={-1}
           role="region"
           aria-label="돌봄 공간 전환"
-          className="absolute top-full right-hm-20 mt-hm-8 flex max-h-[60svh] w-70 max-w-[calc(100%-40px)] flex-col gap-hm-4 overflow-y-auto rounded-hm-12 border border-hm-border-default bg-hm-bg-surface p-hm-8 outline-none"
+          className="absolute top-full right-hm-20 mt-hm-4 flex max-h-[60svh] w-60 max-w-[calc(100%-40px)] flex-col gap-hm-2 overflow-y-auto rounded-hm-12 border border-hm-border-default bg-hm-bg-surface p-hm-4 shadow-sm outline-none"
         >
-          <p className="px-hm-16 text-hm-body-small text-hm-text-secondary">
-            돌봄 공간
-          </p>
           {switchingId ? (
             <div className="p-hm-16">
               <LoadingState
@@ -119,38 +116,29 @@ export function CareSpaceMenu({
                 key={item.id}
                 type="button"
                 aria-current={item.id === space.id ? "true" : undefined}
-                className={`hm-focus-ring flex min-h-18 items-center gap-hm-12 rounded-hm-8 p-hm-16 text-left text-hm-body-emphasis wrap-anywhere ${item.id === space.id ? "bg-hm-bg-brand-subtle text-hm-text-brand" : "text-hm-text-primary"}`}
+                className={`hm-focus-ring flex min-h-hm-touch-min shrink-0 items-center gap-hm-8 rounded-hm-8 px-hm-12 py-hm-8 text-left text-hm-body-small ${item.id === space.id ? "bg-hm-bg-brand-subtle text-hm-text-brand" : "text-hm-text-primary hover:bg-hm-bg-subtle"}`}
                 onClick={() => {
                   if (item.id === space.id) setOpen(false);
                   else onSelect(item.id);
                 }}
               >
-                {item.id === space.id ? (
-                  <Icon name="check" />
-                ) : (
-                  <span
-                    className="size-6 shrink-0"
-                    aria-hidden="true"
-                  />
-                )}
-                {careSpaceName(item)}
+                <span className="min-w-0 flex-1 wrap-anywhere">
+                  {careSpaceName(item)}
+                </span>
+                {item.id === space.id && <Icon name="check" />}
               </button>
             ))
           )}
-          <div className="border-t border-hm-border-default" />
+          <div className="shrink-0 border-t border-hm-divider-default" />
           <button
             type="button"
-            className="hm-focus-ring flex min-h-18 items-center gap-hm-12 rounded-hm-8 p-hm-16 text-left text-hm-body-emphasis text-hm-text-brand disabled:opacity-40"
+            className="hm-focus-ring flex min-h-hm-touch-min shrink-0 items-center gap-hm-8 rounded-hm-8 px-hm-12 py-hm-8 text-left text-hm-body-small text-hm-text-brand hover:bg-hm-bg-subtle disabled:opacity-40"
             disabled={Boolean(switchingId)}
             onClick={() => {
               setOpen(false);
               onAllSpaces();
             }}
           >
-            <span
-              className="size-6 shrink-0"
-              aria-hidden="true"
-            />
             <span className="min-w-0 flex-1">공간 전체 보기</span>
             <Icon name="chevron-right-secondary" />
           </button>
