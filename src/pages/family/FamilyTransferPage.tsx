@@ -184,6 +184,7 @@ function TransferSelection() {
               {owner && (
                 <FamilyMember
                   name={owner.displayName ?? "이름 미등록"}
+                  profileImageUrl={owner.profileImageUrl}
                   role="owner"
                   self={owner.isMe}
                   detail="나만 참여 중"

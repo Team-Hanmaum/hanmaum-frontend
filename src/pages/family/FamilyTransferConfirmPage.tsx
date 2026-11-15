@@ -211,6 +211,7 @@ function TransferConfirmation() {
               {owner && (
                 <FamilyMember
                   name={owner.displayName ?? "이름 미등록"}
+                  profileImageUrl={owner.profileImageUrl}
                   role="owner"
                   self={owner.isMe}
                   detail="현재 소유자"
@@ -219,6 +220,7 @@ function TransferConfirmation() {
               {self && self.membershipId !== owner?.membershipId && (
                 <FamilyMember
                   name={self.displayName ?? "이름 미등록"}
+                  profileImageUrl={self.profileImageUrl}
                   role={self.role === "OWNER" ? "owner" : "member"}
                   self
                   detail="나 · 현재 공간에 참여 중"

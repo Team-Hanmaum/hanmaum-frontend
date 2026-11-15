@@ -112,6 +112,7 @@ export function HomeContent({
               <Avatar
                 name={news.author.name}
                 initial={news.author.initial}
+                profileImageUrl={news.author.profileImageUrl}
                 emphasis={news.author.isMine ? "self" : "default"}
                 size="compact"
                 decorative

@@ -92,6 +92,7 @@ export function NewsList({
                 <NewsCard
                   title={record.title}
                   author={`${record.author.name} · ${formatRecordTime(record.createdAt)}`}
+                  authorImageUrl={record.author.profileImageUrl}
                   body={record.body}
                   previewBody
                   status={

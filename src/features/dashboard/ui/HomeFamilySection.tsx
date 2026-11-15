@@ -46,6 +46,7 @@ export function HomeFamilySection({
               >
                 <FamilyAvatar
                   name={member.name}
+                  profileImageUrl={member.profileImageUrl}
                   self={member.self}
                   roleLabel={`${member.self ? "나 · " : ""}${member.role === "owner" ? "소유자" : "구성원"}`}
                 />

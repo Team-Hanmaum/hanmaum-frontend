@@ -1,4 +1,4 @@
-import { Badge, Button, type BadgeProps } from "@/components/ui";
+import { Avatar, Badge, Button, type BadgeProps } from "@/components/ui";
 export type NewsStatus =
   | "recorded"
   | "analysis-completed"
@@ -68,6 +68,7 @@ const statuses: Record<
 export type NewsCardProps = {
   title?: string;
   author: string;
+  authorImageUrl?: string | null;
   body: string;
   previewBody?: boolean;
   status: NewsStatus;
@@ -80,6 +81,7 @@ export type NewsCardProps = {
 export function NewsCard({
   title,
   author,
+  authorImageUrl,
   body,
   previewBody = false,
   status,
@@ -94,9 +96,17 @@ export function NewsCard({
     <article
       className={`flex w-full min-w-0 flex-col items-start gap-hm-12 rounded-hm-14 bg-hm-bg-surface p-hm-20 wrap-anywhere ${className}`}
     >
-      <p className="w-full text-hm-caption-default text-hm-text-secondary">
-        {author}
-      </p>
+      <div className="flex w-full items-center gap-hm-8">
+        <Avatar
+          name={author}
+          profileImageUrl={authorImageUrl}
+          size="compact"
+          decorative
+        />
+        <p className="min-w-0 text-hm-caption-default text-hm-text-secondary">
+          {author}
+        </p>
+      </div>
       {title && <h3 className="w-full text-hm-heading-section">{title}</h3>}
       <p
         className={`w-full text-hm-body-reading whitespace-pre-wrap ${previewBody ? "line-clamp-3" : ""}`}

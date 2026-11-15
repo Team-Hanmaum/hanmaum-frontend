@@ -9,6 +9,7 @@ export interface SpaceDetail extends CareSpaceSummary {
 export interface SpaceMember {
   membershipId: string;
   displayName: string | null;
+  profileImageUrl?: string | null;
   role: CareSpaceRole;
   isMe: boolean;
 }

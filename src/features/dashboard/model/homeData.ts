@@ -34,6 +34,7 @@ export function toSpaceView(
     members: members.map((member) => ({
       id: member.membershipId,
       name: member.displayName?.trim() || (member.isMe ? "나" : "이름 미설정"),
+      profileImageUrl: member.profileImageUrl,
       role: member.role === "OWNER" ? "owner" : "member",
       self: member.isMe,
     })),
@@ -54,7 +55,7 @@ export function toHomeView(
       recentChanges: data.recentChanges.totalCount,
     },
     recentNews: records.items.slice(0, limits.recentNews).map((record) => {
-      const { withdrawn, displayName } = record.author;
+      const { withdrawn, displayName, profileImageUrl } = record.author;
       const name = withdrawn ? undefined : displayName?.trim();
       return {
         id: record.recordId,
@@ -62,6 +63,7 @@ export function toHomeView(
           name: withdrawn ? "탈퇴한 사용자" : name || "이름 미설정",
           initial: name ? undefined : "?",
           isMine: record.isMine && !withdrawn,
+          profileImageUrl: withdrawn ? null : (profileImageUrl ?? null),
         },
         recordedAtLabel: formattedTime(record.recordedAt),
         body: record.content,

@@ -75,6 +75,7 @@ export function FamilyPage() {
         <FamilyMember
           key={member.id}
           name={member.name}
+          profileImageUrl={member.profileImageUrl}
           role={member.role}
           self={member.self}
         />
