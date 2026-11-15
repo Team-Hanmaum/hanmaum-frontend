@@ -120,10 +120,7 @@
 
 ## 참고 문서
 
-- 문서 위치와 읽는 순서는 ../docs/handoff/README.md에서 확인한다.
-- 구조와 공통 규격 작업은 COMMON.md, FE.md, TOKENS.md를 참고한다.
-- UI 작업은 FIGMA.md와 해당 Figma 상세 화면을 확인한다.
-- 기능과 정책 작업은 FEATURES.md, DECISIONS.md, sources/notion-policy.md의 관련 부분을 확인한다.
-- 위 문서명은 ../docs/handoff/ 기준이며 작업에 필요한 부분만 읽는다.
-- 현재 레포의 구현과 공통 규격은 README.md, src/components/README.md, src/routes/README.md, src/styles/README.md도 함께 참고한다. 이 경로들은 현재 레포 루트 기준이다.
-- 공통 handoff에는 개발 초기 상태가 포함될 수 있으므로, 현재 구현 상태는 실제 코드와 현재 레포 문서로 재확인한다.
+- 기능과 정책은 `hanmaum-docs`의 [기능 명세서](https://github.com/Team-Hanmaum/hanmaum-docs/blob/main/product/feature-spec.md)와 [제품 정책서](https://github.com/Team-Hanmaum/hanmaum-docs/blob/main/product/product-policy.md)를 확인한다.
+- FE 구조와 실행 방법은 [README](README.md), 화면 이동은 [라우팅 규칙](src/routes/README.md)을 참고한다.
+- UI 작업은 해당 Figma 상세 화면과 [공통 컴포넌트 규격](src/components/README.md), [스타일 규격](src/styles/README.md)을 확인한다.
+- API 연동은 [공통 API 안내](https://github.com/Team-Hanmaum/hanmaum-docs/blob/main/development/api.md)와 [FE API·세션 규칙](src/lib/api/README.md)을 참고한다. 현재 동작은 실제 코드에서 확인한다.
