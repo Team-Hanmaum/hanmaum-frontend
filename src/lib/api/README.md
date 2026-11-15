@@ -36,7 +36,7 @@ VITE_API_BASE_URL=http://localhost:8080
 | `features/{domain}/api/`                   | 경로·DTO·도메인 응답 검증                            |
 | `features/{domain}/model/`                 | Query 키·조회·변경 훅                                |
 
-공통 lib는 도메인·페이지·라우터를 import하지 않는다. 도메인 요청은 `@/lib/api`를 사용하며 httpClient 직접 호출로 CSRF·응답 처리를 우회하지 않는다. 로그인 상태는 `useSession`, 내 정보의 독립 조회는 `useMe`, 로그아웃은 세션 컨트롤러에 연결된 `useLogout`을 사용한다.
+공통 lib는 도메인·페이지·라우터를 import하지 않는다. 도메인 요청은 `@/lib/api`를 사용하며 httpClient 직접 호출로 CSRF·응답 처리를 우회하지 않는다. 로그인 상태와 내 정보는 `useSession`, 로그아웃은 세션 컨트롤러에 연결된 `useLogout`을 사용한다.
 
 ## 도메인 API 파일 구성
 

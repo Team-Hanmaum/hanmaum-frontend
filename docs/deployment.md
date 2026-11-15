@@ -1,160 +1,59 @@
-# Vercel 배포
+# 배포
 
-API 기본 주소는 `https://api.hanmaum.site`, FE 정식 Origin은 `https://hanmaum.site`다. 업무 화면은 실제 API를 사용하고 `.env.production`의 QA 도구는 false다. 업무용 Mock 저장소·예시 화면·실제/Mock 분기는 제거했다.
+| 구분             | 주소                               |
+| ---------------- | ---------------------------------- |
+| 운영 FE          | https://hanmaum.site               |
+| 운영 API         | https://api.hanmaum.site           |
+| 로그인 성공 복귀 | https://hanmaum.site/auth/callback |
 
-## 인증 전환 시 함께 설정할 항목 (#49)
+## CI와 배포
 
-1. FE `/auth/callback` 경로를 포함한 빌드 반영.
-2. BE 성공 복귀 설정 `FRONTEND_URL=https://hanmaum.site/auth/callback` 반영. 공급자에 등록한 BE callback(`/login/oauth2/code/google|kakao`) 변경 불필요.
-3. Vercel Production의 유효 값 확인: `VITE_API_BASE_URL=https://api.hanmaum.site`, `VITE_ENABLE_QA_TOOLS=false`. Vercel 변수는 저장소 env 파일보다 우선하며 변경 후 재빌드 필요. 기존 `VITE_ENABLE_MOCK_PREVIEW`는 더 이상 읽지 않으므로 남아 있어도 무시하며 삭제할 수 있음.
-4. 실제 기기에서 Google·카카오 로그인 → callback → me/공간 조회, 새로고침, 로그아웃(CSRF + 204), 재로그인 확인.
+| 시점                      | 실행                                                                                |
+| ------------------------- | ----------------------------------------------------------------------------------- |
+| PR 생성·새 커밋·다시 열기 | GitHub Actions **Lint and build**: 의존성 설치 → `pnpm check` → `pnpm build`        |
+| 작업 브랜치 push          | Vercel Git 연동으로 Preview 배포                                                    |
+| `dev` push·PR 머지        | GitHub Actions에서 검사 → `vercel build --prod` → `vercel deploy --prebuilt --prod` |
 
-운영 Origin은 `https://hanmaum.site`이며 로컬 연동에는 `https://local.hanmaum.site:5173`의 정확한 CORS 허용 및 `frontend=local` OAuth 복귀 분기가 필요하다. [로컬 HTTPS 개발 환경과 BE 전달 사항](local-development.md)을 따른다. localhost·www·Vercel 임시 주소에서 운영 API 연동을 확인할 수 있다고 가정하지 않는다. CORS 허용만으로 서로 다른 사이트의 SameSite=Lax 쿠키 제한이 해결되지는 않는다.
+- 워크플로우: [ci.yml](../.github/workflows/ci.yml), [deploy.yml](../.github/workflows/deploy.yml).
+- PR 검사는 base와 무관하게 실행한다. base만 바꾸면 실행되지 않으므로 새 커밋 push 또는 PR 다시 열기로 재검사한다.
+- 같은 PR의 이전 검사 실행은 취소하고 최신 커밋을 검사한다. 필수 검사·승인 조건은 GitHub Rulesets에서 관리한다.
+- [vercel.json](../vercel.json)은 SPA rewrite와 `dev`의 Git 자동 배포 제외를 설정한다. Production은 Actions로 배포하며 검사·빌드가 실패하면 배포하지 않는다.
 
-OAuth 실패는 현재 BE JSON 응답이다. FE 로그인 오류 화면으로 돌아오게 하려면 BE 실패 리다이렉트 계약을 추가해야 한다. 이번 FE 코드 변경은 BE·Vercel 프로젝트 설정을 직접 수정하지 않는다.
+## 환경 설정
 
-## Preview와 Production 배포
+Node.js **24.x**, pnpm **10.18.2**, Vercel 프로젝트의 Production Branch는 **dev**, 빌드 명령은 `pnpm build`, 출력 폴더는 `dist`를 사용한다.
 
-이 설정이 `dev`에 반영된 이후 다음 방식으로 운영한다.
+| 설정 위치              | 이름                                 | 값·용도                            |
+| ---------------------- | ------------------------------------ | ---------------------------------- |
+| Vercel                 | `VITE_API_BASE_URL`                  | `https://api.hanmaum.site`         |
+| Vercel                 | `VITE_ENABLE_QA_TOOLS`               | Production은 `false`               |
+| Vercel                 | `VITE_KAKAO_JAVASCRIPT_KEY`          | 카카오톡 공유용 공개 JavaScript 키 |
+| Vercel                 | `ENABLE_EXPERIMENTAL_COREPACK`       | `1` — 프로젝트의 pnpm 버전 사용    |
+| GitHub Actions Secrets | `VERCEL_TOKEN`                       | Vercel 배포 토큰                   |
+| GitHub Actions Secrets | `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | 연결한 Vercel 프로젝트 식별자      |
 
-| 대상                       | 실행 주체                               | 빌드·배포 로그 |
-| -------------------------- | --------------------------------------- | -------------- |
-| 작업 브랜치 push           | Vercel Git 자동 Preview 배포            | Vercel         |
-| `dev` push (PR merge 포함) | GitHub Actions → Vercel Production 배포 | GitHub Actions |
+Vercel 환경 변수는 저장소의 `.env.production`보다 우선하며 변경 후 재빌드가 필요하다. `VITE_` 값은 브라우저에 공개되므로 OAuth 비밀 키·배포 토큰을 넣지 않는다. Actions는 `vercel pull`로 Production 설정을 가져온다.
 
-Vercel의 Git 연결과 Production Branch `dev`는 유지한다. `vercel.json`의 `git.deploymentEnabled.dev=false`로 `dev`의 Git 자동 배포만 제외하여 중복 배포를 막는다. 다른 브랜치는 기본값인 자동 배포를 유지한다.
+## 로그인·API 연결
 
-`.github/workflows/deploy.yml`은 다음 순서로 실행한다.
+- BE CORS는 정확한 FE Origin과 credentials 요청을 허용해야 한다. 운영 로그인 성공 복귀 주소는 위 `/auth/callback`을 사용한다.
+- 공급자 콜백은 BE의 `/login/oauth2/code/google`·`/login/oauth2/code/kakao`이며 FE 콜백과 구분한다.
+- 로컬 FE의 HTTPS·OAuth 복귀 설정은 [로컬 개발](local-development.md)을 따른다. Preview에서 실제 API를 사용하려면 해당 Origin과 복귀 경로도 BE에서 지원해야 한다.
+- 세션·CSRF·응답 처리는 [공통 API 규격](../src/lib/api/README.md)을 따른다. 현재 OAuth 실패는 BE의 JSON 오류 응답이다.
 
-1. `package.json` 기준 Node.js·pnpm 준비 및 `pnpm install --frozen-lockfile`
-2. `pnpm check`로 lint·포맷·타입 검사
-3. 고정 버전 Vercel CLI 설치 및 `vercel pull --environment=production`으로 프로젝트 설정·환경 변수 조회
-4. `vercel build --prod`로 Actions에서 `pnpm build` 실행
-5. `vercel deploy --prebuilt --prod`로 `.vercel/output` 배포 및 Production 도메인 반영
-6. Actions 실행 요약에 결과·커밋·로그 링크·배포 주소 기록
+## 카카오톡 공유
 
-`pnpm build`를 별도 단계에서 중복 실행하지 않는다. 검사나 빌드 실패 시 배포 단계는 실행하지 않는다. Production 배포는 동시에 실행하지 않으며 진행 중인 배포를 새 push로 취소하지 않는다. 대기 중인 실행은 GitHub concurrency 규칙에 따라 최신 실행으로 대체될 수 있다.
+1. 카카오디벨로퍼스의 한마음 앱에서 **JavaScript 키**를 확인한다. 로컬 `.env.development.local`과 Vercel에 `VITE_KAKAO_JAVASCRIPT_KEY`를 설정한다.
+2. **JavaScript SDK 도메인**에 `https://hanmaum.site`, `https://local.hanmaum.site:5173`을 등록한다.
+3. **제품 링크 관리 → 웹 도메인**에 `https://hanmaum.site`을 등록한다. 공유 링크는 `https://hanmaum.site/share/{token}`을 사용한다.
+4. 로컬은 개발 서버 재시작, 배포 환경은 재빌드 후 확인한다. 로컬 수신 화면을 확인할 때는 발급된 링크의 Origin만 로컬 FE 주소로 바꾼다.
 
-워크플로우 설정은 PR 검토 후 `dev`에 반영한다. 로컬 파일 수정만으로 기존 배포 방식이나 공개 사이트가 바뀌지 않으며, 실제 Actions 실행·토큰 권한·Production 반영은 첫 실행에서 확인한다.
+키나 SDK를 사용할 수 없으면 링크 복사를 제공한다. 공유 카드에는 항목 유형·변경 여부·링크만 전달하며, 카카오톡 실행·복귀를 전송 완료로 표시하지 않는다.
 
-## GitHub Actions Secrets
+## 배포 후 확인
 
-저장소의 **Settings → Secrets and variables → Actions → New repository secret**에 등록한다.
-
-| 이름                | 용도                                            | 필수 여부 |
-| ------------------- | ----------------------------------------------- | --------- |
-| `VERCEL_TOKEN`      | 해당 Vercel 프로젝트에 접근할 수 있는 배포 토큰 | 필수      |
-| `VERCEL_ORG_ID`     | 로컬 `.vercel/project.json`의 `orgId`           | 필수      |
-| `VERCEL_PROJECT_ID` | 로컬 `.vercel/project.json`의 `projectId`       | 필수      |
-
-토큰은 [Vercel 계정의 Tokens](https://vercel.com/account/tokens)에서 생성하고 만료 전에 갱신한다. 비밀 값은 저장소·워크플로우 본문·`VITE_` 변수에 넣지 않는다. 앱의 Production 환경 변수는 Vercel 프로젝트에서 관리하며 Actions는 `vercel pull`로 가져온다. BE API 주소는 공개 VITE 설정으로 관리하고 OAuth 비밀 키는 FE에 추가하지 않는다.
-
-Discord 알림은 기존 GitHub 저장소 웹훅의 `check_run`·`check_suite` 이벤트 연동을 사용한다. 워크플로우에서 Discord로 직접 메시지를 전송하지 않으며 별도 알림용 Secret은 필요 없다. 실제 메시지 수신은 첫 Actions 실행 후 확인한다.
-
-## 실제 API 실행 설정
-
-- 로컬 배포 BE: `pnpm setup:local` 후 `pnpm dev`. 정확한 개발 Origin과 OAuth 복귀를 BE에서 허용해야 한다.
-- 로컬 BE: `.env.example`을 `.env.development.local`로 복사하고 로컬 BE의 CORS·세션 설정을 사용한다.
-- Production: API `https://api.hanmaum.site`, QA false. 모든 업무 화면의 조회·변경은 실제 API를 사용한다.
-- Mock 활성화 변수는 사용하지 않는다. Preview도 실제 API에 연결되므로 허용된 Origin에서 검증한다.
-- `/_dev/components`와 그 예시 데이터는 로컬 개발 전용이며 Production 경로·번들에서는 제외한다. 랜딩의 서비스 사용 예시는 소개 콘텐츠다.
-
-## 카카오톡 돌봄 공유 설정 (#71)
-
-공유 링크 API와 카카오톡 전송 화면은 별도다. 링크 발급·복사·수신 조회는 카카오 키 없이도 사용하며, 카카오톡 공유 버튼에는 아래 설정이 필요하다.
-
-1. 카카오디벨로퍼스에서 기존 한마음 앱의 **앱 → 플랫폼 키 → JavaScript 키** 확인. REST API 키·Admin 키·Client Secret 대신 공개 JavaScript 키 사용.
-2. **JavaScript SDK 도메인**에 `https://hanmaum.site` 및 로컬 검증용 `https://local.hanmaum.site:5173` 등록.
-3. **제품 링크 관리 → 웹 도메인**에 공유 카드가 여는 `https://hanmaum.site` 등록. 로컬 링크를 별도로 발급하는 환경이면 해당 도메인도 등록.
-4. 로컬 `.env.development.local`에 `VITE_KAKAO_JAVASCRIPT_KEY=발급받은_JavaScript_키` 설정 후 개발 서버 재시작. Vercel Production에도 같은 이름의 Config 변수 등록 후 재빌드. Preview는 허용한 SDK·API 도메인에서만 검증.
-5. BE `SHARE_URL_PREFIX`가 `https://hanmaum.site/share/`를 반환하는지 확인. FE는 발급된 URL을 임의로 로컬 주소로 바꾸지 않는다. 로컬 수신 화면 확인 시에는 URL의 Origin만 개발 주소로 바꾸고 `/share/{token}` 경로를 유지.
-
-SDK 2.8.5를 공식 CDN과 고정 SRI로 공유 화면에서만 준비한다. 키가 없거나 SDK를 불러오지 못하면 링크 복사를 제공한다. 카드에는 항목 유형·변경 여부·서비스 링크만 전달하며 부모님 이름·항목 제목·원문은 포함하지 않는다. 카카오톡 실행·복귀는 전송 완료를 의미하지 않으므로 성공 전송으로 표시하지 않는다.
-
-공식 기준: [JavaScript SDK 설치·초기화](https://developers.kakao.com/docs/ko/javascript/getting-started), [카카오톡 공유](https://developers.kakao.com/docs/ko/kakaotalk-share/js-link), [SDK 다운로드](https://developers.kakao.com/docs/ko/javascript/download).
-
-## 최초 배포 기록
-
-- 배포 주소: [hanmaum-frontend.vercel.app](https://hanmaum-frontend.vercel.app/)
-- Vercel 프로젝트: [Hanmaum / hanmaum-frontend](https://vercel.com/hanmaum1/hanmaum-frontend)
-- 최초 배포일: 2026-10-04
-- 최초 배포 소스: `chore/14-vercel-deployment`의 `041d72c`
-- 방식: 승인된 프로젝트 계정의 CLI로 첫 Production 배포, GitHub 저장소 연결 완료
-- 최초 Git 연결 당시 Production Branch: `dev`로 설정 완료
-- 설정 반영 PR: [#15](https://github.com/Team-Hanmaum/hanmaum-frontend/pull/15). 최초 배포 시점에는 승인·머지 대기 상태이며, 팀 검토 후 `dev`에 반영하는 절차
-
-첫 배포는 `dev`의 앱 코드에 이 PR의 배포 설정을 더한 커밋을 사용했다. PR #15에 포함된 Actions 워크플로우와 SPA rewrite를 함께 `dev`에 반영한 이후 Production 배포를 Actions에서 진행한다.
-
-## 프로젝트 설정
-
-| 항목             | 값                                                      |
-| ---------------- | ------------------------------------------------------- |
-| GitHub 저장소    | `Team-Hanmaum/hanmaum-frontend`                         |
-| Root Directory   | 저장소 루트 (`./`)                                      |
-| Framework Preset | Vite                                                    |
-| Node.js          | `24.x` — `package.json`의 `engines.node` 기준           |
-| 패키지 매니저    | `pnpm@10.18.2` — `package.json`의 `packageManager` 기준 |
-| Install Command  | 자동 감지 — 아래 Corepack 환경 변수 설정 필요           |
-| Build Command    | `pnpm build`                                            |
-| Output Directory | `dist`                                                  |
-| 초기 배포 기준   | 현재 앱이 포함된 `dev`                                  |
-
-Vercel 프로젝트의 Preview와 Production 환경에 `ENABLE_EXPERIMENTAL_COREPACK=1`을 추가한다. 이 값은 빌드 도구 선택용이며 비밀 값이 아니다. Corepack이 `packageManager`의 pnpm 버전을 사용하도록 하여 로컬·배포 버전을 맞춘다. 저장소의 `pnpm-lock.yaml`을 유지하고 빌드 로그에서 사용 버전을 확인한다.
-
-빌드 명령·출력 경로·SPA rewrite는 루트 `vercel.json`에서 관리한다. Vercel의 Production Branch는 대시보드 설정이며 파일에 포함되지 않는다. 현재 `main`에는 앱 코드가 없으므로 최초 프로젝트 설정 시 `dev`를 기준으로 확인한다. 추후 `main`으로 전환할 때는 앱 코드와 배포 설정이 먼저 반영되어 있어야 한다.
-
-## 연결과 배포 절차
-
-1. 프로젝트를 관리할 Vercel 계정에 로그인한다.
-2. `Team-Hanmaum`의 소유자 또는 해당 레포 접근 권한이 있는 멤버의 GitHub 계정을 연결하고, Vercel GitHub App의 대상 레포 접근 권한을 설정한다.
-3. 기존 Vercel 프로젝트 유무를 확인한 뒤 저장소를 Import한다. 위 빌드 설정과 Corepack 환경 변수를 확인한다.
-4. 배포할 커밋에 `vercel.json`이 포함되어 있는지 확인한다. PR 승인·머지 전 설정은 해당 작업 브랜치의 배포로 검증하며 `dev`나 `main`에 직접 커밋하지 않는다.
-5. Actions Secrets를 등록하고 워크플로우·`dev` 자동 배포 제외 설정을 함께 반영한다. Preview는 Vercel에서, Production은 GitHub Actions에서 실행 결과를 확인한 뒤 아래 항목을 검증한다.
-
-CLI를 사용하는 경우에도 먼저 로그인 계정과 프로젝트 소유 범위를 확인한다. 로컬 프로젝트 연결 정보인 `.vercel/`은 Git에 포함하지 않는다. 배포 토큰이나 계정 인증 정보를 저장소에 저장하지 않는다.
-
-## 검증
-
-```sh
-pnpm check
-pnpm build
-```
-
-- `/` 랜딩 표시 및 시작하기 버튼의 `/login` 이동
-- `/login`, `/onboarding/guide`, 참여한 실제 공간의 홈 직접 접속·새로고침
-- 파비콘·로고·폰트·JS·CSS 정적 파일의 정상 응답
-- 잘못된 주소에서 앱의 404 화면 표시
-- `/_dev/components` 접근 시 앱의 404 화면 표시
-- 실제 모드: 두 OAuth 진입 → `/auth/callback` → 참여 공간 0/1/여러 개 분기
-- 실제 모드: 401 만료, 403 실패, 조회 재시도, 로그아웃 204와 응답 유실 후 재확인
-- 실제 로그인 → 공간 생성/선택 → 홈·가족 조회, 소식·제안·돌봄·공간 관리·공유 확인
-- 운영 빌드: 업무용 예시 데이터·미연동 배지·QA 도구 비노출. 이전 `mock-` 식별자 주소의 404 처리 확인
-
-SPA rewrite는 브라우저가 직접 요청한 페이지 경로에도 `index.html`을 제공한다. 실제 화면과 알 수 없는 경로의 404 표시는 React Router에서 처리하므로 앱의 404 화면과 HTTP 404 상태 코드는 구분한다.
-
-## BE 연동 시 확인할 사항
-
-### 운영 환경의 QA 도구
-
-현재 `.env.production`의 `VITE_ENABLE_QA_TOOLS=false`는 QA 도구 활성화를 차단한다. 개발 QA가 필요한 환경에서만 true로 지정하며 인증·업무 데이터는 실제 API 흐름을 유지한다. 이전 빌드의 동작은 환경 변수만 변경해서 바뀌지 않으므로 다시 빌드·배포한다.
-
-비활성화된 빌드는 저장된 QA 모드와 `qa=1`을 무시하고 원래 화면을 표시한다. URL 쿼리만으로 404로 이동시키지 않는다. 도구 허용 여부와 관계없이 세션·권한·업무 데이터는 실제 API로 확인한다.
-
-### API 계약
-
-- 실제 API 주소 및 개발·운영 환경 구분
-- 배포 도메인의 CORS 허용, 세션 쿠키 속성과 CSRF 처리 계약
-- Google·카카오 OAuth의 콜백 및 성공·실패 후 이동 주소
-- 운영에서 세션·공간 참여 권한 검증과 로그인 버튼 연결 확인
-- 소식·돌봄·가족·초대·공유·탈퇴 등 업무 API의 계약 변경 시 DTO·검증·요청·소비 화면 함께 확인
-
-이번 인증 연결은 위 환경 변수와 BE 성공 복귀 설정을 함께 반영해야 한다. OAuth 비밀 키를 FE에 등록하지 않으며 브라우저에 공개되는 `VITE_` 환경 변수에 비밀 값을 넣지 않는다.
-
-## 공식 참고
-
-- [Vite SPA 배포](https://vercel.com/docs/frameworks/frontend/vite#using-vite-to-make-spas)
-- [Corepack 빌드 설정](https://vercel.com/docs/builds/configure-a-build#corepack)
-- [Git 배포와 Production Branch](https://vercel.com/docs/git)
-- [GitHub Organization 연결 권한](https://vercel.com/docs/git/vercel-for-github#organization-repositories)
-- [GitHub Actions에서 Vercel 배포](https://vercel.com/kb/guide/how-can-i-use-github-actions-with-vercel)
-- [브랜치별 Git 자동 배포 설정](https://vercel.com/docs/project-configuration/git-configuration#gitdeploymentenabled)
+- Google·카카오 로그인 → FE 콜백 → 공간 선택·홈, 로그아웃·재로그인
+- 실제 공간의 상세 URL 직접 접속·새로고침, 잘못된 주소의 404
+- 로고·폰트·버튼 스타일과 공유 링크 조회
+- Production의 `/_dev/components` 404 및 QA 도구 비노출
+- Android·iOS의 [PWA 설치와 실행](pwa.md)
