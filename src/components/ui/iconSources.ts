@@ -40,6 +40,7 @@ import checkDisabled from "@/assets/icons/check-disabled.svg";
 import personBrand from "@/assets/icons/person-brand.svg";
 import chevronRightSecondary from "@/assets/icons/chevron-right-secondary.svg";
 import personError from "@/assets/icons/person-error.svg";
+import logoutError from "@/assets/icons/logout-error.svg";
 import infoBrand from "@/assets/icons/info-brand.svg";
 import infoSecondary from "@/assets/icons/info-secondary.svg";
 import alertError from "@/assets/icons/alert-error.svg";
@@ -97,6 +98,7 @@ export const iconSources = {
   "person-brand": personBrand,
   "chevron-right-secondary": chevronRightSecondary,
   "person-error": personError,
+  "logout-error": logoutError,
   "info-brand": infoBrand,
   "info-secondary": infoSecondary,
   "alert-error": alertError,

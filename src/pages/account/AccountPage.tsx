@@ -46,7 +46,7 @@ export function AccountPage() {
       />
       <MenuRow
         tone="danger"
-        icon="chevron-right-error"
+        icon="logout-error"
         title="로그아웃"
         description="계정과 돌봄 기록은 유지돼요"
         onClick={() => void navigate(paths.logout)}
