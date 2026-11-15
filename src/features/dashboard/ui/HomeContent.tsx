@@ -1,9 +1,4 @@
-import {
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  Notice,
-} from "@/components/feedback";
+import { EmptyState, Notice } from "@/components/feedback";
 import { SectionHeader } from "@/components/layout";
 import { Button, MenuRow } from "@/components/ui";
 import {
@@ -30,7 +25,6 @@ export function HomeContent({
   onPending,
   onHistory,
   onChange,
-  onRetry,
 }: {
   space: CareSpaceView;
   data: HomeView;
@@ -44,7 +38,6 @@ export function HomeContent({
   onPending: () => void;
   onHistory: () => void;
   onChange: (id: string) => void;
-  onRetry: () => void;
 }) {
   const empty = state === "empty" || state === "created";
   const newsSection = (
@@ -77,27 +70,6 @@ export function HomeContent({
       )}
     </section>
   );
-  if (state === "loading")
-    return (
-      <>
-        <h1 className="text-hm-title-hero">지금의 돌봄 현황</h1>
-        <LoadingState label="홈을 불러오고 있어요" />
-      </>
-    );
-  if (state === "error")
-    return (
-      <>
-        <h1 className="sr-only">홈</h1>
-        <div className="flex flex-1 items-center">
-          <ErrorState
-            reason="load-error"
-            title="홈을 불러오지 못했어요"
-            body={"연결 상태를 확인한 뒤\n다시 시도해 주세요."}
-            onAction={onRetry}
-          />
-        </div>
-      </>
-    );
   return (
     <>
       <h1 className="sr-only">{careSpaceName(space)} 홈</h1>
@@ -105,16 +77,6 @@ export function HomeContent({
         <Notice
           title={`${careSpaceName(space)} 공간이 준비됐어요`}
           body="혼자 먼저 시작해도 좋아요."
-        />
-      )}
-      {state === "joined" && (
-        <Notice
-          title={`${careSpaceName(space)}에 참여했어요`}
-          body={
-            space.role === "owner"
-              ? "이미 참여한 공간이에요. 소유자 역할은 그대로예요."
-              : "구성원으로 가족과 소식을 나눌 수 있어요."
-          }
         />
       )}
       <HomeFamilySection
@@ -172,53 +134,37 @@ export function HomeContent({
           <section className="flex flex-col gap-hm-12">
             <SectionHeader
               title="다가오는 일정"
-              action={
-                state === "section-error"
-                  ? undefined
-                  : {
-                      label: "모두 보기",
-                      onClick: () =>
-                        onCare({ type: "schedule", status: "upcoming" }),
-                    }
-              }
+              action={{
+                label: "모두 보기",
+                onClick: () => onCare({ type: "schedule", status: "upcoming" }),
+              }}
             />
-            {state === "section-error" ? (
-              <ErrorState
-                reason="load-error"
-                title="일정을 불러오지 못했어요"
-                body="다시 불러와 일정을 확인해 주세요."
-                onAction={onRetry}
-              />
-            ) : (
-              <>
-                {!data.upcomingSchedules.length && (
-                  <p className="text-hm-body-default text-hm-text-secondary">
-                    다가오는 일정이 없어요.
-                  </p>
-                )}
-                {data.upcomingSchedules.map((schedule) => (
-                  <CareCard
-                    key={schedule.id}
-                    title={schedule.title}
-                    statusLabel={schedule.statusLabel}
-                    meta={schedule.meta}
-                    body={schedule.body}
-                    bodyTone="hint"
-                    action={{
-                      label: "일정 자세히 보기",
-                      onClick: () => onOpenCare(schedule.id),
-                    }}
-                  />
-                ))}
-                <MenuRow
-                  icon="clock"
-
-                  title={`지난 일정 ${data.pastScheduleCount}건`}
-                  description="날짜가 지났지만 아직 예정으로 남아 있어요."
-                  onClick={() => onCare({ type: "schedule", status: "past" })}
-                />
-              </>
+            {!data.upcomingSchedules.length && (
+              <p className="text-hm-body-default text-hm-text-secondary">
+                다가오는 일정이 없어요.
+              </p>
             )}
+            {data.upcomingSchedules.map((schedule) => (
+              <CareCard
+                key={schedule.id}
+                title={schedule.title}
+                statusLabel={schedule.statusLabel}
+                meta={schedule.meta}
+                body={schedule.body}
+                bodyTone="hint"
+                action={{
+                  label: "일정 자세히 보기",
+                  onClick: () => onOpenCare(schedule.id),
+                }}
+              />
+            ))}
+            <MenuRow
+              icon="clock"
+
+              title={`지난 일정 ${data.pastScheduleCount}건`}
+              description="날짜가 지났지만 아직 예정으로 남아 있어요."
+              onClick={() => onCare({ type: "schedule", status: "past" })}
+            />
           </section>
           <section className="flex flex-col gap-hm-12">
             <SectionHeader

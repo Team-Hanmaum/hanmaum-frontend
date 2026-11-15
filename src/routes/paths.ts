@@ -72,10 +72,6 @@ export function newsDeletionPath(careSpaceId: string, deletionId: string) {
   return `${spacePath(careSpaceId, "news")}/deletions/${encodeURIComponent(deletionId)}`;
 }
 
-export function invitationPath(token: string) {
-  return `/invitations/${encodeURIComponent(token)}`;
-}
-
 export function proposalListPath(careSpaceId: string, status = "review") {
   return `${paths.spaces}/${encodeURIComponent(careSpaceId)}/proposals?status=${encodeURIComponent(status)}`;
 }
@@ -124,14 +120,8 @@ export function careReconfirmPath(careSpaceId: string, itemId: string) {
 export function careCreatePath(spaceId: string, kind: string) {
   return `${spacePath(spaceId, "care")}/new/${encodeURIComponent(kind)}`;
 }
-export function careManagePath(spaceId: string, itemId: string) {
-  return `${careItemPath(spaceId, itemId)}/manage`;
-}
 export function careSharePath(spaceId: string, itemId: string) {
   return `${careItemPath(spaceId, itemId)}/share`;
-}
-export function careSharedPath(spaceId: string, itemId: string) {
-  return `${careItemPath(spaceId, itemId)}/shared`;
 }
 export function careHistoryPath(
   careSpaceId: string,
