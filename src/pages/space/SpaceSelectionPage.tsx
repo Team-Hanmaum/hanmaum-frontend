@@ -8,7 +8,7 @@ import {
   LoadingState,
   Notice,
 } from "@/components/feedback";
-import { Button, Icon, IconButton } from "@/components/ui";
+import { Button, IconButton } from "@/components/ui";
 import type { CareSpaceSummary } from "@/features/carespace/api/careSpaceTypes";
 import {
   CareSpaceList,
@@ -103,13 +103,10 @@ export function SpaceSelectionPage() {
             <div className="flex justify-center px-hm-20 pt-hm-16 pb-[calc(var(--hm-spacing-24)+env(safe-area-inset-bottom))]">
               <Button
                 variant="primary"
-                className="min-h-hm-48 max-w-full border border-transparent px-hm-24 py-hm-10"
+                className="min-h-hm-48 max-w-full border border-transparent px-hm-40 py-hm-10"
                 onClick={() => void navigate(paths.onboardingGuide)}
               >
-                <span className="flex max-w-full items-center justify-center gap-hm-8">
-                  <Icon name="plus-inverse" />
-                  <span className="min-w-0">돌봄 공간 만들기</span>
-                </span>
+                돌봄 공간 만들기
               </Button>
             </div>
           </FixedBottomArea>
