@@ -106,11 +106,7 @@ export function SpaceSelectionPage() {
             }
           />
         )}
-        <h1 className="text-hm-title-page">
-          어느 공간으로
-          <br />
-          들어갈까요?
-        </h1>
+        <h1 className="text-hm-title-page">공간을 선택해주세요.</h1>
         {remote.isPending ? (
           <LoadingState label="참여 공간을 불러오고 있어요" />
         ) : remote.isError ? (
