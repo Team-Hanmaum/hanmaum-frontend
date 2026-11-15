@@ -1,5 +1,5 @@
 import { useParams } from "react-router";
-import { Button, Badge, MenuRow, TextAction } from "@/components/ui";
+import { Button, Badge, Icon, MenuRow, TextAction } from "@/components/ui";
 import { Notice } from "@/components/feedback";
 import { useCareItem } from "@/features/careitem/model/useCareQueries";
 import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
@@ -200,17 +200,17 @@ export function CareItemPage() {
               항목 관리
             </Button>
             {canShare && (
-              <Button
-                variant="outline"
-                className="min-h-hm-touch-min px-hm-16 py-hm-8"
+              <TextAction
+                className="inline-flex min-h-hm-touch-min items-center gap-hm-8 rounded-hm-10 px-hm-12 font-bold text-hm-text-brand hover:bg-hm-bg-brand-subtle"
                 onClick={() =>
                   void navigate(
                     withReturn(careSharePath(space.spaceId, itemId)),
                   )
                 }
               >
+                <Icon name="link-brand" />
                 공유
-              </Button>
+              </TextAction>
             )}
           </div>
           {item.answers.length > 0 && (

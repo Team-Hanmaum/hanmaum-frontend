@@ -81,6 +81,7 @@ export function CareEditInputs({
     <CareFieldsForm
       apiMode
       direct
+      compact
       kind={item.itemType.toLowerCase() as CareItemKind}
       fields={fields}
       onChange={onChange}

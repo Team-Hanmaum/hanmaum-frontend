@@ -1,15 +1,10 @@
 import { useRef, useState } from "react";
 import { useParams } from "react-router";
 import { BottomSheet, Notice } from "@/components/feedback";
-import {
-  BrandSymbol,
-  Button,
-  Field,
-  SelectionRow,
-  TextAction,
-} from "@/components/ui";
+import { BrandSymbol, Button, Field, TextAction } from "@/components/ui";
 import type { CareDetail } from "@/features/careitem/api/careReadTypes";
 import { useCareItem } from "@/features/careitem/model/useCareQueries";
+import { CareFieldList } from "@/features/careitem/ui/CareFieldList";
 import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
 import { useCareShareLink } from "@/features/sharing/model/useCareShareLink";
 import {
@@ -105,17 +100,16 @@ function ShareContent({
   refresh: () => void;
   refreshing: boolean;
 }) {
-  const [includesChange, setIncludesChange] = useState(false);
   const link = useCareShareLink(item.spaceId, {
     itemId: item.itemId,
     expectedItemVersion: item.version,
-    includesChange,
+    includesChange: false,
   });
   const actions = useShareActions();
   const field = useRef<HTMLInputElement>(null);
   const card = link.data?.cards[0];
   const message = shareCardMessage(
-    card ?? { itemType: item.itemType, includesChange },
+    card ?? { itemType: item.itemType, includesChange: false },
   );
   const conflict = link.isError && needsShareRefresh(link.error);
   return (
@@ -128,20 +122,24 @@ function ShareContent({
         actions={
           card ? (
             <>
-              <Button
-                disabled={actions.sdk !== "ready"}
-                loading={actions.busy}
-                onClick={() => void actions.share(card)}
-              >
-                카카오톡으로 공유
-              </Button>
-              <Button
-                variant="secondary"
-                disabled={actions.busy}
-                onClick={() => void actions.copy(card.url)}
-              >
-                공유 링크 복사
-              </Button>
+              <div className="grid grid-cols-2 gap-hm-12">
+                <Button
+                  disabled={actions.sdk !== "ready"}
+                  loading={actions.busy}
+                  onClick={() => void actions.share(card)}
+                  className="px-hm-8"
+                >
+                  카카오톡 공유
+                </Button>
+                <Button
+                  variant="secondary"
+                  disabled={actions.busy}
+                  onClick={() => void actions.copy(card.url)}
+                  className="px-hm-8"
+                >
+                  링크 복사
+                </Button>
+              </div>
               {actions.sdk === "error" && (
                 <TextAction onClick={() => void actions.retrySdk()}>
                   카카오톡 공유 다시 준비
@@ -167,6 +165,12 @@ function ShareContent({
           <p className="text-hm-body-emphasis wrap-anywhere">
             {item.title ?? "제목 없음"}
           </p>
+          {item.itemType === "SCHEDULE" && (
+            <CareFieldList
+              values={item}
+              keys={["scheduledDate", "scheduledTime", "location"]}
+            />
+          )}
         </section>
         <section className="flex flex-col gap-hm-8">
           <h2 className="text-hm-heading-section">가족에게 보이는 카드</h2>
@@ -186,18 +190,8 @@ function ShareContent({
             </p>
           </div>
         </section>
-        {!card && (
-          <SelectionRow
-            label="변경 안내 함께 공유"
-            description="유효한 확정 변경 이력이 있는지 확인한 뒤 공유해요."
-            checked={includesChange}
-            disabled={link.status !== "idle"}
-            onChange={(event) => setIncludesChange(event.target.checked)}
-          />
-        )}
         <p className="text-hm-body-small text-hm-text-secondary">
-          제목과 상세 내용은 카드에 표시되지 않아요. 상세 내용은 로그인한 공간
-          참여자만 볼 수 있어요.
+          상세 내용은 링크를 연 뒤 로그인한 공간 참여자에게만 보여요.
         </p>
         {link.isError && (
           <Notice

@@ -1,4 +1,5 @@
-import { Button, Badge, TextAction, MenuRow, Field } from "@/components/ui";
+import { useState } from "react";
+import { Button, Badge, TextAction, Icon, Field } from "@/components/ui";
 import { CareSection } from "./CareSection";
 import type { CareItemKind } from "../model/careItemViewTypes";
 import { Notice } from "@/components/feedback";
@@ -10,6 +11,7 @@ import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
 import { useCareEdit, type EditOperation } from "../model/useCareEdit";
 import { reviewFailure } from "@/features/proposal/model/reviewFailure";
 import { CareEditInputs } from "./CareEditInputs";
+import { CareEvidenceList } from "./CareEvidenceList";
 import { CareValuesView } from "./CareValuesView";
 import { CareReconfirmationMetadata } from "./CareReconfirmationMetadata";
 import { CareTimeSelection } from "./CareTimeSelection";
@@ -21,7 +23,6 @@ import { useTimeSelectionScreen } from "@/routes/useTimeSelectionScreen";
 import {
   careItemPath,
   careListPath,
-  careSourcesPath,
   proposalRequestPath,
 } from "@/routes/paths";
 
@@ -43,6 +44,7 @@ export function CareEditForm({
   const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const form = useCareEdit(space, item, operation);
+  const [evidenceOpen, setEvidenceOpen] = useState(false);
   const deleting = operation === "delete";
   const { blocker, allowNavigation } = useUnsavedChanges(form.dirty);
   const complete = (requestId?: string) =>
@@ -140,35 +142,23 @@ export function CareEditForm({
       spaceId={space.spaceId}
       onBack={onBack}
       actions={
-        deleting ? (
-          <div className="grid grid-cols-2 gap-hm-12">
-            <Button
-              variant="outline"
-              disabled={form.frozen}
-              onClick={onBack}
-            >
-              돌아가기
-            </Button>
-            {submitAction}
-          </div>
-        ) : (
-          <>
-            {submitAction}
-            <TextAction
-              disabled={form.frozen}
-              onClick={form.review ? form.edit : onBack}
-            >
-              {form.review ? "내용 다시 수정" : "돌아가기"}
-            </TextAction>
-          </>
-        )
+        <div className="grid grid-cols-2 gap-hm-12">
+          <Button
+            variant="outline"
+            disabled={form.frozen}
+            onClick={form.review && !deleting ? form.edit : onBack}
+          >
+            {form.review && !deleting ? "다시 수정" : "돌아가기"}
+          </Button>
+          {submitAction}
+        </div>
       }
     >
-      {!deleting && (
+      {!deleting && form.review && !form.direct && (
         <Badge
-          label={
-            form.review ? (form.direct ? "최종 확인" : "승인 요청") : "수정 중"
-          }
+          tone="brand"
+          className="self-start"
+          label="승인 요청"
         />
       )}
       <h1 className="text-hm-title-page">
@@ -184,7 +174,7 @@ export function CareEditForm({
               ? "상태를 어떻게 바꿀까요?"
               : operation === "answer"
                 ? "확인한 내용을 알려주세요"
-                : "무엇이 달라졌나요?"}
+                : "내용을 수정해 주세요"}
       </h1>
       {(form.error || form.mutation.isError) && (
         <Notice
@@ -289,42 +279,52 @@ export function CareEditForm({
           />
         </>
       ) : (
-        <CareEditInputs
-          item={form.item}
-          operation={operation}
-          fields={form.fields}
-          onChange={form.setFields}
-          status={form.status}
-          onStatus={form.setStatus}
-          members={members.data ?? []}
-          onTime={timeScreen.show}
-          disabled={form.frozen}
-        />
+        <div className="flex flex-col gap-hm-16">
+          <CareEditInputs
+            item={form.item}
+            operation={operation}
+            fields={form.fields}
+            onChange={form.setFields}
+            status={form.status}
+            onStatus={form.setStatus}
+            members={members.data ?? []}
+            onTime={timeScreen.show}
+            disabled={form.frozen}
+          />
+        </div>
       )}
-      {!deleting && (
+      {!deleting && form.review && !form.direct && (
         <Notice
-          title={
-            form.direct ? "확인 후 반영해요" : "현재 돌봄 정보는 그대로예요"
-          }
+          title="소유자가 확인해요"
           body={
-            form.direct
-              ? "변경 이력과 돌봄 목록·홈을 함께 갱신해요."
-              : operation === "answer"
-                ? "답변은 승인 대기로 저장돼요. 소유자가 승인하기 전까지 질문은 미확인 상태를 유지해요."
-                : "소유자가 요청을 확인하고 승인한 뒤 반영해요."
+            operation === "answer"
+              ? "답변은 승인 대기로 저장돼요. 소유자가 승인하기 전까지 질문은 미확인 상태를 유지해요."
+              : "소유자가 요청을 확인하고 승인한 뒤 반영해요."
           }
         />
       )}
-      {operation === "edit" && (
-        <MenuRow
-          icon="link-brand"
-          title="기존 근거 보기"
-          onClick={() =>
-            void navigate(
-              withReturn(careSourcesPath(space.spaceId, item.itemId)),
-            )
-          }
-        />
+      {operation === "edit" && !form.review && (
+        <details
+          className="group rounded-hm-12 border border-hm-border-default"
+          open={evidenceOpen}
+          onToggle={(event) => setEvidenceOpen(event.currentTarget.open)}
+        >
+          <summary className="hm-focus-ring flex min-h-hm-touch-min cursor-pointer list-none items-center justify-between gap-hm-8 rounded-hm-12 px-hm-16 py-hm-8 text-hm-body-small font-bold text-hm-text-brand [&::-webkit-details-marker]:hidden">
+            기존 근거 보기
+            <span className="inline-flex group-open:rotate-90">
+              <Icon name="chevron-right-secondary" />
+            </span>
+          </summary>
+          {evidenceOpen && (
+            <div className="px-hm-8 pb-hm-8">
+              <CareEvidenceList
+                spaceId={space.spaceId}
+                itemId={item.itemId}
+                expanded
+              />
+            </div>
+          )}
+        </details>
       )}
       {dialog}
     </ProposalPageLayout>
