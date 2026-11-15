@@ -29,18 +29,11 @@ export function LoginPage() {
           />
           <h1 className="text-hm-title-page text-hm-text-brand">한마음</h1>
         </div>
-        <div className="flex flex-col gap-hm-12">
-          <p className="text-hm-title-hero">
-            흩어진 소식은 하나로,
-            <br />
-            돌봄은 한마음으로
-          </p>
-          <p className="text-hm-body-default text-hm-text-secondary">
-            가족의 소식을 모으고,
-            <br />
-            함께 챙길 일을 정리해요.
-          </p>
-        </div>
+        <p className="text-hm-title-hero">
+          흩어진 소식은 하나로,
+          <br />
+          돌봄은 한마음으로
+        </p>
       </div>
       <section
         aria-label="소셜 로그인"
