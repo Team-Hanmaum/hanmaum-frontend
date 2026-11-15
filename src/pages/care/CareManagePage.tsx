@@ -1,12 +1,14 @@
 import { useParams } from "react-router";
-import { Badge, Button, MenuRow } from "@/components/ui";
+import { Button, MenuRow } from "@/components/ui";
 import { Notice } from "@/components/feedback";
 import { useCareItem } from "@/features/careitem/model/useCareQueries";
 import {
   canChangeDirectly,
   careWriteUnavailable,
 } from "@/features/careitem/model/careEditDraft";
-import { CareValuesView } from "@/features/careitem/ui/CareValuesView";
+import { careItemTitle } from "@/features/careitem/model/careReadView";
+import { CareFieldList } from "@/features/careitem/ui/CareFieldList";
+import { CareReconfirmationMetadata } from "@/features/careitem/ui/CareReconfirmationMetadata";
 import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import { useSpaceContext } from "@/routes/useSpaceContext";
@@ -37,14 +39,28 @@ export function CareManagePage() {
         />
       ) : (
         <>
-          <Badge label={space.role === "OWNER" ? "소유자" : "구성원"} />
-          <h1 className="text-hm-title-page">
-            {item.title ?? "내용이 제거된 항목"}
-          </h1>
-          <CareValuesView
-            values={item}
-            keys={["status", "description"]}
-          />
+          <div className="flex flex-col gap-hm-8">
+            <h1 className="text-hm-title-page wrap-anywhere">
+              {careItemTitle(item)}
+            </h1>
+            {item.needsReconfirmation && (
+              <CareReconfirmationMetadata item={item} />
+            )}
+            <CareFieldList
+              values={item}
+              keys={
+                item.needsReconfirmation
+                  ? ["description"]
+                  : ["status", "description"]
+              }
+            />
+          </div>
+          {item.needsReconfirmation && (
+            <p className="text-hm-body-small text-hm-text-secondary">
+              원본을 바탕으로 기록한 정보가 가려졌어요. 재확인은 항목 상세에서
+              진행할 수 있어요.
+            </p>
+          )}
           {(
             [
               { operation: "edit", label: "내용 수정" },
@@ -58,7 +74,7 @@ export function CareManagePage() {
             .map(({ operation, label }) => (
               <MenuRow
                 key={operation}
-                icon="edit"
+                icon={operation === "delete" ? null : "edit"}
                 tone={operation === "delete" ? "danger" : "default"}
                 title={`${label}${operation === "answer" || canChangeDirectly(space, item, operation) ? "" : " 요청"}`}
                 onClick={() =>
@@ -66,16 +82,18 @@ export function CareManagePage() {
                 }
               />
             ))}
-          <Notice
-            title={
-              item.itemType === "QUESTION" && item.status === "CONFIRMED"
-                ? "답변 확인이 끝난 질문이에요"
-                : space.role === "OWNER"
-                  ? "확인 후 반영해요"
-                  : "소유자에게 변경을 요청해요"
-            }
-            body="최종 확인 전까지 현재 돌봄 정보는 유지돼요."
-          />
+          {!item.needsReconfirmation && (
+            <Notice
+              title={
+                item.itemType === "QUESTION" && item.status === "CONFIRMED"
+                  ? "답변 확인이 끝난 질문이에요"
+                  : space.role === "OWNER"
+                    ? "확인 후 반영해요"
+                    : "소유자에게 변경을 요청해요"
+              }
+              body="최종 확인 전까지 현재 돌봄 정보는 유지돼요."
+            />
+          )}
         </>
       )}
     </ProposalPageLayout>

@@ -1,5 +1,10 @@
 import { isObject } from "@/lib/api/responseValidators";
-import type { CareValues, ItemType, SourceAuthor } from "../api/careReadTypes";
+import type {
+  CareDetail,
+  CareValues,
+  ItemType,
+  SourceAuthor,
+} from "../api/careReadTypes";
 export const itemLabels: Record<ItemType, string> = {
   SCHEDULE: "일정",
   TASK: "할 일",
@@ -56,6 +61,15 @@ export function flattenCareValues(values: CareValues | null): CareValues {
 }
 export function readCareText(value: unknown) {
   return typeof value === "string" && value.trim() ? value : undefined;
+}
+
+export function careItemTitle(item: CareDetail) {
+  return (
+    readCareText(item.title) ??
+    (item.needsReconfirmation
+      ? `재확인이 필요한 ${itemLabels[item.itemType]}`
+      : "내용이 제거된 항목")
+  );
 }
 
 export function parseCareEvidenceValues(

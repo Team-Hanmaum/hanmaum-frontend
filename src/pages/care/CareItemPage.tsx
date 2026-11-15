@@ -4,12 +4,14 @@ import { Notice } from "@/components/feedback";
 import { useCareItem } from "@/features/careitem/model/useCareQueries";
 import { useSpaceMembers } from "@/features/carespace/model/useSpaceDetail";
 import { CareFieldList } from "@/features/careitem/ui/CareFieldList";
+import { CareReconfirmationMetadata } from "@/features/careitem/ui/CareReconfirmationMetadata";
 import { formatCareDate } from "@/features/careitem/model/careItemFields";
 import type {
   CareDetail,
   ItemType,
 } from "@/features/careitem/api/careReadTypes";
 import {
+  careItemTitle,
   displayCareValue,
   itemLabels,
   readCareText,
@@ -107,15 +109,18 @@ export function CareItemPage() {
           <div className="flex flex-col gap-hm-8">
             <div className="flex flex-wrap items-baseline justify-between gap-x-hm-12 gap-y-hm-4">
               <h1 className="min-w-0 text-hm-title-page wrap-anywhere">
-                {item.title ?? "내용이 제거된 항목"}
+                {careItemTitle(item)}
               </h1>
-              {item.status && (
+              {item.status && !item.needsReconfirmation && (
                 <Badge
                   label={displayCareValue("status", item.status)}
                   tone="brand"
                 />
               )}
             </div>
+            {item.needsReconfirmation && (
+              <CareReconfirmationMetadata item={item} />
+            )}
             {timing && (
               <p className="text-hm-body-emphasis wrap-anywhere text-hm-text-secondary">
                 {timing}
@@ -126,12 +131,12 @@ export function CareItemPage() {
             <Notice
               title={
                 item.needsReconfirmation
-                  ? "원본 변경으로 다시 확인이 필요해요"
+                  ? "원본을 확인할 수 없어요"
                   : "서로 다른 내용이 있어요"
               }
               body={
                 item.needsReconfirmation
-                  ? "소유자가 현재 값과 유효한 근거를 다시 확인해야 해요."
+                  ? "원본을 바탕으로 기록한 정보가 가려졌어요. 공간 소유자가 확인한 내용으로 다시 등록할 수 있어요."
                   : "현재 값과 제안의 근거를 비교해 주세요."
               }
               action={
