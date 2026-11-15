@@ -2,6 +2,8 @@ import { PageTitleWithAction } from "@/components/layout";
 import { MenuRow, Tabs } from "@/components/ui";
 import { EmptyState } from "@/components/feedback";
 import { useCareItems } from "@/features/careitem/model/useCareQueries";
+import { scheduleDayOffset } from "@/features/careitem/model/scheduleDayOffset";
+import { ScheduleCountdownBadge } from "@/features/careitem/ui/ScheduleCountdownBadge";
 import {
   careStatusTabs,
   careTypeTabs,
@@ -79,6 +81,7 @@ export function CarePage() {
     types[filter.type],
     filter.status?.toUpperCase(),
   );
+  const now = new Date();
   const row = (item: CareSummary, inReconfirmationList: boolean) => (
     <MenuRow
       key={item.itemId}
@@ -93,6 +96,15 @@ export function CarePage() {
             : undefined
       }
       description={careListDescription(item, filter.status)}
+      trailing={
+        item.itemType === "SCHEDULE" &&
+        filter.status === "upcoming" &&
+        !item.needsReconfirmation && (
+          <ScheduleCountdownBadge
+            daysUntil={scheduleDayOffset(item.fields?.scheduledDate, now)}
+          />
+        )
+      }
       onClick={() =>
         void navigate(withReturn(careItemPath(space.spaceId, item.itemId)))
       }

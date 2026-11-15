@@ -30,12 +30,14 @@ export function CareEditForm({
   operation,
   queryError,
   reload,
+  onBack,
 }: {
   space: SpaceDetail;
   item: CareDetail;
   operation: EditOperation;
   queryError: unknown;
   reload: () => void;
+  onBack: () => void;
 }) {
   const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
@@ -61,10 +63,6 @@ export function CareEditForm({
   const timeScreen = useTimeSelectionScreen(
     item.itemType === "SCHEDULE" && !form.review,
   );
-  const back = () =>
-    void navigate(withReturn(careItemPath(space.spaceId, item.itemId)), {
-      motion: "back",
-    });
   const title =
     operation === "edit"
       ? "내용 변경"
@@ -111,7 +109,7 @@ export function CareEditForm({
     <ProposalPageLayout
       title={form.review ? "내용 확인" : title}
       spaceId={space.spaceId}
-      onBack={back}
+      onBack={onBack}
       actions={
         <>
           <Button
@@ -132,7 +130,7 @@ export function CareEditForm({
           </Button>
           <TextAction
             disabled={form.frozen}
-            onClick={form.review && operation !== "delete" ? form.edit : back}
+            onClick={form.review && operation !== "delete" ? form.edit : onBack}
           >
             {form.review && operation !== "delete"
               ? "내용 다시 수정"

@@ -7,7 +7,7 @@ import type { RecordListResponse } from "@/features/record/api/recordReadTypes";
 import type { DashboardResponse, DashboardItem } from "../api/dashboardTypes";
 import type { HomeView } from "./homeViewTypes";
 import { homePreviewLimits as limits } from "./homePreviewLimits";
-import { scheduleDayOffset } from "./scheduleDayOffset";
+import { scheduleDayOffset } from "@/features/careitem/model/scheduleDayOffset";
 
 const formattedTime = (value: string) =>
   new Intl.DateTimeFormat("ko-KR", {

@@ -1,4 +1,4 @@
-import type { ComponentPropsWithRef } from "react";
+import type { ComponentPropsWithRef, ReactNode } from "react";
 import { Icon, type IconName } from "./Icon";
 import { Badge } from "./Badge";
 import "./focus-ring.css";
@@ -11,11 +11,13 @@ export type MenuRowProps = Omit<
   icon?: IconName | null;
   tone?: "default" | "danger" | "brand";
   badge?: string;
+  trailing?: ReactNode;
 };
 export function MenuRow({
   title,
   description,
   badge,
+  trailing,
   tone = "default",
   icon = tone === "danger" ? "person-error" : "person-brand",
   className = "",
@@ -48,6 +50,7 @@ export function MenuRow({
           </span>
         )}
       </span>
+      {trailing}
       <Icon
         name={
           tone === "brand" ? "chevron-right-brand" : "chevron-right-secondary"

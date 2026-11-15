@@ -5,8 +5,13 @@ const seoulDate = new Intl.DateTimeFormat("en-CA", {
   day: "2-digit",
 });
 
-export function scheduleDayOffset(scheduledDate: string, now: Date) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(scheduledDate)) return undefined;
+export function scheduleDayOffset(scheduledDate: unknown, now: Date) {
+  if (
+    typeof scheduledDate !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(scheduledDate)
+  ) {
+    return undefined;
+  }
   const scheduled = new Date(`${scheduledDate}T00:00:00Z`);
   if (
     !Number.isFinite(scheduled.getTime()) ||

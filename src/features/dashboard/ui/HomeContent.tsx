@@ -9,6 +9,7 @@ import type { HomeScreenState } from "../model/homeScreenStates";
 import type { HomeView } from "../model/homeViewTypes";
 import { HomeFamilySection } from "./HomeFamilySection";
 import type { CareListFilter } from "@/features/careitem/model/careItemSelectors";
+import { ScheduleCountdownBadge } from "@/features/careitem/ui/ScheduleCountdownBadge";
 
 function HomeDetailRow({
   title,
@@ -38,13 +39,7 @@ function HomeDetailRow({
           {description}
         </span>
       </span>
-      {daysUntil !== undefined && (
-        <Badge
-          label={daysUntil === 0 ? "D-day" : `D-${daysUntil}`}
-          tone="brand"
-          className="shrink-0 whitespace-nowrap tabular-nums"
-        />
-      )}
+      <ScheduleCountdownBadge daysUntil={daysUntil} />
       <Icon name="chevron-right-secondary" />
     </button>
   );

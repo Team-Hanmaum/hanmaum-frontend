@@ -23,6 +23,7 @@ import { ApiError } from "@/lib/api";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import { careItemPath, careListPath } from "@/routes/paths";
 import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useSpaceContext } from "@/routes/useSpaceContext";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 
@@ -32,14 +33,19 @@ export function CareSharePage() {
   const query = useCareItem(space.spaceId, itemId);
   const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
-  const backPath =
-    query.error instanceof ApiError && query.error.status === 404
-      ? careListPath(space.spaceId)
-      : careItemPath(space.spaceId, itemId);
-  const back = () =>
-    void navigate(withReturn(backPath), {
-      motion: "back",
-    });
+  const backToItem = useBackNavigation(
+    withReturn(careItemPath(space.spaceId, itemId)),
+  );
+  const back = () => {
+    if (query.error instanceof ApiError && query.error.status === 404) {
+      void navigate(withReturn(careListPath(space.spaceId)), {
+        replace: true,
+        motion: "back",
+      });
+    } else {
+      backToItem();
+    }
+  };
   const [revision, setRevision] = useState(0);
   const refresh = async () => {
     const next = await query.refetch();

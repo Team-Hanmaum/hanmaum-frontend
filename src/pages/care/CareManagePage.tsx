@@ -11,6 +11,7 @@ import { ReviewQueryState } from "@/features/proposal/ui/ReviewQueryState";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import { useSpaceContext } from "@/routes/useSpaceContext";
 import { useAppNavigate } from "@/routes/useAppNavigate";
+import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import { careItemPath } from "@/routes/paths";
 export function CareManagePage() {
@@ -21,7 +22,7 @@ export function CareManagePage() {
   const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
   const base = careItemPath(space.spaceId, itemId);
-  const back = () => void navigate(withReturn(base), { motion: "back" });
+  const back = useBackNavigation(withReturn(base));
   return (
     <ProposalPageLayout
       title="항목 관리"
