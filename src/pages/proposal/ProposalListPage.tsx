@@ -41,6 +41,7 @@ export function ProposalListPage() {
   const { space } = useSpaceContext();
   const [params, setParams] = useSearchParams();
   const status = params.get("status");
+  const sourceTab = params.get("fromTab") === "care" ? "care" : "news";
   const result = resultTabs.find((tab) => tab.value === status);
   const activeTab = result
     ? "results"
@@ -48,7 +49,9 @@ export function ProposalListPage() {
       ? "requests"
       : "review";
   const { withReturn } = useWithdrawalReturn();
-  const back = useBackNavigation(withReturn(spacePath(space.spaceId, "news")));
+  const back = useBackNavigation(
+    withReturn(spacePath(space.spaceId, sourceTab)),
+  );
 
   function selectStatus(value: string) {
     if (value === status) return;
@@ -63,6 +66,7 @@ export function ProposalListPage() {
       spaceId={space.spaceId}
       onBack={back}
       tabs
+      activeTab={sourceTab}
     >
       <h1 className="sr-only">제안·요청</h1>
       <Tabs

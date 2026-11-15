@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { EmptyState, ErrorState, Notice } from "@/components/feedback";
 import { SectionHeader } from "@/components/layout";
-import { Button, MenuRow, Spinner } from "@/components/ui";
+import { Button, Spinner } from "@/components/ui";
 import { formatRecordTime, groupRecordsByDay } from "../model/recordDates";
 import type { RecordView } from "../model/recordViewTypes";
 import type { NewsListState } from "../model/newsScreenStates";
@@ -13,7 +13,6 @@ export function NewsList({
   state,
   onCreate,
   onOpen,
-  onReview,
   onRetry,
   onMore,
   paging,
@@ -22,7 +21,6 @@ export function NewsList({
   state: NewsListState;
   onCreate: () => void;
   onOpen: (id: string) => void;
-  onReview: () => void;
   onRetry: () => void;
   onMore: () => void;
   // 서버 커서 페이지: 불러온 소식을 모두 표시하고 다음 페이지 유무는 서버 응답을 따른다.
@@ -38,7 +36,6 @@ export function NewsList({
   if (state === "loading")
     return (
       <>
-        <h1 className="text-hm-title-page">소식</h1>
         <div
           role="status"
           aria-label="가족의 소식을 불러오는 중"
@@ -55,13 +52,6 @@ export function NewsList({
   const empty = state === "empty" || records.length === 0;
   return (
     <>
-      <h1 className="text-hm-title-page">가족 소식</h1>
-      <MenuRow
-        icon="info-brand"
-        title="확인할 내용"
-        description="제안과 가족의 변경 요청"
-        onClick={onReview}
-      />
       {state === "error" ? (
         <ErrorState
           reason="load-error"

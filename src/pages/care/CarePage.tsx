@@ -1,4 +1,5 @@
-import { MenuRow, Tabs, TextAction } from "@/components/ui";
+import { PageTitleWithAction } from "@/components/layout";
+import { MenuRow, Tabs } from "@/components/ui";
 import { EmptyState } from "@/components/feedback";
 import { useCareItems } from "@/features/careitem/model/useCareQueries";
 import {
@@ -132,17 +133,16 @@ export function CarePage() {
   const statusTabs = careStatusTabs[filter.type];
   return (
     <>
-      <div className="flex items-center justify-between gap-hm-12">
-        <h1 className="text-hm-title-page">돌봄</h1>
-        <TextAction
-          className="shrink-0 rounded-hm-full border border-hm-action-primary/25 bg-hm-bg-brand-subtle px-hm-12 font-bold text-hm-text-brand hover:border-hm-action-primary/50"
-          onClick={() =>
-            void navigate(withReturn(proposalListPath(space.spaceId)))
-          }
-        >
-          제안·요청
-        </TextAction>
-      </div>
+      <PageTitleWithAction
+        title="돌봄"
+        action={{
+          label: "제안·요청",
+          onClick: () =>
+            void navigate(
+              withReturn(proposalListPath(space.spaceId, "review", "care")),
+            ),
+        }}
+      />
       <Tabs
         label="돌봄 종류"
         variant="underline"

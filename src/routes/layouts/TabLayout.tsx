@@ -1,7 +1,6 @@
 import { Outlet, useMatches } from "react-router";
 import { PageLayout } from "@/components/layout";
 import { FixedBottomArea } from "@/components/layout/FixedBottomArea";
-import { Button } from "@/components/ui";
 import { CareSpaceMenu } from "@/features/carespace/ui/CareSpaceMenu";
 import { useCareSpaces } from "@/features/carespace/model/useCareSpaces";
 import { toSpaceView } from "@/features/dashboard/model/homeData";
@@ -27,6 +26,7 @@ export function TabLayout() {
     .find((value) => (value.handle as { tab?: SpaceTab } | undefined)?.tab);
   const active =
     (match?.handle as { tab: SpaceTab } | undefined)?.tab ?? "home";
+  const showNewsAction = active === "home" || active === "news";
   const onCreateNews = () =>
     void navigate(withReturn(newsCreatePath(space.spaceId)));
   const members = useSpaceMembers(space.spaceId, active === "all");
@@ -60,27 +60,17 @@ export function TabLayout() {
         <FixedBottomArea
           position="fixed"
           className={
-            active === "home" || active === "care"
+            showNewsAction || active === "care"
               ? "pointer-events-none"
               : undefined
           }
         >
-          {active === "home" && (
+          {showNewsAction && (
             <TabQuickAction
               label="소식"
               accessibleLabel="소식 남기기"
               onClick={onCreateNews}
             />
-          )}
-          {active === "news" && (
-            <div className="bg-hm-bg-surface px-hm-20 pt-hm-16 pb-hm-12">
-              <Button
-                className="w-full"
-                onClick={onCreateNews}
-              >
-                소식 남기기
-              </Button>
-            </div>
           )}
           {active === "care" && <CareListAction spaceId={space.spaceId} />}
           <div className="pointer-events-auto">

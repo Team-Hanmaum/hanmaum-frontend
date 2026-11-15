@@ -72,8 +72,14 @@ export function newsDeletionPath(careSpaceId: string, deletionId: string) {
   return `${spacePath(careSpaceId, "news")}/deletions/${encodeURIComponent(deletionId)}`;
 }
 
-export function proposalListPath(careSpaceId: string, status = "review") {
-  return `${paths.spaces}/${encodeURIComponent(careSpaceId)}/proposals?status=${encodeURIComponent(status)}`;
+export function proposalListPath(
+  careSpaceId: string,
+  status = "review",
+  fromTab?: "care",
+) {
+  const params = new URLSearchParams({ status });
+  if (fromTab) params.set("fromTab", fromTab);
+  return `${paths.spaces}/${encodeURIComponent(careSpaceId)}/proposals?${params}`;
 }
 export function proposalReviewPath(careSpaceId: string, recordId: string) {
   return `${newsDetailPath(careSpaceId, recordId)}/proposals`;
