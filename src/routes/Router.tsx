@@ -9,7 +9,6 @@ import App from "@/App";
 import { qaMode } from "@/lib/qaMode";
 
 // 공간 진입 전 화면
-import { LandingPage } from "@/pages/landing/LandingPage";
 import { LoginPage } from "@/pages/login/LoginPage";
 import { AuthCallbackPage } from "@/pages/login/AuthCallbackPage";
 import { InvitationPage } from "@/pages/space/InvitationPage";
@@ -38,7 +37,7 @@ import { getRouteMotion } from "./routeMotion";
 import { paths, spacePath, careItemPath } from "./paths";
 
 // 경로 이동 처리
-function landingLoader({ request }: LoaderFunctionArgs) {
+function startLoader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   if (import.meta.env.DEV && url.searchParams.get("preview") === "components")
     return redirect(`${paths.components}${url.hash}`);
@@ -88,9 +87,9 @@ const entryRoutes: RouteObject[] = [
   },
   {
     index: true,
-    Component: LandingPage,
+    Component: LoginPage,
     handle: { title: "한마음" },
-    loader: landingLoader,
+    loader: startLoader,
   },
   {
     path: paths.login,
