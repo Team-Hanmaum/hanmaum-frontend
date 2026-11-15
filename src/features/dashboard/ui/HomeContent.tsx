@@ -115,7 +115,7 @@ export function HomeContent({
                 {news.title && (
                   <span className="text-hm-body-emphasis">{news.title}</span>
                 )}
-                <span className="line-clamp-2 text-hm-body-default whitespace-pre-line">
+                <span className="line-clamp-2 text-hm-body-default whitespace-normal">
                   {news.body}
                 </span>
               </span>
