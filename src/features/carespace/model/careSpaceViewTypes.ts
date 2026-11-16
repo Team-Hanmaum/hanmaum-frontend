@@ -14,6 +14,8 @@ export type CareSpaceView = {
   empty: boolean;
 };
 
+export const careSpaceNameSuffix = "의 돌봄";
+
 export function careSpaceName(space: Pick<CareSpaceView, "subjectLabel">) {
-  return `${space.subjectLabel}의 돌봄`;
+  return `${space.subjectLabel}${careSpaceNameSuffix}`;
 }

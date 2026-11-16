@@ -2,7 +2,11 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Header } from "@/components/layout";
 import { Icon } from "@/components/ui";
 import { ErrorState, LoadingState } from "@/components/feedback";
-import { careSpaceName, type CareSpaceView } from "../model/careSpaceViewTypes";
+import {
+  careSpaceName,
+  careSpaceNameSuffix,
+  type CareSpaceView,
+} from "../model/careSpaceViewTypes";
 
 export function CareSpaceMenu({
   space,
@@ -70,7 +74,8 @@ export function CareSpaceMenu({
           },
         }}
         space={{
-          name: careSpaceName(space),
+          name: space.subjectLabel,
+          suffix: careSpaceNameSuffix,
           expanded: open,
           controls: open ? id : undefined,
           onClick: () => setOpen(!open),
