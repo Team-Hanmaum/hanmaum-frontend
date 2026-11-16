@@ -249,7 +249,9 @@ export function CareCreateForm({
           </p>
         </>
       ) : (
-        <div className="flex flex-col gap-hm-16">
+        <div
+          className={`flex flex-col gap-hm-16 ${type === "SCHEDULE" ? "" : "[&_textarea]:resize-none"}`}
+        >
           <CareFieldsForm
             apiMode
             direct
