@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Button, Badge, TextAction } from "@/components/ui";
+import { Button, TextAction } from "@/components/ui";
 import { Notice } from "@/components/feedback";
 import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog";
 import type { SpaceDetail } from "@/features/carespace/api/spaceDetailTypes";
@@ -26,7 +26,7 @@ import { itemLabels } from "../model/careReadView";
 import { validateCareFields } from "../model/careItemFields";
 import type { CareItemKind } from "../model/careItemViewTypes";
 import { CareFieldsForm } from "./CareFieldsForm";
-import { CareValuesView } from "./CareValuesView";
+import { CareFieldList } from "./CareFieldList";
 import { CareTimeSelection } from "./CareTimeSelection";
 import { ProposalPageLayout } from "@/routes/layouts/ProposalPageLayout";
 import { useTimeSelectionScreen } from "@/routes/useTimeSelectionScreen";
@@ -42,6 +42,13 @@ import {
 type Attempt =
   | { direct: true; body: CreateCareItemBody }
   | { direct: false; body: RequestSubmissionBody };
+
+const reviewFields: Record<CreatableItemType, readonly string[]> = {
+  SCHEDULE: ["scheduledDate", "scheduledTime", "location", "description"],
+  TASK: ["assigneeMembershipId", "dueDate", "description"],
+  QUESTION: ["description"],
+};
+
 export function CareCreateForm({
   space,
   type,
@@ -79,6 +86,12 @@ export function CareCreateForm({
     void navigate(withReturn(careListPath(space.spaceId, { type: kind })), {
       motion: "back",
     });
+  function returnToInputs() {
+    if (frozen) return;
+    setReview(false);
+    mutation.reset();
+    attempt.current = null;
+  }
   function confirm() {
     const next =
       type === "SCHEDULE" ? validateCareFields("schedule", fields) : {};
@@ -155,9 +168,16 @@ export function CareCreateForm({
     <ProposalPageLayout
       title={review ? "내용 확인" : `${itemLabels[type]} 추가`}
       spaceId={space.spaceId}
-      onBack={back}
+      onBack={review && !frozen ? returnToInputs : back}
       actions={
-        <>
+        <div className="grid grid-cols-2 gap-hm-8 [&>.hm-button]:px-hm-8">
+          <Button
+            variant="outline"
+            disabled={frozen}
+            onClick={review ? returnToInputs : back}
+          >
+            {review ? "내용 다시 수정" : "돌아가기"}
+          </Button>
           <Button
             loading={mutation.isPending}
             disabled={mutation.isError && !retry}
@@ -171,41 +191,23 @@ export function CareCreateForm({
                   : "등록 요청하기"
                 : "입력 내용 확인"}
           </Button>
-          <TextAction
-            disabled={frozen}
-            onClick={() => {
-              if (review) {
-                setReview(false);
-                mutation.reset();
-                attempt.current = null;
-              } else back();
-            }}
-          >
-            {review ? "내용 다시 수정" : "돌아가기"}
-          </TextAction>
-        </>
+        </div>
       }
     >
-      <Badge
-        label={
-          review
-            ? direct
-              ? "최종 확인"
-              : "승인 요청"
-            : `${space.subjectLabel}의 돌봄`
-        }
-      />
-      <h1 className="text-hm-title-page">
-        {review
-          ? direct
-            ? "이 내용으로 등록할까요?"
-            : "이 내용으로 요청할까요?"
-          : type === "SCHEDULE"
-            ? "어떤 일정인가요?"
-            : type === "TASK"
-              ? "무엇을 챙겨야 하나요?"
-              : "무엇을 확인해야 하나요?"}
-      </h1>
+      {!review && (
+        <div className="flex flex-col gap-hm-4">
+          <h1 className="text-hm-title-page">
+            {type === "SCHEDULE"
+              ? "어떤 일정인가요?"
+              : type === "TASK"
+                ? "어떤 할 일인가요?"
+                : "무엇을 확인해야 하나요?"}
+          </h1>
+          <p className="text-hm-body-small wrap-anywhere text-hm-text-secondary">
+            {space.subjectLabel}의 돌봄
+          </p>
+        </div>
+      )}
       {(error || mutation.isError) && (
         <Notice
           role="alert"
@@ -226,48 +228,46 @@ export function CareCreateForm({
         </TextAction>
       )}
       {review ? (
-        <CareValuesView
-          values={createItemValues(type, fields)}
-          members={members.data}
-          keys={
-            type === "SCHEDULE"
-              ? [
-                  "title",
-                  "scheduledDate",
-                  "scheduledTime",
-                  "location",
-                  "description",
-                ]
-              : type === "TASK"
-                ? ["title", "description", "assigneeMembershipId", "dueDate"]
-                : ["title", "description"]
-          }
-        />
+        <>
+          <section className="flex min-w-0 flex-col gap-hm-8 rounded-hm-16 bg-hm-bg-surface p-hm-16">
+            <p className="text-hm-caption-default text-hm-text-brand">
+              {itemLabels[type]}
+            </p>
+            <h1 className="text-hm-title-page wrap-anywhere whitespace-pre-wrap">
+              {fields.title.trim()}
+            </h1>
+            <CareFieldList
+              values={createItemValues(type, fields)}
+              members={members.data}
+              keys={reviewFields[type]}
+            />
+          </section>
+          <p className="text-hm-body-small text-hm-text-secondary">
+            {direct
+              ? "등록하면 가족이 돌봄 목록에서 볼 수 있어요."
+              : "소유자가 요청을 확인한 뒤 돌봄 목록에 반영해요."}
+          </p>
+        </>
       ) : (
-        <CareFieldsForm
-          apiMode
-          direct
-          kind={kind}
-          fields={fields}
-          onChange={setFields}
-          onTimeSelect={timeScreen.show}
-          members={(members.data ?? []).map((m) => ({
-            id: m.membershipId,
-            name: m.displayName || "이름 미설정",
-            role: m.role.toLowerCase(),
-          }))}
-          disabled={frozen}
-          errors={fieldErrors}
-        />
+        <div className="flex flex-col gap-hm-16 [&_textarea]:resize-none">
+          <CareFieldsForm
+            apiMode
+            direct
+            compact
+            kind={kind}
+            fields={fields}
+            onChange={setFields}
+            onTimeSelect={timeScreen.show}
+            members={(members.data ?? []).map((m) => ({
+              id: m.membershipId,
+              name: m.displayName || "이름 미설정",
+              role: m.role.toLowerCase(),
+            }))}
+            disabled={frozen}
+            errors={fieldErrors}
+          />
+        </div>
       )}
-      <Notice
-        title={direct ? "확인 후 바로 등록해요" : "소유자의 확인 후 반영해요"}
-        body={
-          direct
-            ? "등록한 내용은 돌봄 목록과 홈에 반영돼요."
-            : "등록 요청을 보내도 승인 전까지 현재 돌봄 정보는 그대로예요."
-        }
-      />
       {dialog}
     </ProposalPageLayout>
   );

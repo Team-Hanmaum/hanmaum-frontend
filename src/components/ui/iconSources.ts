@@ -41,6 +41,7 @@ import personBrand from "@/assets/icons/person-brand.svg";
 import chevronRightSecondary from "@/assets/icons/chevron-right-secondary.svg";
 import personError from "@/assets/icons/person-error.svg";
 import logout from "@/assets/icons/logout.svg";
+import logoutError from "@/assets/icons/logout-error.svg";
 import infoBrand from "@/assets/icons/info-brand.svg";
 import infoSecondary from "@/assets/icons/info-secondary.svg";
 import alertError from "@/assets/icons/alert-error.svg";
@@ -99,6 +100,7 @@ export const iconSources = {
   "chevron-right-secondary": chevronRightSecondary,
   "person-error": personError,
   logout: logout,
+  "logout-error": logoutError,
   "info-brand": infoBrand,
   "info-secondary": infoSecondary,
   "alert-error": alertError,

@@ -114,7 +114,7 @@ export function FamilyPage() {
               ] as const)
             : []),
           {
-            icon: "logout",
+            icon: "logout-error",
             tone: "danger",
             title: "공간 나가기",
             description:

@@ -64,7 +64,7 @@ export function NewsForm({
         placeholder="예: 다음 진료가 20일 오후 2시로 바뀌었어요."
         error={error}
         disabled={disabled}
-        className="[&_textarea]:leading-[var(--text-hm-body-reading--line-height)] [&_textarea:enabled]:bg-hm-bg-surface [&_textarea:enabled:focus]:bg-hm-bg-brand-subtle"
+        className="[&_textarea]:resize-none [&_textarea]:leading-[var(--text-hm-body-reading--line-height)] [&_textarea:enabled]:bg-hm-bg-surface [&_textarea:enabled:focus]:bg-hm-bg-brand-subtle"
       />
       <p
         id={`${id}-sharing-note`}

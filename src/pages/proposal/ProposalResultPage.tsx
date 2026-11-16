@@ -25,22 +25,31 @@ import {
   careItemPath,
   careHistoryPath,
   spacePath,
+  spaceTabs,
 } from "@/routes/paths";
 // 결과 전용 GET은 없으므로 처리한 제안 ID로 저장된 decision을 다시 조회한다. 새로고침도 동일하게 복원한다.
 export function ProposalResultPage() {
   const { space } = useSpaceContext();
   const { resultId = "" } = useParams();
   const [params] = useSearchParams();
-  const fromNews = params.get("fromTab") === "news";
+  const fromTab = params.get("fromTab");
+  const sourceTab = spaceTabs.find((tab) => tab === fromTab);
   const ids = readSelectedIds(params.get("ids") ?? resultId);
   const queries = useSelectedProposals(space.spaceId, ids);
   const members = useSpaceMembers(space.spaceId);
   const navigate = useAppNavigate();
   const { withReturn } = useWithdrawalReturn();
+  const status = queries[0]?.data?.status;
+  const listStatus =
+    status === "DECLINED"
+      ? "rejected"
+      : status === "INVALIDATED"
+        ? "invalidated"
+        : "applied";
   const back = useBackNavigation(
     withReturn(
-      fromNews
-        ? proposalListPath(space.spaceId, "applied")
+      sourceTab
+        ? proposalListPath(space.spaceId, listStatus, sourceTab)
         : proposalListPath(space.spaceId),
     ),
   );
@@ -50,7 +59,7 @@ export function ProposalResultPage() {
       spaceId={space.spaceId}
       onBack={back}
       tabs
-      activeTab={fromNews ? "news" : "care"}
+      activeTab={sourceTab ?? "care"}
       actions={
         <Button
           onClick={() =>

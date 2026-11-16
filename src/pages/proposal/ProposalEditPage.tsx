@@ -152,21 +152,30 @@ function Editor({
       spaceId={spaceId}
       onBack={onBack}
       actions={
-        <Button
-          disabled={expired || refreshFailed}
-          onClick={confirm}
-        >
-          수정 내용 확인
-        </Button>
+        <div className="grid grid-cols-2 gap-hm-8 [&>.hm-button]:px-hm-8">
+          <Button
+            variant="outline"
+            onClick={onBack}
+          >
+            취소
+          </Button>
+          <Button
+            disabled={expired || refreshFailed}
+            onClick={confirm}
+          >
+            수정 내용 확인
+          </Button>
+        </div>
       }
     >
       {dialog}
       {refreshNotice}
-      <h1 className="text-hm-title-page">반영할 내용을 다듬어 주세요</h1>
-      <Notice
-        title="현재 돌봄 정보는 그대로예요"
-        body="여기서는 검토할 초안만 바꿔요. 최종 확인 후 반영하거나 소유자에게 요청해요."
-      />
+      <div className="flex flex-col gap-hm-4">
+        <h1 className="text-hm-title-page">{proposal.title ?? "제안 수정"}</h1>
+        <p className="text-hm-body-small text-hm-text-secondary">
+          수정 내용은 검토할 초안에 저장돼요.
+        </p>
+      </div>
       {expired ? (
         <Notice
           tone="error"

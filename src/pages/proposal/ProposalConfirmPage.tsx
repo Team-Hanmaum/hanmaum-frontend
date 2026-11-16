@@ -152,7 +152,7 @@ export function ProposalConfirmPage() {
   const blocked = !!mutation.error && !canRetryReview(mutation.error);
   return (
     <ProposalPageLayout
-      title="반영 전 확인"
+      title={space.role === "OWNER" ? "반영 전 확인" : "요청 전 확인"}
       spaceId={space.spaceId}
       onBack={back}
       actions={
@@ -194,23 +194,19 @@ export function ProposalConfirmPage() {
         ) : undefined
       }
     >
-      <h1 className="text-hm-title-page">
-        {space.role === "OWNER"
-          ? "반영 전에 한 번 더 확인해 주세요"
-          : "요청할 내용을 확인해 주세요"}
-      </h1>
-      <Notice
-        title={
-          space.role === "OWNER"
-            ? "확인한 내용만 돌봄에 반영해요"
-            : "아직 돌봄 정보는 바뀌지 않아요"
-        }
-        body={
-          space.role === "OWNER"
-            ? "선택한 내용은 함께 처리돼요. 하나라도 바뀌면 다시 검토해야 해요."
-            : "소유자가 요청을 검토하고 최종 반영해요."
-        }
-      />
+      <div className="flex flex-col gap-hm-4">
+        <h1 className="text-hm-title-page">
+          {space.role === "OWNER" ? "반영할 내용" : "요청할 내용"}
+          {loaded && ` ${entries.length}건`}
+        </h1>
+        {loaded && (
+          <p className="text-hm-body-small text-hm-text-secondary">
+            {space.role === "OWNER"
+              ? "선택한 제안은 함께 처리돼요."
+              : "소유자가 요청을 검토하고 최종 반영해요."}
+          </p>
+        )}
+      </div>
       {!ids.length ? (
         <EmptyState
           title="선택한 제안이 없어요"
@@ -222,15 +218,17 @@ export function ProposalConfirmPage() {
           retry={() => queries.forEach((q) => void q.refetch())}
         />
       ) : (
-        entries.map(({ proposal, draft }) => (
-          <ProposalCard
-            key={proposal.proposalId}
-            proposal={proposal}
-            draft={draft}
-            members={members.data}
-            readonly
-          />
-        ))
+        <div className="flex flex-col gap-hm-12">
+          {entries.map(({ proposal, draft }) => (
+            <ProposalCard
+              key={proposal.proposalId}
+              proposal={proposal}
+              draft={draft}
+              members={members.data}
+              readonly
+            />
+          ))}
+        </div>
       )}
       {(problem || duplicate || leases.error || mutation.error) && (
         <Notice

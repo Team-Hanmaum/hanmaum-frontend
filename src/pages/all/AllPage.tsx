@@ -57,7 +57,7 @@ export function AllPage() {
             title: "참여 공간 선택",
             onClick: () =>
               void navigate(paths.spaces, {
-                state: { fromAllSpaceId: space.id },
+                state: { fromSpace: { id: space.id, tab: "all" } },
               }),
           },
         ]}
@@ -100,7 +100,7 @@ export function AllPage() {
               ] as const)
             : []),
           {
-            icon: "logout",
+            icon: "logout-error",
             tone: "danger",
             title: "공간 나가기",
             onClick: go(familyLeavePath(space.id)),

@@ -12,6 +12,7 @@ type MainHeader = HeaderCommon & {
   };
   space?: {
     name: string;
+    suffix?: string;
     onClick: () => void;
     expanded?: boolean;
     controls?: string;
@@ -27,6 +28,8 @@ type BackHeader = HeaderCommon & {
 export type HeaderProps = MainHeader | BackHeader;
 
 export function Header(props: HeaderProps) {
+  const space = props.variant === "main" ? props.space : undefined;
+  const spaceLabel = space ? `${space.name}${space.suffix ?? ""}` : undefined;
   const brand = props.variant === "main" && (
     <>
       <BrandSymbol decorative />
@@ -56,18 +59,19 @@ export function Header(props: HeaderProps) {
               </div>
             )}
           </div>
-          {props.space && (
+          {space && (
             <button
               type="button"
-              onClick={props.space.onClick}
-              aria-label={`돌봄 공간 선택: ${props.space.name}`}
-              aria-expanded={props.space.expanded}
-              aria-controls={props.space.controls}
-              title={props.space.name}
+              onClick={space.onClick}
+              aria-label={`돌봄 공간 선택: ${spaceLabel}`}
+              aria-expanded={space.expanded}
+              aria-controls={space.controls}
+              title={spaceLabel}
               className="hm-focus-ring group flex min-h-hm-touch-min max-w-[calc(100%-6.5rem)] min-w-0 items-center gap-hm-4 rounded-hm-8 pl-hm-8 text-hm-body-emphasis hover:bg-hm-bg-subtle aria-expanded:bg-hm-bg-subtle"
             >
-              <span className="min-w-0 flex-1 truncate font-bold">
-                {props.space.name}
+              <span className="min-w-0 flex-1 truncate font-normal">
+                <span className="font-bold">{space.name}</span>
+                {space.suffix}
               </span>
               <span className="inline-flex shrink-0 group-aria-expanded:rotate-180">
                 <Icon name="chevron-down-secondary" />

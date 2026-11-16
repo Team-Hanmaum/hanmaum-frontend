@@ -78,9 +78,11 @@ export function HomePage() {
         onOpenNews={(id) => void navigate(newsDetailPath(space.spaceId, id))}
         onCare={(filter) => void navigate(careListPath(space.spaceId, filter))}
         onOpenCare={(id) => void navigate(careItemPath(space.spaceId, id))}
-        onPending={() => void navigate(proposalListPath(space.spaceId))}
+        onPending={() =>
+          void navigate(proposalListPath(space.spaceId, "review", "home"))
+        }
         onHistory={() =>
-          void navigate(proposalListPath(space.spaceId, "applied"))
+          void navigate(proposalListPath(space.spaceId, "applied", "home"))
         }
         onChange={(id) => {
           const change = dashboard.data.recentChanges.items.find(

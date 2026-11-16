@@ -52,7 +52,11 @@ export function TabLayout() {
           }
           onHome={() => void navigate(spacePath(space.spaceId))}
           onSelect={(id) => void navigate(spacePath(id))}
-          onAllSpaces={() => void navigate(paths.spaces)}
+          onAllSpaces={() =>
+            void navigate(paths.spaces, {
+              state: { fromSpace: { id: space.spaceId, tab: active } },
+            })
+          }
           onRetry={() => void spaces.refetch()}
         />
       }

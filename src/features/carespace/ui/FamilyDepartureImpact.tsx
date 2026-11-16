@@ -41,7 +41,7 @@ export function FamilyDepartureImpact({
                 </ul>
               </>
             ) : (
-              "현재 맡은 미완료 할 일이 없어요. 처리 시점에 미완료인 할 일의 담당자가 미지정으로 바뀌어요."
+              "현재 맡은 미완료 할 일이 없어요."
             )}
           </dd>
         </div>
