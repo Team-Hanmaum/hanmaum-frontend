@@ -54,7 +54,9 @@ export function AccountPage() {
       <MenuRow
         icon="grid-brand"
         title="참여 중인 돌봄 공간"
-        onClick={() => void navigate(paths.spaces)}
+        onClick={() =>
+          void navigate(paths.spaces, { state: { fromAccount: { spaceId } } })
+        }
       />
       <MenuRow
         icon="logout"

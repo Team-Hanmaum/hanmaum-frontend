@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Notice } from "@/components/feedback";
-import { Button, TextAction } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { WheelPicker } from "@/components/ui/WheelPicker";
 import { formatCareTime } from "../model/careItemFields";
 
@@ -59,15 +59,22 @@ export function CareTimeSelection({
     ? `${String((Number(parts.hour) % 12) + Number(parts.period)).padStart(2, "0")}:${String(parts.minute).padStart(2, "0")}`
     : "";
   const actions = (
-    <>
+    <div className="grid grid-cols-2 gap-hm-8">
       <Button
+        variant="outline"
+        className="min-w-0 px-hm-8"
+        onClick={onBack}
+      >
+        돌아가기
+      </Button>
+      <Button
+        className="min-w-0 px-hm-8"
         disabled={!complete || moving}
         onClick={() => onConfirm(value)}
       >
         이 시간으로 선택
       </Button>
-      <TextAction onClick={onBack}>돌아가기</TextAction>
-    </>
+    </div>
   );
   const content = (
     <>

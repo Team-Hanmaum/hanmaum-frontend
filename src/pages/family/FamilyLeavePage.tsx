@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { ErrorState, Notice } from "@/components/feedback";
+import { ConfirmDialog, ErrorState, Notice } from "@/components/feedback";
 import { UnsavedChangesDialog } from "@/components/feedback/UnsavedChangesDialog";
 import { Button, MenuRow } from "@/components/ui";
 import { useSession } from "@/features/auth/model/useSession";
 import { useCareItems } from "@/features/careitem/model/useCareQueries";
 import { leaveCareSpace } from "@/features/carespace/api/familyManagementApi";
 import type { MembershipChangeBody } from "@/features/carespace/api/familyManagementTypes";
+import { careSpaceName } from "@/features/carespace/model/careSpaceViewTypes";
 import { endFamilyAccess } from "@/features/carespace/model/familyCache";
 import { useFamilyAction } from "@/features/carespace/model/useFamilyAction";
 import { useFamilyManagement } from "@/features/carespace/model/useFamilyManagement";
@@ -27,6 +29,7 @@ import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 export function FamilyLeavePage() {
   const data = useFamilyManagement();
   const { spaceId, space, members } = data;
+  const [confirmationSpaceId, setConfirmationSpaceId] = useState<string>();
   const tasks = useCareItems(spaceId, "TASK");
   const session = useSession();
   const client = useQueryClient();
@@ -66,6 +69,18 @@ export function FamilyLeavePage() {
     action.reset();
     void data.refresh();
     void tasks.refetch();
+  };
+  const confirmationOpen = confirmationSpaceId === spaceId;
+  const confirmLeave = () => {
+    if (!confirmationOpen || !ready || !space || action.pending) return;
+    setConfirmationSpaceId(undefined);
+    action.submit(
+      {
+        expectedSpaceVersion: space.version,
+        clientRequestId: crypto.randomUUID(),
+      },
+      complete,
+    );
   };
   return (
     <FamilyPageLayout
@@ -109,16 +124,7 @@ export function FamilyLeavePage() {
               variant="destructive"
               loading={action.pending}
               disabled={!ready}
-              onClick={() => {
-                if (ready)
-                  action.submit(
-                    {
-                      expectedSpaceVersion: space.version,
-                      clientRequestId: crypto.randomUUID(),
-                    },
-                    complete,
-                  );
-              }}
+              onClick={() => setConfirmationSpaceId(spaceId)}
             >
               공간 나가기
             </Button>
@@ -182,7 +188,7 @@ export function FamilyLeavePage() {
       ) : (
         <>
           <div className="flex flex-col gap-hm-8">
-            <h1 className="text-hm-title-page">이 공간에서 나갈까요?</h1>
+            <h1 className="text-hm-title-page">공간 나가기 전 확인</h1>
             <p className="text-hm-body-small text-hm-text-secondary">
               {space.subjectLabel}의 돌봄 · {self.displayName || "나"}
             </p>
@@ -207,6 +213,22 @@ export function FamilyLeavePage() {
           )}
         </>
       )}
+      <ConfirmDialog
+        open={confirmationOpen}
+        onOpenChange={(open) =>
+          setConfirmationSpaceId(open ? spaceId : undefined)
+        }
+        title={
+          space
+            ? `‘${careSpaceName(space)}’에서 나갈까요?`
+            : "이 공간에서 나갈까요?"
+        }
+        body="나가면 이 공간의 소식과 돌봄 기록을 볼 수 없어요. 이미 남긴 소식과 변경 이력은 가족에게 남아요."
+        intent="destructive"
+        confirmLabel="나가기"
+        confirmDisabled={!ready || action.pending}
+        onConfirm={confirmLeave}
+      />
       <UnsavedChangesDialog
         open={blocker.state === "blocked"}
         title="나가기 결과 확인을 나갈까요?"

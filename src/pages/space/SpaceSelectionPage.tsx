@@ -16,7 +16,7 @@ import {
 } from "@/features/carespace/ui/CareSpaceList";
 import { useCareSpaces } from "@/features/carespace/model/useCareSpaces";
 import type { ApiError } from "@/lib/api";
-import { paths, spacePath } from "@/routes/paths";
+import { accountPath, paths, spacePath, type SpaceTab } from "@/routes/paths";
 import { useBackNavigation } from "@/routes/useBackNavigation";
 
 function toListItem(space: CareSpaceSummary): CareSpaceListItem {
@@ -65,13 +65,16 @@ export function SpaceSelectionPage() {
   const location = useLocation();
   const entry = location.state as {
     familyAction?: { kind: string; spaceId: string };
-    fromAllSpaceId?: string;
+    fromSpace?: { id: string; tab: SpaceTab };
+    fromAccount?: { spaceId: string | null };
   } | null;
   const familyAction = entry?.familyAction;
-  const fromAllSpaceId = entry?.fromAllSpaceId;
-  const onBack = useBackNavigation(
-    fromAllSpaceId ? spacePath(fromAllSpaceId, "all") : paths.spaces,
-  );
+  const returnPath = entry?.fromSpace
+    ? spacePath(entry.fromSpace.id, entry.fromSpace.tab)
+    : entry?.fromAccount
+      ? accountPath(entry.fromAccount.spaceId ?? undefined)
+      : undefined;
+  const onBack = useBackNavigation(returnPath ?? paths.spaces);
   const accountAction = (
     <IconButton
       icon="person"
@@ -95,7 +98,7 @@ export function SpaceSelectionPage() {
     <>
       <PageLayout
         header={
-          fromAllSpaceId ? (
+          returnPath ? (
             <Header
               variant="back"
               title="참여 공간 선택"
@@ -143,7 +146,7 @@ export function SpaceSelectionPage() {
             }
           />
         )}
-        <h1 className="text-hm-title-page">공간을 선택해주세요.</h1>
+        <h1 className="text-hm-title-page">공간을 선택해 주세요</h1>
         {remote.isPending ? (
           <LoadingState label="참여 공간을 불러오고 있어요" />
         ) : remote.isError ? (

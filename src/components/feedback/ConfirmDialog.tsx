@@ -51,24 +51,26 @@ export function ConfirmDialog({
           {body}
         </p>
         {feedback}
-        <Button
-          variant={intent === "destructive" ? "destructive" : "primary"}
-          onClick={onConfirm}
-          loading={busy}
-          disabled={confirmDisabled}
-          className="w-full"
-        >
-          {confirmLabel}
-        </Button>
-        <Button
-          data-initial-focus
-          variant="outline"
-          onClick={() => onOpenChange(false)}
-          disabled={busy}
-          className="w-full"
-        >
-          {cancelLabel}
-        </Button>
+        <div className="grid grid-cols-2 gap-hm-8">
+          <Button
+            data-initial-focus
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={busy}
+            className="min-w-0 px-hm-8"
+          >
+            {cancelLabel}
+          </Button>
+          <Button
+            variant={intent === "destructive" ? "destructive" : "primary"}
+            onClick={onConfirm}
+            loading={busy}
+            disabled={confirmDisabled}
+            className="min-w-0 px-hm-8"
+          >
+            {confirmLabel}
+          </Button>
+        </div>
       </div>
     </Modal>
   );

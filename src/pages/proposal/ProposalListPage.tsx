@@ -42,7 +42,10 @@ export function ProposalListPage() {
   const [params, setParams] = useSearchParams();
   const status = params.get("status");
   const fromTab = params.get("fromTab");
-  const sourceTab = fromTab === "care" || fromTab === "all" ? fromTab : "news";
+  const sourceTab =
+    fromTab === "home" || fromTab === "care" || fromTab === "all"
+      ? fromTab
+      : "news";
   const result = resultTabs.find((tab) => tab.value === status);
   const activeTab = result
     ? "results"

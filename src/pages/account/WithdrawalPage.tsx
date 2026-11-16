@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router";
 import { Badge, Button, MenuRow } from "@/components/ui";
-import { ErrorState, LoadingState, Notice } from "@/components/feedback";
+import {
+  ConfirmDialog,
+  ErrorState,
+  LoadingState,
+  Notice,
+} from "@/components/feedback";
 import { useSession } from "@/features/auth/model/useSession";
 import { useCareSpaces } from "@/features/carespace/model/useCareSpaces";
 import { AccountInfoCard } from "@/features/user/ui/AccountInfoCard";
@@ -25,11 +30,14 @@ export function WithdrawalPage() {
   const back = useBackNavigation(paths.account);
   const [params] = useSearchParams();
   const [checked, setChecked] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const owned = spaces.data?.filter((space) => space.role === "OWNER") ?? [];
   const unknown = session.status === "withdrawal-unknown";
   const checking = unknown && session.checking;
   const pending = withdrawal.isPending || session.status === "withdrawing";
   const ready = !!spaces.data && !spaces.isError;
+  const canWithdraw =
+    ready && !owned.length && !spaces.isFetching && !pending && !unknown;
   const cancel = () => {
     if (!pending && !unknown) back();
   };
@@ -78,7 +86,7 @@ export function WithdrawalPage() {
               loading={pending || spaces.isFetching}
               onClick={() => {
                 if (owned.length) refresh();
-                else withdrawal.mutate();
+                else setConfirming(true);
               }}
             >
               {owned.length ? "정리 상태 확인하기" : "계정 정보 삭제하고 탈퇴"}
@@ -220,6 +228,20 @@ export function WithdrawalPage() {
           body={withdrawal.error.message}
         />
       )}
+      <ConfirmDialog
+        open={confirming}
+        onOpenChange={setConfirming}
+        title="한마음에서 탈퇴할까요?"
+        body="계정 정보가 삭제되고 참여 중인 돌봄 공간에 접근할 수 없어요. 가족과 공유한 기록은 남아요."
+        intent="destructive"
+        confirmLabel="탈퇴하기"
+        confirmDisabled={!canWithdraw}
+        onConfirm={() => {
+          if (!confirming || !canWithdraw) return;
+          setConfirming(false);
+          withdrawal.mutate();
+        }}
+      />
     </AccountPageLayout>
   );
 }
