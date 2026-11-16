@@ -54,7 +54,12 @@ export function CareFieldsForm({
   }
   const update = (key: keyof CareItemFields, value: string) =>
     onChange({ ...fields, [key]: value });
-  const pickerTitle = picker === "assigneeId" ? "담당자 선택" : "날짜 선택";
+  const pickerTitle =
+    picker === "assigneeId"
+      ? "담당자 선택"
+      : picker === "dueDate"
+        ? "기한 선택"
+        : "날짜 선택";
   return (
     <>
       {kind === "schedule" || apiMode ? (
@@ -70,7 +75,10 @@ export function CareFieldsForm({
           }
           value={fields.title}
           multiline={apiMode && kind === "question"}
-          rows={apiMode && kind === "question" ? 5 : undefined}
+          rows={apiMode && kind === "question" ? (compact ? 3 : 5) : undefined}
+          className={
+            compact && kind === "question" ? "[&_textarea]:min-h-24" : undefined
+          }
           maxLength={10000}
           helper={original ? `AI 제안 · ${original}` : undefined}
           error={errors.title}
@@ -141,7 +149,7 @@ export function CareFieldsForm({
                     ? formatCareDate(fields[key])
                     : "날짜 선택"
             }
-            className={`border border-hm-border-default ${compact ? "min-h-hm-touch-min py-hm-8" : ""}`}
+            className={`border border-hm-border-default ${compact ? "min-h-hm-touch-min! py-hm-8" : ""}`}
             disabled={disabled}
             onClick={() => (key === "time" ? onTimeSelect() : open(key))}
           />
@@ -175,6 +183,7 @@ export function CareFieldsForm({
           }
           multiline
           rows={compact ? 3 : 5}
+          className={compact ? "[&_textarea]:min-h-24" : undefined}
           maxLength={10000}
           value={fields.note}
           onChange={(event) => update("note", event.target.value)}
@@ -210,7 +219,13 @@ export function CareFieldsForm({
         }}
         title={pickerTitle}
         footer={
-          <>
+          <div className="grid grid-cols-2 gap-hm-8 [&>.hm-button]:px-hm-8">
+            <Button
+              variant="outline"
+              onClick={() => setPicker(null)}
+            >
+              돌아가기
+            </Button>
             <Button
               disabled={picker === "date" && !selection}
               onClick={() => {
@@ -218,25 +233,24 @@ export function CareFieldsForm({
                 setPicker(null);
               }}
             >
-              {picker === "assigneeId" ? "선택 완료" : "이 날짜로 선택"}
+              {picker === "assigneeId" || (picker === "dueDate" && !selection)
+                ? "선택 완료"
+                : "이 날짜로 선택"}
             </Button>
-            <TextAction onClick={() => setPicker(null)}>돌아가기</TextAction>
-          </>
+          </div>
         }
       >
         {picker === "date" || picker === "dueDate" ? (
           <>
-            <p className="text-hm-title-page">언제인가요?</p>
             <DatePicker
               value={selection}
               onChange={setSelection}
             />
-            <Notice
-              title={formatCareDate(selection)}
-              body="선택한 날짜가 입력 화면에 들어가요."
-            />
-            {picker === "dueDate" && (
-              <TextAction onClick={() => setSelection("")}>
+            {picker === "dueDate" && selection && (
+              <TextAction
+                className="self-start"
+                onClick={() => setSelection("")}
+              >
                 기한 정하지 않음
               </TextAction>
             )}
@@ -244,12 +258,11 @@ export function CareFieldsForm({
         ) : (
           picker === "assigneeId" && (
             <>
-              <p className="text-hm-title-page">누가 챙길까요?</p>
               <SelectionRow
                 control="radio"
                 name="assignee"
                 label="미지정"
-                description="아직 담당자를 정하지 않음"
+                className="min-h-hm-touch-min py-hm-8"
                 checked={!selection}
                 onChange={() => setSelection("")}
               />
@@ -260,6 +273,7 @@ export function CareFieldsForm({
                   name="assignee"
                   label={member.name}
                   description={member.role === "owner" ? "소유자" : "구성원"}
+                  className="min-h-hm-touch-min py-hm-8"
                   checked={selection === member.id}
                   onChange={() => setSelection(member.id)}
                 />
