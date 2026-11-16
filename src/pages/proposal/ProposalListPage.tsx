@@ -21,11 +21,13 @@ import { useBackNavigation } from "@/routes/useBackNavigation";
 import { useWithdrawalReturn } from "@/routes/useWithdrawalReturn";
 import {
   spacePath,
+  spaceTabs,
   proposalReviewPath,
   proposalRequestPath,
   proposalResultPath,
   spaceInfoRequestsPath,
   spaceInfoRequestPath,
+  type SpaceTab,
 } from "@/routes/paths";
 const resultTabs = [
   { value: "applied", label: "반영됨", status: "APPLIED" },
@@ -42,10 +44,7 @@ export function ProposalListPage() {
   const [params, setParams] = useSearchParams();
   const status = params.get("status");
   const fromTab = params.get("fromTab");
-  const sourceTab =
-    fromTab === "home" || fromTab === "care" || fromTab === "all"
-      ? fromTab
-      : "news";
+  const sourceTab = spaceTabs.find((tab) => tab === fromTab) ?? "news";
   const result = resultTabs.find((tab) => tab.value === status);
   const activeTab = result
     ? "results"
@@ -90,6 +89,7 @@ export function ProposalListPage() {
                 <ProposalList
                   spaceId={space.spaceId}
                   status="REVIEW_PENDING"
+                  sourceTab={sourceTab}
                 />
               ) : null,
           },
@@ -117,6 +117,7 @@ export function ProposalListPage() {
                       <ProposalList
                         spaceId={space.spaceId}
                         status={tab.status}
+                        sourceTab={sourceTab}
                       />
                     ) : null,
                 }))}
@@ -131,9 +132,11 @@ export function ProposalListPage() {
 function ProposalList({
   spaceId,
   status,
+  sourceTab,
 }: {
   spaceId: string;
   status: ProposalStatus;
+  sourceTab: SpaceTab;
 }) {
   const list = useProposalList(spaceId, status);
   const navigate = useAppNavigate();
@@ -166,7 +169,7 @@ function ProposalList({
                   withReturn(
                     p.status === "REVIEW_PENDING"
                       ? proposalReviewPath(spaceId, p.recordId)
-                      : proposalResultPath(spaceId, p.proposalId),
+                      : proposalResultPath(spaceId, p.proposalId, sourceTab),
                   ),
                 )
               }

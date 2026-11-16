@@ -75,7 +75,7 @@ export function newsDeletionPath(careSpaceId: string, deletionId: string) {
 export function proposalListPath(
   careSpaceId: string,
   status = "review",
-  fromTab?: "home" | "care" | "all",
+  fromTab?: SpaceTab,
 ) {
   const params = new URLSearchParams({ status });
   if (fromTab) params.set("fromTab", fromTab);
@@ -90,8 +90,13 @@ export function proposalConfirmPath(careSpaceId: string) {
 export function proposalRequestPath(careSpaceId: string, requestId: string) {
   return `${paths.spaces}/${encodeURIComponent(careSpaceId)}/proposal-requests/${encodeURIComponent(requestId)}`;
 }
-export function proposalResultPath(careSpaceId: string, resultId: string) {
-  return `${paths.spaces}/${encodeURIComponent(careSpaceId)}/proposals/results/${encodeURIComponent(resultId)}`;
+export function proposalResultPath(
+  careSpaceId: string,
+  resultId: string,
+  fromTab?: SpaceTab,
+) {
+  const path = `${paths.spaces}/${encodeURIComponent(careSpaceId)}/proposals/results/${encodeURIComponent(resultId)}`;
+  return fromTab ? `${path}?${new URLSearchParams({ fromTab })}` : path;
 }
 export function proposalEditPath(careSpaceId: string, proposalId: string) {
   return `${paths.spaces}/${encodeURIComponent(careSpaceId)}/proposals/${encodeURIComponent(proposalId)}/edit`;
