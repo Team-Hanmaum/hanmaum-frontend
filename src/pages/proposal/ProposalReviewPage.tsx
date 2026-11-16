@@ -24,6 +24,9 @@ import {
   proposalEvidencePath,
   newsDetailPath,
 } from "@/routes/paths";
+
+const selectionLimit = 20;
+
 export function ProposalReviewPage() {
   const { space } = useSpaceContext();
   const { recordId = "" } = useParams();
@@ -49,9 +52,14 @@ export function ProposalReviewPage() {
         .map((p) => [p.proposalId, p]),
     ).values(),
   ];
-  const selectedIds = selected.filter((id) =>
-    items.some((p) => p.proposalId === id && p.status === "REVIEW_PENDING"),
+  const pendingIds = new Set(
+    items.filter((p) => p.status === "REVIEW_PENDING").map((p) => p.proposalId),
   );
+  const selectedIds = selected.filter((id) => pendingIds.has(id));
+  const limitReached = selectedIds.length >= selectionLimit;
+  const checking = !list.data || list.isRefetchError;
+  const confirmLabel =
+    space.role === "OWNER" ? "반영할 내용 확인" : "요청할 내용 확인";
   return (
     <ProposalPageLayout
       title="제안 검토"
@@ -68,44 +76,54 @@ export function ProposalReviewPage() {
             )
           }
         >
-          {space.role === "OWNER" ? "반영할 내용 확인" : "요청할 내용 확인"} ·{" "}
-          {selectedIds.length}건
+          {confirmLabel}
+          {selectedIds.length > 0 && ` · ${selectedIds.length}건`}
         </Button>
       }
     >
-      <h1 className="text-hm-title-page">무엇을 반영할까요?</h1>
-      <Notice
-        title={
-          space.role === "OWNER"
-            ? "확인한 내용만 반영해요"
-            : "소유자에게 반영을 요청해요"
-        }
-        body="최대 20개까지 선택할 수 있어요. 같은 돌봄 항목의 변경은 하나씩 확인해 주세요."
-      />
-      {!list.data || list.isRefetchError ? (
+      <div className="flex flex-col gap-hm-4">
+        <h1 className="text-hm-title-page">이 소식의 제안</h1>
+        {!checking && items.length > 0 && (
+          <p className="text-hm-body-small text-hm-text-secondary">
+            {list.hasNextPage ? "불러온 제안" : "검토할 제안"} {items.length}건
+          </p>
+        )}
+      </div>
+      {checking ? (
         <ReviewQueryState
           error={list.error}
           retry={() => void list.refetch()}
         />
       ) : items.length ? (
-        items.map((p) => (
-          <ReviewCard
-            key={p.proposalId}
-            spaceId={space.spaceId}
-            id={p.proposalId}
-            selected={selectedIds.includes(p.proposalId)}
-            onSelect={(checked) =>
-              client.setQueryData<string[]>(key, (previous) =>
-                checked
-                  ? [...new Set([...(previous ?? []), p.proposalId])].slice(
-                      0,
-                      20,
-                    )
-                  : (previous ?? []).filter((id) => id !== p.proposalId),
-              )
-            }
-          />
-        ))
+        <div className="flex flex-col gap-hm-12">
+          {items.map((p) => (
+            <ReviewCard
+              key={p.proposalId}
+              spaceId={space.spaceId}
+              id={p.proposalId}
+              selected={selectedIds.includes(p.proposalId)}
+              limitReached={limitReached}
+              onSelect={(checked) =>
+                client.setQueryData<string[]>(key, (previous) => {
+                  const current = (previous ?? []).filter(
+                    (id) => pendingIds.has(id) && id !== p.proposalId,
+                  );
+                  return checked && current.length < selectionLimit
+                    ? [...current, p.proposalId]
+                    : current;
+                })
+              }
+            />
+          ))}
+          {limitReached && (
+            <p
+              role="status"
+              className="text-hm-body-small text-hm-text-secondary"
+            >
+              한 번에 최대 {selectionLimit}건까지 선택할 수 있어요.
+            </p>
+          )}
+        </div>
       ) : (
         <EmptyState
           title="검토할 제안이 없어요"
@@ -134,11 +152,13 @@ function ReviewCard({
   spaceId,
   id,
   selected,
+  limitReached,
   onSelect,
 }: {
   spaceId: string;
   id: string;
   selected: boolean;
+  limitReached: boolean;
   onSelect: (checked: boolean) => void;
 }) {
   const query = useProposal(spaceId, id);
@@ -172,6 +192,7 @@ function ReviewCard({
         draft={draft}
         members={members.data}
         selected={selected}
+        selectionDisabled={limitReached && !selected}
         onSelect={onSelect}
         onEdit={() => void navigate(withReturn(proposalEditPath(spaceId, id)))}
         onTarget={() =>

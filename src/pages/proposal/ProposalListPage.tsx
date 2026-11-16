@@ -1,5 +1,5 @@
 import { useSearchParams } from "react-router";
-import { Button, MenuRow, Tabs } from "@/components/ui";
+import { Badge, Button, MenuRow, Tabs } from "@/components/ui";
 import { EmptyState } from "@/components/feedback";
 import { useProposalList } from "@/features/proposal/model/useProposalQueries";
 import { useChangeRequests } from "@/features/proposal/model/useChangeRequests";
@@ -7,7 +7,10 @@ import {
   actionLabels,
   requestFilterLabels,
 } from "@/features/proposal/model/reviewLabels";
-import type { ProposalStatus } from "@/features/proposal/api/proposalReadTypes";
+import type {
+  ProposalStatus,
+  ProposalSummary,
+} from "@/features/proposal/api/proposalReadTypes";
 import type { RequestStatus } from "@/features/proposal/api/changeRequestTypes";
 import {
   authorName,
@@ -153,17 +156,40 @@ function ProposalList({
       list.data.pages.flatMap((p) => p.items).map((p) => [p.proposalId, p]),
     ).values(),
   ];
+  const rows = new Map<string, { proposal: ProposalSummary; count: number }>();
+  for (const proposal of items) {
+    const key =
+      proposal.status === "REVIEW_PENDING"
+        ? proposal.recordId
+        : proposal.proposalId;
+    const row = rows.get(key);
+    if (row) row.count += 1;
+    else rows.set(key, { proposal, count: 1 });
+  }
   return (
     <div className="flex flex-col gap-hm-12">
-      {items.length ? (
+      {rows.size ? (
         <div className="divide-y divide-hm-divider-default rounded-hm-16 bg-hm-bg-surface">
-          {items.map((p) => (
+          {[...rows].map(([key, { proposal: p, count }]) => (
             <MenuRow
-              key={p.proposalId}
+              key={key}
               icon={null}
               className="min-h-hm-touch-min! rounded-none py-hm-12 first:rounded-t-hm-16 last:rounded-b-hm-16 hover:bg-hm-bg-subtle focus-visible:z-10"
               title={p.title ?? "내용이 제거된 제안"}
-              description={`${actionLabels[p.action]} · ${formatServerTime(p.createdAt)}`}
+              description={
+                count > 1
+                  ? formatServerTime(p.createdAt)
+                  : `${actionLabels[p.action]} · ${formatServerTime(p.createdAt)}`
+              }
+              trailing={
+                p.status === "REVIEW_PENDING" && (
+                  <Badge
+                    className="shrink-0"
+                    label={`${list.hasNextPage ? "불러온 " : ""}${count}건`}
+                    tone="brand"
+                  />
+                )
+              }
               onClick={() =>
                 void navigate(
                   withReturn(

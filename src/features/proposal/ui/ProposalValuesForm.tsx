@@ -1,5 +1,11 @@
-import { Field, Button, TextAction } from "@/components/ui";
+import { useState } from "react";
+import { BottomSheet } from "@/components/feedback";
+import { Field, Button, MenuRow, TextAction } from "@/components/ui";
 import { DatePicker } from "@/components/ui/DatePicker";
+import {
+  formatCareDate,
+  formatCareTime,
+} from "@/features/careitem/model/careItemFields";
 import {
   fieldLabels,
   displayCareValue,
@@ -21,8 +27,11 @@ export function ProposalValuesForm({
   onTime: () => void;
   members: SpaceMember[];
 }) {
+  const [dateField, setDateField] = useState<string | null>(null);
+  const [dateSelection, setDateSelection] = useState("");
+
   return (
-    <div className="flex flex-col gap-hm-24">
+    <div className="flex flex-col gap-hm-16">
       {draftKeys(proposal).map((key) => {
         const value =
           typeof draft.values[key] === "string" ? draft.values[key] : "";
@@ -37,13 +46,16 @@ export function ProposalValuesForm({
               className="flex flex-col gap-hm-8"
             >
               <h2 className="text-hm-body-emphasis">{fieldLabels[key]}</h2>
-              <DatePicker
-                value={value}
-                onChange={(v) => onChange(key, v)}
+              <MenuRow
+                icon="care-brand"
+                className="min-h-hm-touch-min! border border-hm-border-default py-hm-8"
+                title={value ? formatCareDate(value) : "날짜 선택"}
+                aria-label={`${fieldLabels[key]} 선택${value ? ` · ${formatCareDate(value)}` : ""}`}
+                onClick={() => {
+                  setDateSelection(value);
+                  setDateField(key);
+                }}
               />
-              <TextAction onClick={() => onChange(key, null)}>
-                날짜 미정으로 변경
-              </TextAction>
             </section>
           );
         if (key === "scheduledTime")
@@ -53,16 +65,21 @@ export function ProposalValuesForm({
               className="flex flex-col gap-hm-8"
             >
               <h2 className="text-hm-body-emphasis">시간</h2>
-              <Button
-                variant="secondary"
-                aria-label="시간 선택"
+              <MenuRow
+                icon="clock-brand"
+                className="min-h-hm-touch-min! border border-hm-border-default py-hm-8"
+                title={value ? formatCareTime(value) : "시간 선택"}
+                aria-label={`시간 선택${value ? ` · ${formatCareTime(value)}` : ""}`}
                 onClick={onTime}
-              >
-                {value || "시간 선택"}
-              </Button>
-              <TextAction onClick={() => onChange(key, null)}>
-                시간 미정으로 변경
-              </TextAction>
+              />
+              {value && (
+                <TextAction
+                  className="self-start"
+                  onClick={() => onChange(key, null)}
+                >
+                  시간 미정으로 변경
+                </TextAction>
+              )}
             </section>
           );
         if (key === "assigneeMembershipId")
@@ -131,6 +148,7 @@ export function ProposalValuesForm({
           <Field
             key={key}
             multiline
+            rows={3}
             label={fieldLabels[key]}
             value={value}
             onChange={(e) => onChange(key, e.target.value || null)}
@@ -147,6 +165,44 @@ export function ProposalValuesForm({
           />
         );
       })}
+      <BottomSheet
+        open={dateField !== null}
+        onOpenChange={(open) => {
+          if (!open) setDateField(null);
+        }}
+        title={dateField ? fieldLabels[dateField] : "날짜 선택"}
+        footer={
+          <div className="grid grid-cols-2 gap-hm-8">
+            <Button
+              variant="outline"
+              onClick={() => setDateField(null)}
+            >
+              취소
+            </Button>
+            <Button
+              onClick={() => {
+                if (dateField) onChange(dateField, dateSelection || null);
+                setDateField(null);
+              }}
+            >
+              선택 완료
+            </Button>
+          </div>
+        }
+      >
+        <DatePicker
+          value={dateSelection}
+          onChange={setDateSelection}
+        />
+        {dateSelection && (
+          <TextAction
+            className="self-start"
+            onClick={() => setDateSelection("")}
+          >
+            날짜 미정으로 변경
+          </TextAction>
+        )}
+      </BottomSheet>
     </div>
   );
 }
